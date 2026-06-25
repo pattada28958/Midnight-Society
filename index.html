@@ -1323,16 +1323,28 @@
             <div class="cinema-player-body">
                 <!-- Video player iframe container (Responsive 16:9 ratio) -->
                 <div class="video-ratio-container" style="position: relative; width: 100%; padding-top: 56.25%; background: #000; border-bottom: 1px solid rgba(229, 9, 20, 0.1);">
-                    <iframe id="cinema-video-iframe" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    <iframe id="cinema-video-iframe" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                 </div>
                 <div class="cinema-movie-info" style="padding: 1.5rem 2rem; background: #08080c; text-align: left;">
+                    <!-- File protocol warning banner -->
+                    <div id="cinema-file-protocol-warning" style="display: none; background: rgba(229, 9, 20, 0.08); border: 1px dashed rgba(229, 9, 20, 0.3); padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.8rem; color: var(--text-primary); align-items: center; gap: 0.75rem;">
+                        <i class="fa-solid fa-triangle-exclamation" style="color: var(--primary); font-size: 1.1rem;"></i>
+                        <div>
+                            <strong>คำแนะนำ:</strong> บราวเซอร์บางรุ่นอาจบล็อกการเล่นวิดีโอเนื่องจากเปิดเว็บบนเครื่องโดยตรง (file://) หากวิดีโอไม่เล่นหรือขึ้นหน้าจอสีดำ กรุณากดปุ่ม <strong>"เปิดรับชมภายนอก"</strong> ด้านขวาเพื่อเปิดเล่นบน YouTube โดยตรงพร้อมซับไทยครับ 🩸
+                        </div>
+                    </div>
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
                         <div>
                             <h2 id="cinema-player-title" style="font-size: 1.6rem; color: #fff; font-family: 'Outfit', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 10px rgba(229, 9, 20, 0.4); margin-bottom: 0.35rem;">-</h2>
                             <p id="cinema-player-meta" style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: flex; gap: 0.75rem; align-items: center;"></p>
                         </div>
-                        <div id="subtitles-status-indicator" style="font-size: 0.75rem; background: rgba(229, 9, 20, 0.08); padding: 0.4rem 0.75rem; border-radius: 8px; border: 1px solid rgba(229, 9, 20, 0.25); display: flex; align-items: center; gap: 0.4rem; color: var(--text-primary);">
-                            <i class="fa-solid fa-closed-captioning" style="color: var(--primary);"></i> ซับไทย (เปิดใช้งานอัตโนมัติ 🩸)
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <div id="subtitles-status-indicator" style="font-size: 0.75rem; background: rgba(229, 9, 20, 0.08); padding: 0.4rem 0.75rem; border-radius: 8px; border: 1px solid rgba(229, 9, 20, 0.25); display: flex; align-items: center; gap: 0.4rem; color: var(--text-primary);">
+                                <i class="fa-solid fa-closed-captioning" style="color: var(--primary);"></i> ซับไทย (เปิดใช้งานอัตโนมัติ 🩸)
+                            </div>
+                            <a id="cinema-external-link" href="#" target="_blank" class="btn-primary" style="font-size: 0.75rem; padding: 0.4rem 0.75rem; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); box-shadow: none; height: auto;">
+                                <i class="fa-brands fa-youtube" style="color: #ff0000;"></i> เปิดรับชมภายนอก
+                            </a>
                         </div>
                     </div>
                     <p id="cinema-player-desc" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin-top: 0.5rem;"></p>

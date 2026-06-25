@@ -100,7 +100,7 @@ const PUBLIC_DOMAIN_MOVIES = [
         year: 1922,
         duration: "1 ชั่วโมง 34 นาที",
         description: "ภาพยนตร์แวมไพร์เงียบระดับตำนานดัดแปลงจากดราคูลา นำเสนอภาพลักษณ์แวมไพร์ที่ผอมโซ ซีดเซียว และน่าสยดสยองที่สุดชิ้นหนึ่งในประวัติศาสตร์ภาพยนตร์โลก",
-        videoUrl: "https://www.youtube.com/embed/FC6jVamE4BY",
+        videoUrl: "https://www.youtube.com/embed/drRpyme1U08",
         rating: "7.9"
     },
     {
@@ -110,7 +110,7 @@ const PUBLIC_DOMAIN_MOVIES = [
         year: 1968,
         duration: "1 ชั่วโมง 36 นาที",
         description: "จุดเริ่มต้นของซอมบี้ยุคใหม่โดย George A. Romero เมื่อผู้คนหนีตายเข้าไปขังตัวเองในบ้านร้างท่ามกลางฝูงคนตายที่ฟื้นคืนชีพขึ้นมารุมทึ้งเนื้อสดๆ",
-        videoUrl: "https://www.youtube.com/embed/5g83DsswKQA",
+        videoUrl: "https://www.youtube.com/embed/yuuLDvWORaQ",
         rating: "7.8"
     },
     {
@@ -120,7 +120,7 @@ const PUBLIC_DOMAIN_MOVIES = [
         year: 1920,
         duration: "1 ชั่วโมง 17 นาที",
         description: "ภาพยนตร์สยองขวัญเงียบแนวเยอรมันเอ็กซ์เพรสชันนิสม์ เล่าเรื่องราวนักสะกดจิตวิปริตที่ใช้คนเดินละเมอไปก่อคดีฆาตกรรม",
-        videoUrl: "https://www.youtube.com/embed/AP3S51L24BY",
+        videoUrl: "https://www.youtube.com/embed/YGRZNk2n-uk",
         rating: "8.0"
     },
     {
@@ -130,7 +130,7 @@ const PUBLIC_DOMAIN_MOVIES = [
         year: 1932,
         duration: "1 ชั่วโมง 9 นาที",
         description: "ภาพยนตร์ซอมบี้เรื่องแรกของโลก นำแสดงโดย Bela Lugosi เล่าเรื่องราวนายแพทย์มนต์ดำแห่งเฮติที่เปลี่ยนหญิงสาวให้กลายเป็นทาสไร้วิญญาณ",
-        videoUrl: "https://www.youtube.com/embed/41X1W-nQxoc",
+        videoUrl: "https://www.youtube.com/embed/hy4J5mB62l4",
         rating: "6.3"
     }
 ];
@@ -5226,6 +5226,23 @@ function openCinemaPlayer(movieId) {
         `;
     }
     
+    // Set external link with Thai subtitle force parameters
+    const extLink = document.getElementById('cinema-external-link');
+    if (extLink) {
+        const watchUrl = movie.videoUrl.replace('/embed/', '/watch?v=') + '&hl=th&cc_lang_pref=th&cc_load_policy=1';
+        extLink.href = watchUrl;
+    }
+    
+    // Show warning banner if running locally on file:// protocol
+    const warningEl = document.getElementById('cinema-file-protocol-warning');
+    if (warningEl) {
+        if (window.location.protocol === 'file:') {
+            warningEl.style.display = 'flex';
+        } else {
+            warningEl.style.display = 'none';
+        }
+    }
+    
     // Load YouTube video with Closed Captions forced in Thai
     if (cinemaVideoIframe) {
         const videoUrlWithCC = `${movie.videoUrl}?autoplay=1&hl=th&cc_lang_pref=th&cc_load_policy=1&rel=0`;
@@ -5243,6 +5260,12 @@ function closeCinemaPlayer() {
     // Clear iframe src to stop video playing
     if (cinemaVideoIframe) {
         cinemaVideoIframe.src = '';
+    }
+    
+    // Reset external link
+    const extLink = document.getElementById('cinema-external-link');
+    if (extLink) {
+        extLink.href = '#';
     }
     
     // Close modal
