@@ -94,14 +94,17 @@ const FALLBACK_POPULAR_MOVIES = [
 
 const PUBLIC_DOMAIN_MOVIES = [
     {
-        id: 198,
+        id: 653,
         title: "Nosferatu",
         thaiTitle: "นอสเฟอราตู: ตำนานแวมไพร์รายแรก",
         year: 1922,
         duration: "1 ชั่วโมง 34 นาที",
         description: "ภาพยนตร์แวมไพร์เงียบระดับตำนานดัดแปลงจากดราคูลา นำเสนอภาพลักษณ์แวมไพร์ที่ผอมโซ ซีดเซียว และน่าสยดสยองที่สุดชิ้นหนึ่งในประวัติศาสตร์ภาพยนตร์โลก",
         videoUrl: "https://www.youtube.com/embed/drRpyme1U08",
-        rating: "7.9"
+        rating: "7.9",
+        director: "F.W. Murnau (เอฟ. ดับเบิลยู. มูร์เนา)",
+        cast: "Max Schreck, Gustav von Wangenheim, Greta Schröder",
+        trivia: "นี่คือภาพยนตร์แวมไพร์เรื่องแรกของโลกที่ดัดแปลงจากนวนิยาย 'Dracula' ของ Bram Stoker โดยไม่ได้รับอนุญาต ภรรยาหม้ายของ Stoker จึงฟ้องร้องศาลให้ทำลายฟิล์มภาพยนตร์เรื่องนี้ทั้งหมด แต่โชคดีที่มีฟิล์มบางส่วนถูกคัดลอกส่งไปต่างประเทศก่อน ทำให้เรายังมีโอกาสได้ชมผลงานชั้นเลิศนี้จนถึงปัจจุบัน"
     },
     {
         id: 10331,
@@ -111,27 +114,36 @@ const PUBLIC_DOMAIN_MOVIES = [
         duration: "1 ชั่วโมง 36 นาที",
         description: "จุดเริ่มต้นของซอมบี้ยุคใหม่โดย George A. Romero เมื่อผู้คนหนีตายเข้าไปขังตัวเองในบ้านร้างท่ามกลางฝูงคนตายที่ฟื้นคืนชีพขึ้นมารุมทึ้งเนื้อสดๆ",
         videoUrl: "https://www.youtube.com/embed/yuuLDvWORaQ",
-        rating: "7.8"
+        rating: "7.8",
+        director: "George A. Romero (จอร์จ เอ. โรเมโร)",
+        cast: "Duane Jones, Judith O'Dea, Karl Hardman",
+        trivia: "ผลงานขึ้นหิ้งที่เป็นบิดาแห่ง 'ซอมบี้ยุคนิยม' ที่เปลี่ยนซอมบี้จากมนต์ดำวูดูมาเป็นซากศพเดินได้ที่หิวกระหายเนื้อสด ๆ หนังเรื่องนี้หลุดเข้าสู่สาธารณสมบัติทันทีตั้งแต่วันแรกที่ฉาย เนื่องจากความผิดพลาดของผู้จัดจำหน่ายที่ลืมใส่สัญลักษณ์ลิขสิทธิ์ (©) บนฟิล์มตอนที่เปลี่ยนชื่อหนังจาก 'Night of the Flesh Eaters'"
     },
     {
-        id: 203,
+        id: 234,
         title: "The Cabinet of Dr. Caligari",
         thaiTitle: "ห้องตู้ของดร. คาลิการี",
         year: 1920,
         duration: "1 ชั่วโมง 17 นาที",
         description: "ภาพยนตร์สยองขวัญเงียบแนวเยอรมันเอ็กซ์เพรสชันนิสม์ เล่าเรื่องราวนักสะกดจิตวิปริตที่ใช้คนเดินละเมอไปก่อคดีฆาตกรรม",
         videoUrl: "https://www.youtube.com/embed/YGRZNk2n-uk",
-        rating: "8.0"
+        rating: "8.0",
+        director: "Robert Wiene (โรเบิร์ต วีน)",
+        cast: "Werner Krauss, Conrad Veidt, Lil Dagover",
+        trivia: "ผลงานชิ้นเอกแนว 'เยอรมันเอ็กซ์เพรสชันนิสม์' (German Expressionism) ที่โดดเด่นด้วยการใช้ฉากบิดเบี้ยว ลายเส้นเฉียงคม และเงาเทียมที่วาดลงบนกำแพงโดยตรงเพื่อสะท้อนความวิกลจริตของตัวละคร ถือเป็นจุดเริ่มต้นของจิตวิทยาแนวฆาตกรต่อเนื่องและจุดหักมุม (Plot Twist) แรกในประวัติศาสตร์ภาพยนตร์โลก"
     },
     {
-        id: 32724,
+        id: 15867,
         title: "White Zombie",
         thaiTitle: "พิศวาสซอมบี้",
         year: 1932,
         duration: "1 ชั่วโมง 9 นาที",
         description: "ภาพยนตร์ซอมบี้เรื่องแรกของโลก นำแสดงโดย Bela Lugosi เล่าเรื่องราวนายแพทย์มนต์ดำแห่งเฮติที่เปลี่ยนหญิงสาวให้กลายเป็นทาสไร้วิญญาณ",
         videoUrl: "https://www.youtube.com/embed/hy4J5mB62l4",
-        rating: "6.3"
+        rating: "6.3",
+        director: "Victor Halperin (วิคเตอร์ ฮัลเพริน)",
+        cast: "Bela Lugosi, Madge Bellamy, Joseph Cawthorn",
+        trivia: "ภาพยนตร์ซอมบี้เรื่องแรกในประวัติศาสตร์ภาพยนตร์โลก นำเสนอแนวคิดดั้งเดิมเกี่ยวกับซอมบี้ที่เกิดจากมนต์ดำและยาสมุนไพรสะกดจิตของลัทธิวูดูในเฮติ เพื่อดึงมนุษย์มาเป็นแรงงานทาสไร้วิญญาณ นำแสดงโดย Bela Lugosi นักแสดงแดร็กคูลาในตำนาน"
     }
 ];
 
@@ -5140,7 +5152,7 @@ async function renderCinemaTab() {
                     <div class="card-badges" style="z-index: 4;">
                         <span class="rating-badge"><i class="fa-solid fa-star"></i> TMDB ${voteAverage}</span>
                     </div>
-                    <div class="movie-details" style="z-index: 4; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 70%, rgba(0,0,0,0) 100%);">
+                    <div class="movie-details" style="position: absolute; bottom: 0; left: 0; right: 0; padding: 1.25rem 1rem 1rem; z-index: 4; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.45) 75%, transparent 100%);">
                         <h4 class="movie-title-card" style="font-size: 0.85rem; color: #fff; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0.2rem;">${movie.thaiTitle}</h4>
                         <div class="movie-meta-details" style="font-size: 0.7rem; color: var(--text-secondary);">${movie.year} | ${movie.duration}</div>
                     </div>
@@ -5154,16 +5166,16 @@ async function renderCinemaTab() {
                 console.error("Failed to load TMDB details for cinema movie ID " + movie.id, err);
                 const fallbackPoster = 'https://images.unsplash.com/photo-1509248961158-e54f6934749c?q=80&w=500&auto=format&fit=crop';
                 card.innerHTML = `
-                    <img class="movie-poster" src="${fallbackPoster}" alt="${movie.thaiTitle}">
+                    <img class="movie-poster" src="${fallbackPoster}" alt="${movie.thaiTitle}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0;">
                     <div class="cinema-card-play-overlay">
                         <div class="play-icon-circle"><i class="fa-solid fa-play"></i></div>
                     </div>
-                    <div class="card-badges">
+                    <div class="card-badges" style="z-index: 4;">
                         <span class="rating-badge"><i class="fa-solid fa-star"></i> TMDB ${movie.rating}</span>
                     </div>
-                    <div class="movie-details">
-                        <h4 class="movie-title-card">${movie.thaiTitle}</h4>
-                        <div class="movie-meta-details">${movie.year} | ${movie.duration}</div>
+                    <div class="movie-details" style="position: absolute; bottom: 0; left: 0; right: 0; padding: 1.25rem 1rem 1rem; z-index: 4; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.45) 75%, transparent 100%);">
+                        <h4 class="movie-title-card" style="font-size: 0.85rem; color: #fff; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0.2rem;">${movie.thaiTitle}</h4>
+                        <div class="movie-meta-details" style="font-size: 0.7rem; color: var(--text-secondary);">${movie.year} | ${movie.duration}</div>
                     </div>
                 `;
                 card.addEventListener('click', () => {
@@ -5217,6 +5229,14 @@ function openCinemaPlayer(movieId) {
     // Set text contents
     if (cinemaPlayerTitle) cinemaPlayerTitle.textContent = movie.thaiTitle;
     if (cinemaPlayerDesc) cinemaPlayerDesc.textContent = movie.description;
+    
+    // Set extra info (Director, Cast, Trivia)
+    const directorEl = document.getElementById('cinema-player-director');
+    const castEl = document.getElementById('cinema-player-cast');
+    const triviaEl = document.getElementById('cinema-player-trivia');
+    if (directorEl) directorEl.textContent = movie.director || '-';
+    if (castEl) castEl.textContent = movie.cast || '-';
+    if (triviaEl) triviaEl.textContent = movie.trivia || '-';
     
     // Set meta tags
     if (cinemaPlayerMeta) {

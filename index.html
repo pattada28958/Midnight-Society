@@ -1348,14 +1348,35 @@
                         </div>
                     </div>
                     <p id="cinema-player-desc" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin-top: 0.5rem;"></p>
+                    
+                    <!-- Detailed movie metadata for classics -->
+                    <div id="cinema-player-extra-info" style="margin-top: 1rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; font-size: 0.8rem;">
+                        <div>
+                            <span style="color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.2rem;"><i class="fa-solid fa-clapperboard"></i> ผู้กำกับ / Director</span>
+                            <span id="cinema-player-director" style="color: var(--text-primary);">-</span>
+                        </div>
+                        <div>
+                            <span style="color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.2rem;"><i class="fa-solid fa-users"></i> นักแสดงนำ / Cast</span>
+                            <span id="cinema-player-cast" style="color: var(--text-primary);">-</span>
+                        </div>
+                    </div>
+                    <div id="cinema-player-trivia-block" style="margin-top: 1rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255,255,255,0.04); border-left: 3px solid var(--primary); padding: 0.75rem 1rem; border-radius: 4px;">
+                        <span style="color: var(--primary); font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.25rem;"><i class="fa-solid fa-scroll"></i> เกร็ดประวัติศาสตร์หนังสยองขวัญคลาสสิก / Horror History Fact</span>
+                        <span id="cinema-player-trivia" style="color: var(--text-secondary); font-size: 0.78rem; line-height: 1.5; display: block;">-</span>
+                    </div>
+
+                    <div id="cinema-subtitles-tip" style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.75rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-circle-info" style="color: var(--primary);"></i>
+                        <span><strong>แนะนำการเปิดซับไทย:</strong> หากซับไทยไม่แสดงผลโดยอัตโนมัติ ให้คลิกไอคอน <strong>ตั้งค่า (ฟันเฟือง)</strong> บนตัวเล่น YouTube -> เลือก <strong>คำบรรยาย (Subtitles/CC)</strong> -> เลือก <strong>แปลอัตโนมัติ (Auto-translate)</strong> -> เลือก <strong>ภาษาไทย (Thai)</strong> ครับ 🩸</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Main Controller Scripts -->
-    <script src="storage.js?v=20250625"></script>
-    <script src="tmdb.js?v=20250625"></script>
-    <script src="app.js?v=20250625"></script>
+    <script src="storage.js?v=20260626"></script>
+    <script src="tmdb.js?v=20260626"></script>
+    <script src="app.js?v=20260626"></script>
 </body>
 </html>
