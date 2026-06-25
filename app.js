@@ -152,6 +152,7 @@ const statAvg = document.getElementById('stat-avg');
 // Search & Filter Elements
 const searchInput = document.getElementById('search-input');
 const searchBtn = document.getElementById('search-btn');
+const searchSuggestions = document.getElementById('search-suggestions');
 const genreFilter = document.getElementById('genre-filter');
 const yearFilter = document.getElementById('year-filter');
 const countryFilter = document.getElementById('country-filter');
@@ -587,6 +588,11 @@ function setupEventListeners() {
     searchInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleSearch();
     });
+    searchInput.addEventListener('input', handleSearchInput);
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') hideSuggestions();
+    });
+    document.addEventListener('click', handleOutsideClickForSuggestions);
 
     // Filters & Sorting triggers
     genreFilter.addEventListener('change', handleFilterChange);
@@ -716,6 +722,7 @@ function switchTab(tabName) {
 
     // Reset controls input values on tab switch
     searchInput.value = '';
+    hideSuggestions();
     currentSearchQuery = '';
     genreFilter.value = '';
     yearFilter.value = '';
@@ -3578,5 +3585,112 @@ function runSurvivalSimulator(charId, choice) {
         
         outcomeTextEl.textContent = result.text;
         resultBox.style.display = 'block';
+    }
+}
+
+// --- SEARCH AUTOCOMPLETE SUGGESTIONS LOGIC ---
+let suggestionDebounceTimer = null;
+
+function handleSearchInput() {
+    const query = searchInput.value.trim();
+    if (!query) {
+        hideSuggestions();
+        return;
+    }
+
+    if (activeTab === 'collection') {
+        showLocalSuggestions(query);
+    } else if (activeTab === 'discover') {
+        clearTimeout(suggestionDebounceTimer);
+        suggestionDebounceTimer = setTimeout(() => {
+            showOnlineSuggestions(query);
+        }, 300);
+    } else {
+        hideSuggestions();
+    }
+}
+
+function hideSuggestions() {
+    if (searchSuggestions) {
+        searchSuggestions.innerHTML = '';
+        searchSuggestions.style.display = 'none';
+    }
+}
+
+function showLocalSuggestions(query) {
+    if (!searchSuggestions) return;
+    
+    const collection = isSharedProfileMode ? sharedCollectionData : Storage.getCollection();
+    const matches = collection.filter(movie => 
+        (movie.title && movie.title.toLowerCase().includes(query.toLowerCase())) ||
+        (movie.original_title && movie.original_title.toLowerCase().includes(query.toLowerCase()))
+    ).slice(0, 6);
+
+    renderSuggestionsList(matches, 'local');
+}
+
+async function showOnlineSuggestions(query) {
+    if (!searchSuggestions || query.length < 2) {
+        hideSuggestions();
+        return;
+    }
+
+    try {
+        const results = await TMDB.searchHorrorMovies(query, 1);
+        if (results && results.results && results.results.length > 0) {
+            const matches = results.results.slice(0, 6);
+            renderSuggestionsList(matches, 'online');
+        } else {
+            hideSuggestions();
+        }
+    } catch (err) {
+        console.error("Failed to fetch autocomplete suggestions", err);
+        hideSuggestions();
+    }
+}
+
+function renderSuggestionsList(movies, source) {
+    if (!searchSuggestions) return;
+    
+    if (movies.length === 0) {
+        hideSuggestions();
+        return;
+    }
+
+    searchSuggestions.innerHTML = '';
+    searchSuggestions.style.display = 'flex';
+
+    movies.forEach(movie => {
+        const item = document.createElement('div');
+        item.className = 'suggestion-item';
+        
+        const posterPath = movie.poster_path ? TMDB.getImageUrl(movie.poster_path, 'w92') : 'https://images.unsplash.com/photo-1509248961158-e54f6934749c?q=80&w=92&auto=format&fit=crop';
+        const year = movie.release_date ? movie.release_date.split('-')[0] : '-';
+        const tagText = source === 'local' ? 'คอลเล็กชัน' : 'ค้นพบใหม่';
+
+        item.innerHTML = `
+            <img src="${posterPath}" class="suggestion-poster" alt="${movie.title}">
+            <div class="suggestion-info">
+                <span class="suggestion-title">${movie.title}</span>
+                <div class="suggestion-meta">
+                    <span>${year}</span>
+                    <span class="suggestion-tag">${tagText}</span>
+                </div>
+            </div>
+        `;
+
+        item.addEventListener('click', () => {
+            searchInput.value = movie.title;
+            hideSuggestions();
+            handleSearch();
+        });
+
+        searchSuggestions.appendChild(item);
+    });
+}
+
+function handleOutsideClickForSuggestions(e) {
+    if (searchSuggestions && !searchSuggestions.contains(e.target) && e.target !== searchInput) {
+        hideSuggestions();
     }
 }
