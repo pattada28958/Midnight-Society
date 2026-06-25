@@ -32,6 +32,9 @@
                 <button class="nav-tab" id="tab-characters" data-tab="characters">
                     <i class="fa-solid fa-mask"></i> ทำเนียบฆาตกร
                 </button>
+                <button class="nav-tab" id="tab-finalgirls" data-tab="finalgirls">
+                    <i class="fa-solid fa-shield-halved"></i> ไฟนอลเกิร์ล (Final Girls)
+                </button>
                 <button class="nav-tab" id="tab-discover" data-tab="discover">
                     <i class="fa-solid fa-magnifying-glass"></i> ค้นหาหนังใหม่
                 </button>
@@ -131,18 +134,24 @@
             </section>
 
             <!-- HORROR SPECIAL ACTIVITIES PANEL -->
-            <div class="horror-actions-row" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.5rem;">
+            <div class="horror-actions-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem;">
                 <button class="discover-btn" id="open-roulette-btn" style="background: linear-gradient(135deg, var(--primary), #991b1b); font-size: 0.85rem; padding: 0.65rem 0.5rem; justify-content: center; height: 40px; font-weight: 700; border-radius: 10px;">
                     <i class="fa-solid fa-circle-notch"></i> วงล้อเสี่ยงตาย
                 </button>
                 <button class="discover-btn" id="open-tarot-btn" style="background: linear-gradient(135deg, var(--primary), #581c87); font-size: 0.85rem; padding: 0.65rem 0.5rem; justify-content: center; height: 40px; font-weight: 700; border-radius: 10px;">
-                    <i class="fa-solid fa-notes-medical"></i> ทำนายไพ่ทาโรต์
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> ไพ่ยิปซีทำนายดวงหลอน
                 </button>
                 <button class="discover-btn" id="open-bingo-btn" style="background: linear-gradient(135deg, var(--primary), #065f46); font-size: 0.85rem; padding: 0.65rem 0.5rem; justify-content: center; height: 40px; font-weight: 700; border-radius: 10px;">
                     <i class="fa-solid fa-table-cells"></i> บิงโกภารกิจ
                 </button>
                 <button class="discover-btn" id="open-soundboard-btn" style="background: linear-gradient(135deg, var(--primary), #075985); font-size: 0.85rem; padding: 0.65rem 0.5rem; justify-content: center; height: 40px; font-weight: 700; border-radius: 10px;">
                     <i class="fa-solid fa-music"></i> ซาวด์บอร์ดหลอน
+                </button>
+                <button class="discover-btn" id="open-quiz-btn" style="background: linear-gradient(135deg, var(--primary), #854d0e); font-size: 0.85rem; padding: 0.65rem 0.5rem; justify-content: center; height: 40px; font-weight: 700; border-radius: 10px;">
+                    <i class="fa-solid fa-clipboard-question"></i> ทดสอบจิตวิทยา
+                </button>
+                <button class="discover-btn" id="open-trivia-btn" style="background: linear-gradient(135deg, var(--primary), #991b1b); font-size: 0.85rem; padding: 0.65rem 0.5rem; justify-content: center; height: 40px; font-weight: 700; border-radius: 10px;">
+                    <i class="fa-solid fa-brain"></i> ทายหนังสยองขวัญ
                 </button>
             </div>
 
@@ -248,6 +257,17 @@
                         </select>
                     </div>
 
+                    <!-- Watch Status Filter -->
+                    <div class="filter-group">
+                        <label for="watch-status-filter">สถานะการรับชม</label>
+                        <select id="watch-status-filter" class="filter-select">
+                            <option value="">ทั้งหมด</option>
+                            <option value="watchlist">อยากดู (Watchlist)</option>
+                            <option value="watching">กำลังดู (Watching)</option>
+                            <option value="watched">ดูแล้ว (Watched)</option>
+                        </select>
+                    </div>
+
                     <!-- Sort Filter -->
                     <div class="filter-group">
                         <label for="sort-filter">จัดเรียงตาม</label>
@@ -273,16 +293,32 @@
                 <!-- Sliders Mode (Netflix-style horizontal rows) -->
                 <div id="sliders-mode-container" style="display: none;">
                     <div class="slider-section">
-                        <h3 class="slider-title"><i class="fa-solid fa-fire-flame-curved text-danger"></i> มาแรงยามค่ำคืน (Trending Now)</h3>
+                        <div class="slider-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <h3 class="slider-title" style="margin-bottom: 0;"><i class="fa-solid fa-fire-flame-curved text-danger"></i> มาแรงยามค่ำคืน (Trending Now)</h3>
+                            <button class="view-all-link-btn" data-category="trending"><i class="fa-solid fa-eye"></i> ดูทั้งหมด <i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
                         <div class="slider-container" id="slider-trending"></div>
                     </div>
                     <div class="slider-section">
-                        <h3 class="slider-title"><i class="fa-solid fa-hourglass-half text-danger"></i> เร็ว ๆ นี้ยามค่ำคืน (Upcoming Horror)</h3>
+                        <div class="slider-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <h3 class="slider-title" style="margin-bottom: 0;"><i class="fa-solid fa-hourglass-half text-danger"></i> เร็ว ๆ นี้ยามค่ำคืน (Upcoming Horror)</h3>
+                            <button class="view-all-link-btn" data-category="upcoming"><i class="fa-solid fa-eye"></i> ดูทั้งหมด <i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
                         <div class="slider-container" id="slider-upcoming"></div>
                     </div>
                     <div class="slider-section">
-                        <h3 class="slider-title"><i class="fa-solid fa-ghost text-danger"></i> หลอนฮิตแนะนำ (Popular Hits)</h3>
+                        <div class="slider-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <h3 class="slider-title" style="margin-bottom: 0;"><i class="fa-solid fa-ghost text-danger"></i> หลอนฮิตแนะนำ (Popular Hits)</h3>
+                            <button class="view-all-link-btn" data-category="popular"><i class="fa-solid fa-eye"></i> ดูทั้งหมด <i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
                         <div class="slider-container" id="slider-popular-discover"></div>
+                    </div>
+                    <div class="slider-section">
+                        <div class="slider-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <h3 class="slider-title" style="margin-bottom: 0;"><i class="fa-solid fa-skull-crossbones text-danger"></i> หนังสยองขวัญทั้งหมด (All Horror)</h3>
+                            <button class="view-all-link-btn" data-category="all_horror"><i class="fa-solid fa-eye"></i> ดูทั้งหมด <i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                        <div class="slider-container" id="slider-all-horror"></div>
                     </div>
                 </div>
 
@@ -304,6 +340,14 @@
                     <h3 class="slider-title" style="margin-bottom: 1.5rem;"><i class="fa-solid fa-mask text-danger"></i> ทำเนียบฆาตกรและตัวละครสยองขวัญระดับตำนาน</h3>
                     <div class="characters-grid" id="characters-grid">
                         <!-- Characters dynamically loaded here -->
+                    </div>
+                </div>
+
+                <!-- Final Girls Tab Container -->
+                <div id="finalgirls-tab-container" style="display: none;">
+                    <h3 class="slider-title" style="margin-bottom: 1.5rem;"><i class="fa-solid fa-shield-halved text-success"></i> ทำเนียบผู้รอดชีวิตคนสุดท้าย (Final Girls)</h3>
+                    <div class="characters-grid" id="finalgirls-grid">
+                        <!-- Final Girls dynamically loaded here -->
                     </div>
                 </div>
 
@@ -473,7 +517,7 @@
 
         <!-- FOOTER -->
         <footer>
-            <p>จัดทำโดยคนรักหนังสยองขวัญ 🩸 | ดึงข้อมูลภาพยนตร์โดย <a href="https://www.themoviedb.org" target="_blank">The Movie Database (TMDB) API</a></p>
+            <p>จัดทำโดยคนรักหนังสยองขวัญ By LOUIS and LILY 🩸 | ดึงข้อมูลภาพยนตร์โดย <a href="https://www.themoviedb.org" target="_blank">The Movie Database (TMDB) API</a></p>
         </footer>
 
     </div>
@@ -773,7 +817,8 @@
             <div class="filter-group" style="margin-bottom: 1.5rem; text-align: left;">
                 <label style="font-size: 0.8rem; margin-bottom: 0.35rem; display: block; color: var(--text-primary);"><i class="fa-solid fa-filter"></i> เลือกกลุ่มภาพยนตร์เสี่ยงดวง</label>
                 <select id="roulette-filter-select" class="filter-select" style="padding: 0.5rem; font-size: 0.85rem; height: 36px;">
-                    <option value="all">🌐 สุ่มทั้งหมดในคลัง/ยอดนิยม (All Horror)</option>
+                    <option value="all">📁 สุ่มทั้งหมดจากคลังของคุณ (Local Collection)</option>
+                    <option value="online">🌐 สุ่มหนังสยองขวัญแนะนำทั้งหมด (Discover All Horror)</option>
                     <option value="watched">🟢 สุ่มเฉพาะหนังที่ดูแล้ว (Watched Only)</option>
                     <option value="watchlist">🔴 สุ่มเฉพาะหนังที่อยากดู / กำลังดู (Watchlist Only)</option>
                 </select>
@@ -813,8 +858,15 @@
             <button class="modal-close-btn" id="tarot-close-btn" title="ปิดหน้าต่าง">
                 <i class="fa-solid fa-xmark"></i>
             </button>
-            <h3 class="modal-section-title" style="border-left-color: #581c87; margin-bottom: 1rem;"><i class="fa-solid fa-notes-medical"></i> ระบบทำนายดวงคืนหลอนด้วยไพ่ทาโรต์</h3>
-            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2rem;">
+            <h3 class="modal-section-title" style="border-left-color: #581c87; margin-bottom: 1rem;"><i class="fa-solid fa-wand-magic-sparkles"></i> ไพ่ยิปซีทำนายดวงหลอน (Tarot of Terror)</h3>
+            
+            <!-- Lunar Energy Indicator for Tarot -->
+            <div id="tarot-lunar-indicator" style="font-size: 0.8rem; background: rgba(88, 28, 135, 0.15); border: 1px dashed rgba(139, 92, 246, 0.35); padding: 0.65rem 1rem; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; animation: fadeIn 0.4s ease;">
+                <span><i class="fa-solid fa-moon animate-pulse" style="color: #a78bfa;"></i> พลังดวงจันทร์คืนนี้: <strong id="tarot-lunar-phase-name" style="color: #f8fafc;">-</strong></span>
+                <span>ดัชนีความสะพรึง: <strong id="tarot-lunar-spooky-val" style="color: var(--primary); font-weight: 800;">-</strong></span>
+            </div>
+            
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
                 เลือกสุ่มไพ่ทาโรต์สยองขวัญ 3 ใบ เพื่อทำนายชะตาและดึงหนังที่เหมาะกับจิตวิญญาณของคุณคืนนี้...
             </p>
             
@@ -939,10 +991,132 @@
                     <span style="font-size: 0.78rem;">เสียงใจเต้น</span>
                 </button>
             </div>
+        </div>
+    </div>
             
-            <p style="font-size: 0.72rem; color: var(--text-dark); margin-top: 1.5rem; line-height: 1.4;">
-                * สังเคราะห์เสียงทั้งหมดผ่าน Web Audio API คีย์บอร์ดและคลื่นเสียงไม่มีการดาวน์โหลดไฟล์เสียงภายนอก
-            </p>
+    <!-- HORROR QUIZ MODAL -->
+    <div class="modal-overlay" id="quiz-modal">
+        <div class="modal-content-container" style="max-width: 550px; padding: 2rem;">
+            <button class="modal-close-btn" id="quiz-close-btn" title="ปิดหน้าต่าง">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="modal-section-title" style="border-left-color: #854d0e; margin-bottom: 1rem;">
+                <i class="fa-solid fa-clipboard-question"></i> แบบทดสอบวิญญาณสยอง
+            </h3>
+            
+            <!-- Quiz Start State -->
+            <div id="quiz-start-state" style="text-align: center; padding: 1.5rem 0;">
+                <div style="font-size: 3.5rem; margin-bottom: 1.25rem; animation: pulse 2s infinite;">🩸</div>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 2rem;">
+                    คุณจะรอดชีวิตเป็นผู้ชนะ หรือจะตกเป็นเหยื่อรายแรกของคืนวิปลาสนี้? ร่วมทำแบบทดสอบจิตวิทยาเพื่อค้นหาบทบาทที่แท้จริงของคุณในหนังสยองขวัญ!
+                </p>
+                <button class="btn-primary" id="quiz-start-btn" style="background: linear-gradient(135deg, #854d0e, #a16207); width: 100%;">
+                    <i class="fa-solid fa-play"></i> เริ่มทำแบบทดสอบ
+                </button>
+            </div>
+
+            <!-- Quiz Questions State -->
+            <div id="quiz-questions-state" style="display: none; padding: 0.5rem 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">
+                    <span id="quiz-progress-text" style="font-size: 0.78rem; font-weight: 700; color: #a16207;">คำถามที่ 1/5</span>
+                    <div style="width: 80px; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                        <div id="quiz-progress-bar" style="width: 20%; height: 100%; background: #a16207; transition: width 0.3s ease;"></div>
+                    </div>
+                </div>
+                <h4 id="quiz-question-text" style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.5rem; line-height: 1.5; text-align: left;">-</h4>
+                <div class="quiz-options-list" id="quiz-options-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;">
+                    <!-- Question options populated by JS -->
+                </div>
+            </div>
+
+            <!-- Quiz Result State -->
+            <div id="quiz-result-state" style="display: none; text-align: center;">
+                <h4 style="font-size: 1rem; color: #a16207; margin-bottom: 0.5rem; font-weight: 700;">บทบาทที่แท้จริงของคุณคือ...</h4>
+                <h2 id="quiz-result-archetype" style="font-size: 1.6rem; font-weight: 800; color: #ffffff; margin-bottom: 1.25rem; text-shadow: 0 0 10px rgba(161, 98, 7, 0.4);">ผู้รอดชีวิตคนสุดท้าย (The Final Girl)</h2>
+                
+                <!-- Canvas card viewer -->
+                <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 12px; margin-bottom: 1.5rem; display: flex; justify-content: center;">
+                    <canvas id="quiz-card-canvas" width="500" height="300" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--glass-border); background: #000; box-shadow: 0 4px 15px rgba(0,0,0,0.5);"></canvas>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn-primary" id="quiz-retry-btn" style="flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text-primary); box-shadow: none;">
+                        <i class="fa-solid fa-arrow-rotate-left"></i> ทำใหม่
+                    </button>
+                    <button class="btn-primary" id="quiz-download-btn" style="flex: 2; background: linear-gradient(135deg, #854d0e, #a16207);">
+                        <i class="fa-solid fa-download"></i> ดาวน์โหลดการ์ดโปรไฟล์ (.PNG)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- MIDNIGHT TRIVIA MODAL -->
+    <div class="modal-overlay" id="trivia-modal">
+        <div class="modal-content-container" style="max-width: 520px; padding: 2rem;">
+            <button class="modal-close-btn" id="trivia-close-btn" title="ปิดหน้าต่าง">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="modal-section-title" style="border-left-color: var(--primary); margin-bottom: 1rem;">
+                <i class="fa-solid fa-brain"></i> เกมทายหนังคืนหลอน (Midnight Trivia)
+            </h3>
+
+            <!-- Trivia Start State -->
+            <div id="trivia-start-state" style="text-align: center; padding: 1.5rem 0;">
+                <div style="font-size: 3.5rem; margin-bottom: 1.25rem; animation: pulse 2s infinite;">🎬</div>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 2rem;">
+                    ยินดีต้อนรับสู่แดนชำระบาปของคนรักหนังโหด! กติกาคือคุณต้องตอบคำถาม 5 ข้อจากเบาะแสอีโมจิและปริศนาของหนังสยองขวัญระดับตำนาน โดยมี 3 พลังชีวิต (🩸 🩸 🩸) และจำกัดเวลาข้อละ 15 วินาที ตอบถูกหมดรับเกียรติยศสูงสุด!
+                </p>
+                <button class="btn-primary" id="trivia-start-btn" style="background: linear-gradient(135deg, var(--primary), #991b1b); width: 100%;">
+                    <i class="fa-solid fa-play"></i> เริ่มดวลคำถาม
+                </button>
+            </div>
+
+            <!-- Trivia Gameplay State -->
+            <div id="trivia-gameplay-state" style="display: none; padding: 0.5rem 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">
+                    <span id="trivia-progress-text" style="font-size: 0.78rem; font-weight: 700; color: var(--primary);">คำถามที่ 1/5</span>
+                    
+                    <!-- Hearts lives display -->
+                    <div id="trivia-lives-container" class="trivia-lives" style="display: flex; gap: 0.25rem; font-size: 1.1rem; color: var(--primary);">
+                        <i class="fa-solid fa-droplet animate-pulse"></i>
+                        <i class="fa-solid fa-droplet animate-pulse"></i>
+                        <i class="fa-solid fa-droplet animate-pulse"></i>
+                    </div>
+                </div>
+
+                <!-- Timer countdown bar -->
+                <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin-bottom: 1.5rem;">
+                    <div id="trivia-timer-bar" style="width: 100%; height: 100%; background: linear-gradient(90deg, #ff003c, #991b1b); transition: width 0.1s linear;"></div>
+                </div>
+
+                <!-- Riddle Display Box -->
+                <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: 12px; margin-bottom: 1.5rem; text-align: center;">
+                    <div id="trivia-emoji-clue" style="font-size: 2.5rem; margin-bottom: 0.75rem; filter: drop-shadow(0 0 10px rgba(255,0,60,0.3));">🪓 🚪 ❄️</div>
+                    <p id="trivia-riddle-text" style="font-size: 0.88rem; color: var(--text-primary); line-height: 1.5; margin: 0 0 0.5rem 0; font-weight: 500;"></p>
+                    <span id="trivia-year-hint" style="font-size: 0.75rem; color: var(--text-dark); font-weight: 700; text-transform: uppercase;">ปีที่ฉาย: 1980</span>
+                </div>
+
+                <!-- 4 Choice buttons -->
+                <div class="trivia-options-list" id="trivia-options-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Trivia Result State -->
+            <div id="trivia-result-state" style="display: none; text-align: center; padding: 1rem 0;">
+                <div id="trivia-result-icon" style="font-size: 4rem; margin-bottom: 1rem;">🏆</div>
+                <h2 id="trivia-result-title" style="font-size: 1.6rem; font-weight: 800; color: #ffffff; margin-bottom: 0.5rem;">ผู้รอบรู้คู่วิปลาส!</h2>
+                <p id="trivia-result-desc" style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 2rem; padding: 0 1rem;"></p>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn-primary" id="trivia-retry-btn" style="flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text-primary); box-shadow: none;">
+                        <i class="fa-solid fa-arrow-rotate-left"></i> เล่นอีกครั้ง
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 

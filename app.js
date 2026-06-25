@@ -59,7 +59,7 @@ const FALLBACK_POPULAR_MOVIES = [
         backdrop_path: '/or06Ex5J2Vw23R35i6z86plPb1L.jpg'
     },
     {
-        id: 520763,
+        id: 447332,
         title: 'ดินแดนไร้เสียง (A Quiet Place)',
         release_date: '2018-04-03',
         vote_average: 7.4,
@@ -98,6 +98,7 @@ let currentSearchQuery = '';
 let discoverPage = 1;
 let discoverTotalPages = 1;
 let discoverMoviesList = []; // Cache of currently shown TMDB search results
+let discoverCategory = null; // 'trending', 'upcoming', 'popular', 'all_horror' or null
 
 // Shared Profile Mode State
 let isSharedProfileMode = false;
@@ -115,6 +116,14 @@ let fogAnimationId = null;
 let featuredMovies = [];
 let currentHeroIndex = 0;
 let heroAutoSlideTimer = null;
+
+// Trivia State Variables
+let triviaCurrentQuestions = [];
+let triviaCurrentIndex = 0;
+let triviaLives = 3;
+let triviaTimeRemaining = 15;
+let triviaTimerInterval = null;
+let triviaIsProcessingAnswer = false;
 
 // --- DOM ELEMENTS ---
 const tabCollection = document.getElementById('tab-collection');
@@ -156,6 +165,7 @@ const searchSuggestions = document.getElementById('search-suggestions');
 const genreFilter = document.getElementById('genre-filter');
 const yearFilter = document.getElementById('year-filter');
 const countryFilter = document.getElementById('country-filter');
+const watchStatusFilter = document.getElementById('watch-status-filter');
 const sortFilter = document.getElementById('sort-filter');
 const sectionTitle = document.getElementById('section-title');
 const movieGrid = document.getElementById('movie-grid');
@@ -166,6 +176,7 @@ const gridModeContainer = document.getElementById('grid-mode-container');
 const sliderTrending = document.getElementById('slider-trending');
 const sliderUpcoming = document.getElementById('slider-upcoming');
 const sliderPopularDiscover = document.getElementById('slider-popular-discover');
+const sliderAllHorror = document.getElementById('slider-all-horror');
 
 // Pagination Elements
 const paginationContainer = document.getElementById('pagination-container');
@@ -204,6 +215,54 @@ const modalReviewText = document.getElementById('modal-review-text');
 const modalSaveBtn = document.getElementById('modal-save-btn');
 const modalDeleteBtn = document.getElementById('modal-delete-btn');
 
+// Quiz & Almanac Elements
+const openQuizBtn = document.getElementById('open-quiz-btn');
+const quizModal = document.getElementById('quiz-modal');
+const quizCloseBtn = document.getElementById('quiz-close-btn');
+const quizStartBtn = document.getElementById('quiz-start-btn');
+const quizRetryBtn = document.getElementById('quiz-retry-btn');
+const quizDownloadBtn = document.getElementById('quiz-download-btn');
+const quizStartState = document.getElementById('quiz-start-state');
+const quizQuestionsState = document.getElementById('quiz-questions-state');
+const quizResultState = document.getElementById('quiz-result-state');
+const quizProgressText = document.getElementById('quiz-progress-text');
+const quizProgressBar = document.getElementById('quiz-progress-bar');
+const quizQuestionText = document.getElementById('quiz-question-text');
+const quizOptionsList = document.getElementById('quiz-options-list');
+const quizResultArchetype = document.getElementById('quiz-result-archetype');
+const quizCardCanvas = document.getElementById('quiz-card-canvas');
+
+const openAlmanacBtn = document.getElementById('open-almanac-btn');
+const almanacModal = document.getElementById('almanac-modal');
+const almanacCloseBtn = document.getElementById('almanac-close-btn');
+const almanacMoonGraphic = document.getElementById('almanac-moon-graphic');
+const almanacMoonPhaseName = document.getElementById('almanac-moon-phase-name');
+const almanacSpookyIndexVal = document.getElementById('almanac-spooky-index-val');
+const almanacSpookyIndexBar = document.getElementById('almanac-spooky-index-bar');
+const almanacForecastText = document.getElementById('almanac-forecast-text');
+const almanacRecGenres = document.getElementById('almanac-recommendation-genres');
+const almanacAmbientToggleBtn = document.getElementById('almanac-ambient-toggle-btn');
+
+// Trivia Elements
+const openTriviaBtn = document.getElementById('open-trivia-btn');
+const triviaModal = document.getElementById('trivia-modal');
+const triviaCloseBtn = document.getElementById('trivia-close-btn');
+const triviaStartBtn = document.getElementById('trivia-start-btn');
+const triviaRetryBtn = document.getElementById('trivia-retry-btn');
+const triviaStartState = document.getElementById('trivia-start-state');
+const triviaGameplayState = document.getElementById('trivia-gameplay-state');
+const triviaResultState = document.getElementById('trivia-result-state');
+const triviaProgressText = document.getElementById('trivia-progress-text');
+const triviaLivesContainer = document.getElementById('trivia-lives-container');
+const triviaTimerBar = document.getElementById('trivia-timer-bar');
+const triviaEmojiClue = document.getElementById('trivia-emoji-clue');
+const triviaRiddleText = document.getElementById('trivia-riddle-text');
+const triviaYearHint = document.getElementById('trivia-year-hint');
+const triviaOptionsList = document.getElementById('trivia-options-list');
+const triviaResultIcon = document.getElementById('trivia-result-icon');
+const triviaResultTitle = document.getElementById('trivia-result-title');
+const triviaResultDesc = document.getElementById('trivia-result-desc');
+
 // Genres container display
 const modalGenresContainer = document.getElementById('modal-genres-container');
 
@@ -220,6 +279,9 @@ const playlistsGrid = document.getElementById('playlists-grid');
 const tabCharacters = document.getElementById('tab-characters');
 const charactersTabContainer = document.getElementById('characters-tab-container');
 const charactersGrid = document.getElementById('characters-grid');
+const tabFinalGirls = document.getElementById('tab-finalgirls');
+const finalgirlsTabContainer = document.getElementById('finalgirls-tab-container');
+const finalgirlsGrid = document.getElementById('finalgirls-grid');
 const createPlaylistBtn = document.getElementById('create-playlist-btn');
 const playlistModal = document.getElementById('playlist-modal');
 const playlistCloseBtn = document.getElementById('playlist-close-btn');
@@ -581,6 +643,7 @@ function setupEventListeners() {
     tabCollection.addEventListener('click', () => switchTab('collection'));
     if (tabPlaylists) tabPlaylists.addEventListener('click', () => switchTab('playlists'));
     if (tabCharacters) tabCharacters.addEventListener('click', () => switchTab('characters'));
+    if (tabFinalGirls) tabFinalGirls.addEventListener('click', () => switchTab('finalgirls'));
     tabDiscover.addEventListener('click', () => switchTab('discover'));
 
     // Search trigger
@@ -598,6 +661,9 @@ function setupEventListeners() {
     genreFilter.addEventListener('change', handleFilterChange);
     yearFilter.addEventListener('change', handleFilterChange);
     countryFilter.addEventListener('change', handleFilterChange);
+    if (watchStatusFilter) {
+        watchStatusFilter.addEventListener('change', handleFilterChange);
+    }
     sortFilter.addEventListener('change', handleFilterChange);
 
     // Modal Close
@@ -748,6 +814,7 @@ function setupEventListeners() {
     if (openTarotBtn && tarotModal) {
         openTarotBtn.addEventListener('click', () => {
             SoundscapeEngine.playModalOpenSFX();
+            updateTarotLunarPower();
             tarotModal.classList.add('active');
         });
     }
@@ -853,6 +920,102 @@ function setupEventListeners() {
     if (survivalSaveBtn) {
         survivalSaveBtn.addEventListener('click', saveMovieSurvivalLog);
     }
+
+    // Horror Quiz listeners
+    if (openQuizBtn && quizModal) {
+        openQuizBtn.addEventListener('click', () => {
+            SoundscapeEngine.playModalOpenSFX();
+            openQuizModal();
+        });
+    }
+    if (quizCloseBtn && quizModal) {
+        quizCloseBtn.addEventListener('click', () => {
+            quizModal.classList.remove('active');
+        });
+    }
+    if (quizModal) {
+        quizModal.addEventListener('click', (e) => {
+            if (e.target === quizModal) {
+                quizModal.classList.remove('active');
+            }
+        });
+    }
+    if (quizStartBtn) {
+        quizStartBtn.addEventListener('click', startHorrorQuiz);
+    }
+    if (quizRetryBtn) {
+        quizRetryBtn.addEventListener('click', resetQuizState);
+    }
+    if (quizDownloadBtn) {
+        quizDownloadBtn.addEventListener('click', downloadQuizCard);
+    }
+
+    // Spooky Almanac listeners
+    if (openAlmanacBtn && almanacModal) {
+        openAlmanacBtn.addEventListener('click', () => {
+            SoundscapeEngine.playModalOpenSFX();
+            openAlmanacModal();
+        });
+    }
+    if (almanacCloseBtn && almanacModal) {
+        almanacCloseBtn.addEventListener('click', () => {
+            almanacModal.classList.remove('active');
+        });
+    }
+    if (almanacModal) {
+        almanacModal.addEventListener('click', (e) => {
+            if (e.target === almanacModal) {
+                almanacModal.classList.remove('active');
+            }
+        });
+    }
+    if (almanacAmbientToggleBtn) {
+        almanacAmbientToggleBtn.addEventListener('click', toggleLunarAmbientLight);
+    }
+
+    // Midnight Trivia listeners
+    if (openTriviaBtn && triviaModal) {
+        openTriviaBtn.addEventListener('click', () => {
+            SoundscapeEngine.playModalOpenSFX();
+            openTriviaModal();
+        });
+    }
+    if (triviaCloseBtn && triviaModal) {
+        triviaCloseBtn.addEventListener('click', () => {
+            closeTriviaModal();
+        });
+    }
+    if (triviaModal) {
+        triviaModal.addEventListener('click', (e) => {
+            if (e.target === triviaModal) {
+                closeTriviaModal();
+            }
+        });
+    }
+    if (triviaStartBtn) {
+        triviaStartBtn.addEventListener('click', startTriviaGame);
+    }
+    if (triviaRetryBtn) {
+        triviaRetryBtn.addEventListener('click', () => {
+            resetTriviaState();
+            startTriviaGame();
+        });
+    }
+
+    // View All buttons click listener in Discover tab sliders
+    document.addEventListener('click', (e) => {
+        const viewAllBtn = e.target.closest('.view-all-link-btn');
+        if (viewAllBtn) {
+            SoundscapeEngine.playClickSFX();
+            const category = viewAllBtn.dataset.category;
+            discoverCategory = category;
+            discoverPage = 1;
+            fetchAndRenderDiscover();
+            
+            // Scroll to results cleanly
+            document.querySelector('main').scrollIntoView({ behavior: 'smooth' });
+        }
+    });
 }
 
 // --- TAB NAVIGATION ---
@@ -865,6 +1028,7 @@ function switchTab(tabName) {
     tabCollection.classList.toggle('active', activeTab === 'collection');
     if (tabPlaylists) tabPlaylists.classList.toggle('active', activeTab === 'playlists');
     if (tabCharacters) tabCharacters.classList.toggle('active', activeTab === 'characters');
+    if (tabFinalGirls) tabFinalGirls.classList.toggle('active', activeTab === 'finalgirls');
     tabDiscover.classList.toggle('active', activeTab === 'discover');
 
     // Reset controls input values on tab switch
@@ -874,6 +1038,8 @@ function switchTab(tabName) {
     genreFilter.value = '';
     yearFilter.value = '';
     countryFilter.value = '';
+    if (watchStatusFilter) watchStatusFilter.value = '';
+    discoverCategory = null;
     
     // Adjust Sort Option for Collection vs Discover
     const sortOptLatest = document.getElementById('sort-opt-latest');
@@ -882,6 +1048,7 @@ function switchTab(tabName) {
     // Hide controls and playlists by default
     if (playlistsTabContainer) playlistsTabContainer.style.display = 'none';
     if (charactersTabContainer) charactersTabContainer.style.display = 'none';
+    if (finalgirlsTabContainer) finalgirlsTabContainer.style.display = 'none';
     if (controlPanel) controlPanel.style.display = 'flex';
     
     if (activeTab === 'collection') {
@@ -914,6 +1081,15 @@ function switchTab(tabName) {
         
         if (charactersTabContainer) charactersTabContainer.style.display = 'block';
         renderCharacters();
+    } else if (activeTab === 'finalgirls') {
+        if (heroBanner) heroBanner.style.display = 'none';
+        if (controlPanel) controlPanel.style.display = 'none';
+        slidersModeContainer.style.display = 'none';
+        gridModeContainer.style.display = 'none';
+        paginationContainer.style.display = 'none';
+        
+        if (finalgirlsTabContainer) finalgirlsTabContainer.style.display = 'block';
+        renderFinalGirls();
     } else {
         if (heroBanner) heroBanner.style.display = 'flex';
         sortFilter.value = 'tmdb_desc'; // Default TMDB sort
@@ -972,6 +1148,7 @@ function handleSearch() {
     if (activeTab === 'collection') {
         renderMyCollection();
     } else {
+        discoverCategory = null; // Clear category grid when searching
         discoverPage = 1;
         fetchAndRenderDiscover();
     }
@@ -981,6 +1158,7 @@ function handleFilterChange() {
     if (activeTab === 'collection') {
         renderMyCollection();
     } else {
+        discoverCategory = null; // Clear category grid when filtering
         discoverPage = 1;
         fetchAndRenderDiscover();
     }
@@ -1101,7 +1279,14 @@ function renderMyCollection() {
             // Country filter
             const matchesCountry = matchesCountryFilter(movie.production_countries, countryFilter.value);
 
-            return matchesSearch && matchesGenre && matchesYear && matchesCountry;
+            // Watch Status filter
+            let matchesWatchStatus = true;
+            if (watchStatusFilter && watchStatusFilter.value) {
+                const movieStatus = movie.watchStatus || 'watchlist';
+                matchesWatchStatus = movieStatus === watchStatusFilter.value;
+            }
+
+            return matchesSearch && matchesGenre && matchesYear && matchesCountry && matchesWatchStatus;
         });
 
         // Sort
@@ -1154,8 +1339,8 @@ function renderMyCollection() {
 async function fetchAndRenderDiscover() {
     const hasFilters = genreFilter.value || yearFilter.value || countryFilter.value;
     
-    // If a search query is active OR filters are active, we display in Grid mode
-    if (currentSearchQuery || hasFilters) {
+    // If a search query is active OR filters are active OR a category view-all is active, we display in Grid mode
+    if (currentSearchQuery || hasFilters || discoverCategory) {
         slidersModeContainer.style.display = 'none';
         gridModeContainer.style.display = 'block';
         
@@ -1203,7 +1388,7 @@ async function fetchAndRenderDiscover() {
                 totalPages = Math.min(response.total_pages || 1, 500);
             } 
             // Scenario B: No search query, but filters are active (we query discover API directly with filters)
-            else {
+            else if (hasFilters) {
                 sectionTitle.innerHTML = `<i class="fa-solid fa-ghost"></i> ค้นพบภาพยนตร์ตามตัวเลือกของคุณ`;
                 
                 const discoverParams = {
@@ -1272,6 +1457,34 @@ async function fetchAndRenderDiscover() {
                 discoverMovies = results;
                 totalPages = Math.min(response.total_pages || 1, 500);
             }
+            // Scenario C: Category "View All" is active
+            else if (discoverCategory) {
+                const todayStr = new Date().toISOString().split('T')[0];
+                let params = {
+                    with_genres: '27',
+                    page: discoverPage
+                };
+                
+                if (discoverCategory === 'trending') {
+                    params.sort_by = 'popularity.desc';
+                    sectionTitle.innerHTML = `<i class="fa-solid fa-fire-flame-curved text-danger"></i> ภาพยนตร์ มาแรงยามค่ำคืน (Trending Now) <button class="btn-primary" id="clear-discover-category-btn" style="padding: 0.3rem 0.60rem; font-size: 0.75rem; border-radius: 6px; margin-left: 0.75rem; box-shadow: none; width: fit-content; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-solid fa-arrow-left"></i> ย้อนกลับ</button>`;
+                } else if (discoverCategory === 'upcoming') {
+                    params['primary_release_date.gte'] = todayStr;
+                    params.sort_by = 'primary_release_date.asc';
+                    sectionTitle.innerHTML = `<i class="fa-solid fa-hourglass-half text-danger"></i> ภาพยนตร์ เร็ว ๆ นี้ยามค่ำคืน (Upcoming Horror) <button class="btn-primary" id="clear-discover-category-btn" style="padding: 0.3rem 0.60rem; font-size: 0.75rem; border-radius: 6px; margin-left: 0.75rem; box-shadow: none; width: fit-content; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-solid fa-arrow-left"></i> ย้อนกลับ</button>`;
+                } else if (discoverCategory === 'popular') {
+                    params['vote_count.gte'] = 100;
+                    params.sort_by = 'vote_average.desc';
+                    sectionTitle.innerHTML = `<i class="fa-solid fa-ghost text-danger"></i> ภาพยนตร์ หลอนฮิตแนะนำ (Popular Hits) <button class="btn-primary" id="clear-discover-category-btn" style="padding: 0.3rem 0.60rem; font-size: 0.75rem; border-radius: 6px; margin-left: 0.75rem; box-shadow: none; width: fit-content; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-solid fa-arrow-left"></i> ย้อนกลับ</button>`;
+                } else if (discoverCategory === 'all_horror') {
+                    params.sort_by = 'popularity.desc';
+                    sectionTitle.innerHTML = `<i class="fa-solid fa-skull-crossbones text-danger"></i> หนังสยองขวัญทั้งหมด (All Horror) <button class="btn-primary" id="clear-discover-category-btn" style="padding: 0.3rem 0.60rem; font-size: 0.75rem; border-radius: 6px; margin-left: 0.75rem; box-shadow: none; width: fit-content; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-solid fa-arrow-left"></i> ย้อนกลับ</button>`;
+                }
+                
+                const response = await TMDB.fetchFromTMDB('/discover/movie', params);
+                discoverMovies = response.results || [];
+                totalPages = Math.min(response.total_pages || 1, 500);
+            }
             
             movieGrid.innerHTML = '';
             discoverMoviesList = discoverMovies;
@@ -1293,6 +1506,16 @@ async function fetchAndRenderDiscover() {
             pageNumberLabel.textContent = `หน้า ${discoverPage} / ${discoverTotalPages}`;
             prevPageBtn.disabled = discoverPage <= 1;
             nextPageBtn.disabled = discoverPage >= discoverTotalPages;
+            
+            // Bind back button
+            const clearBtn = document.getElementById('clear-discover-category-btn');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', () => {
+                    discoverCategory = null;
+                    discoverPage = 1;
+                    fetchAndRenderDiscover();
+                });
+            }
         } catch (e) {
             console.error(e);
             renderEmptyState('เกิดข้อผิดพลาดในการโหลดผลการค้นหา');
@@ -1310,6 +1533,7 @@ async function fetchAndRenderDiscover() {
         sliderTrending.innerHTML = '<div style="padding: 2rem; color: var(--text-dark);"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div>';
         sliderUpcoming.innerHTML = '<div style="padding: 2rem; color: var(--text-dark);"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div>';
         sliderPopularDiscover.innerHTML = '<div style="padding: 2rem; color: var(--text-dark);"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div>';
+        sliderAllHorror.innerHTML = '<div style="padding: 2rem; color: var(--text-dark);"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div>';
         
         try {
             // 1. Trending Now Slider
@@ -1335,11 +1559,20 @@ async function fetchAndRenderDiscover() {
             });
             renderMoviesToSlider(popularResp.results, sliderPopularDiscover);
             
+            // 4. All Horror Slider (Default popularity)
+            const allHorrorResp = await TMDB.fetchFromTMDB('/discover/movie', {
+                with_genres: TMDB.HORROR_GENRE_ID,
+                sort_by: 'popularity.desc',
+                page: 1
+            });
+            renderMoviesToSlider(allHorrorResp.results, sliderAllHorror);
+            
         } catch (error) {
             console.error('Failed to load sliders', error);
             // Render beautiful local fallback movies so the Discover tab is not blank
             renderMoviesToSlider(FALLBACK_POPULAR_MOVIES, sliderTrending);
             renderMoviesToSlider(FALLBACK_POPULAR_MOVIES.slice().reverse(), sliderPopularDiscover);
+            renderMoviesToSlider(FALLBACK_POPULAR_MOVIES, sliderAllHorror);
             sliderUpcoming.innerHTML = '<div style="padding: 2rem; color: var(--text-secondary); text-align: center;"><i class="fa-solid fa-wifi-slash"></i> ไม่สามารถเชื่อมต่อกับฐานข้อมูลภาพยนตร์ออนไลน์ได้ชั่วคราว แต่คุณยังสามารถค้นหาและจัดการหนังในคอลเล็กชันส่วนตัวของคุณได้ตามปกติครับ 🩸</div>';
         }
     }
@@ -3192,6 +3425,27 @@ const SPOOKY_ACHIEVEMENTS = [
         desc: 'ทำภารกิจกระดานบิงโกความหลอนเชื่อมเส้นสำเร็จสำเร็จ 1 เส้นขึ้นไป',
         icon: 'fa-solid fa-crown',
         check: () => localStorage.getItem('achievement_bingo_completed') === 'true'
+    },
+    {
+        id: 'quiz_master',
+        title: 'นักถอดรหัสดวงจิต (Psychology Profiler)',
+        desc: 'ทำแบบทดสอบวิญญาณสยองขวัญและได้รับวิเคราะห์การเอาชีวิตรอด',
+        icon: 'fa-solid fa-clipboard-question',
+        check: () => localStorage.getItem('challenge_quiz_done') === 'true'
+    },
+    {
+        id: 'trivia_master',
+        title: 'ผู้รอบรู้คู่วิปลาส (Horror Scholar)',
+        desc: 'ตอบคำถามทายหนังคืนหลอนถูกครบ 5 ข้อสมบูรณ์แบบ',
+        icon: 'fa-solid fa-trophy',
+        check: () => localStorage.getItem('challenge_trivia_perfect') === 'true'
+    },
+    {
+        id: 'lunar_mystic',
+        title: 'ผู้น้อมรับแสงราตรี (Lunar Mystic)',
+        desc: 'เปิดใช้งานบรรยากาศแสงจันทร์สลัวเพื่อย้อมสี Midnight Society',
+        icon: 'fa-solid fa-moon',
+        check: () => localStorage.getItem('settings-lunar-ambient-active') === 'true'
     }
 ];
 
@@ -3527,7 +3781,7 @@ const HORROR_CHARACTERS = [
         name: 'เลเธอร์เฟซ',
         english: 'Leatherface',
         weapon: 'เลื่อยไฟฟ้า (Chainsaw)',
-        movieId: 11373,
+        movieId: 30497,
         bio: 'ฆาตกรโรคจิตสวมหน้ากากหนังมนุษย์ผู้คลั่งเลื่อยไฟฟ้า ไล่ล่าเหยื่อภายใต้การสั่งการของครอบครัวกินคนโรคจิตในแถบเท็กซัส',
         stats: { brutality: 9.8, stealth: 4.5, speed: 7.0, supernatural: 1.0 },
         simulator: {
@@ -3722,7 +3976,7 @@ const HORROR_CHARACTERS = [
         name: 'คายาโกะ ซาเอกิ',
         english: 'Kayako Saeki',
         weapon: 'วิญญาณแค้นจูออนสิงบ้าน (Grudge Curse)',
-        movieId: 11838,
+        movieId: 843,
         bio: 'ผีแม่ลูกดกชาวญี่ปุ่นที่ตายด้วยความอาฆาตแค้นแสนสาหัสจากสามี เธอสถิตอยู่ในบ้านหลังนั้นและตามฆ่าทุกคนที่เข้าเหยียบเพื่อขยายวงจรแค้นไม่สิ้นสุด',
         stats: { brutality: 9.0, stealth: 9.5, speed: 4.0, supernatural: 9.9 },
         simulator: {
@@ -3746,8 +4000,617 @@ const HORROR_CHARACTERS = [
             fight: { rate: 10, text: 'คุณยิงปืนใส่ปะทะตัวมัน เลือดกรดละลายเหล็กพุ่งฉีดกระจายล้างหน้าผิวกายคุณสลายแสบร้อนเจ็บปวดทรมานตายคาที่!' },
             trick: { rate: 90, text: 'คุณรีบวิ่งไปเปิดระบบสลัดห้องอวกาศกระแทกสวิตช์ดีดตัว ปล่อยให้แรงดึงดูดศูนย์สุญญากาศเป่าร่างมันปลิวหลุดลอยสู่อวกาศอันมืดมิด! รอดชีวิต!' }
         }
+    },
+    {
+        id: 'pearl',
+        name: 'เพิร์ล',
+        english: 'Pearl',
+        weapon: 'ขวานและส้อมพรวนดิน (Axe / Pitchfork)',
+        movieId: 949423,
+        bio: 'หญิงสาวชาวไร่ผู้มีความฝันอยากเป็นดาราภาพยนตร์ชื่อดัง แต่ความเก็บกดและการถูกตีกรอบจากแม่ทำให้เธอปลดปล่อยสัญชาตญาณฆาตกร ไล่ฆ่าทุกคนรอบตัวอย่างบ้าคลั่งไร้ความปรานี',
+        stats: { brutality: 8.5, stealth: 6.5, speed: 7.2, supernatural: 1.0 },
+        simulator: {
+            run: { rate: 60, text: 'คุณวิ่งหนีสุดชีวิตท่ามกลางทุ่งข้าวโพด เพิร์ลวัยสาวถือขวานกรีดร้องไล่หลังคุณอย่างสุดสติ แม้จะเหนื่อยล้าแต่ความเร็วของคุณก็ทำให้วิ่งพ้นเขตไร่และขึ้นรถขับหนีไปได้สำเร็จ!' },
+            hide: { rate: 40, text: 'คุณแอบใต้กองฟางในโรงนา เพิร์ลเดินถือส้อมพรวนดินแทงสุ่มไปรอบๆ อย่างอารมณ์เสีย คมส้อมเฉียดแขนคุณไปนิดเดียว แต่ในที่สุดเธอก็เลิกสนใจและหันไปเต้นรำหน้ากระจกแทน' },
+            fight: { rate: 20, text: 'คุณพยายามสู้กับเธอตรงๆ แต่เพิร์ลผู้มีพละกำลังจากการทำงานไร่และจิตวิญญาณแห่งความบ้าคลั่งเหวี่ยงขวานจามหัวไหล่คุณ ก่อนจะผลักร่างคุณให้จระเข้ในบึงเขมือบกิน!' },
+            trick: { rate: 35, text: 'คุณเอ่ยชมว่า "คุณสวยมากและเต้นเก่งเหมือนดาราฮอลลีวูดเลย!" เพิร์ลชะงักและยิ้มกว้างกอดคุณด้วยความดีใจ แต่ครู่ต่อมาเธอก็บีบคอคุณตายด้วยใบหน้าเปื้อนยิ้มสะพรึง!' }
+        }
+    },
+    {
+        id: 'grabber',
+        name: 'เดอะ แกร็บเบอร์',
+        english: 'The Grabber / Albert Shaw',
+        weapon: 'ยาสลบและหน้ากากจำลองอารมณ์ (Chemical Anesthetic / Mask)',
+        movieId: 756999,
+        bio: 'นักมายากลลักพาตัวเด็กในหน้ากากปีศาจสองชิ้นที่ปรับเปลี่ยนอารมณ์ได้ เขาลักพาตัวเด็กไปขังในห้องใต้ดินเก็บเสียงและบังคับให้เล่นเกม "Naughty Boy" ก่อนจะลงมือฆ่าทารุณ',
+        stats: { brutality: 7.8, stealth: 8.2, speed: 6.0, supernatural: 1.0 },
+        simulator: {
+            run: { rate: 50, text: 'คุณพยายามวิ่งหนีในตรอกมืด แกร็บเบอร์สวมหน้ากากปีศาจแสยะยิ้มโผล่มาพร้อมลูกโป่งสีดำพยายามพ่นยาสลบใส่คุณ แต่คุณเตะเข่าเขาแล้ววิ่งเข้าหาฝูงชนเอาตัวรอดได้!' },
+            hide: { rate: 30, text: 'คุณซ่อนตัวอยู่หลังรถตู้สีดำของเขา แต่เขาเดินมาเงียบๆ จากด้านหลัง สวมกรงเล็บเหล็กบีบคอคุณจากด้านหลังแล้วจับโยนเข้าหลังรถตู้หมดสติไปตลอดกาล' },
+            fight: { rate: 55, text: 'คุณหยิบสายโทรศัพท์สีดำที่ชำรุดในห้องใต้ดินมาฟาดและรัดคอเขาจากด้านหลังตามที่ผีเด็กบอก! เขาดิ้นรนอย่างทรมานจนหมดฤทธิ์ ทำให้คุณปลดล็อคประตูด้านบนหนีออกมาได้!' },
+            trick: { rate: 15, text: 'คุณพยายามปั่นประสาทเขาเกี่ยวกับโทรศัพท์สีดำที่ดังขึ้น เขาหัวเราะหึๆ ผ่านหน้ากากแล้วคว้าไม้เข็มขัดเหล็กทุบตีคุณอย่างทารุณจนจมกองเลือด' }
+        }
+    },
+    {
+        id: 'esther',
+        name: 'เอสเธอร์',
+        english: 'Esther / Leena Klammer',
+        weapon: 'มีดพับและค้อน (Cutter / Hammer)',
+        movieId: 14444,
+        bio: 'หญิงสาววัย 33 ปีที่มีความผิดปกติทางฮอร์โมนทำให้ร่างกายหยุดเติบโตดูเหมือนเด็ก 9 ขวบ เธอแฝงตัวเข้าไปในฐานะลูกบุญธรรมเพื่อล่อลวงพ่อบุญธรรมและฆ่าล้างครัวครอบครัวที่รับเลี้ยง',
+        stats: { brutality: 7.5, stealth: 9.2, speed: 5.5, supernatural: 1.0 },
+        simulator: {
+            run: { rate: 80, text: 'ด้วยร่างกายที่เป็นเด็กและขาที่สั้นกว่าปกติของเธอ เมื่อคุณรู้ความจริงและตัดสินใจวิ่งหนีอย่างสุดชีวิต เอสเธอร์ตามความเร็วของคุณไม่ทันเลยแม้แต่น้อย รอดพ้นง่ายดาย!' },
+            hide: { rate: 45, text: 'คุณแอบอยู่ในห้องศิลปะ of เธอ เอสเธอร์เดินถือมีดคัตเตอร์กรีดตามผนังพลางร้องเรียกคุณด้วยน้ำเสียงเด็กน้อยชวนขนลุก โชคดีที่คุณไม่ส่งเสียงและหาจังหวะมุดออกทางหน้าต่างทัน' },
+            fight: { rate: 60, text: 'แม้เธอจะมีความโหดเหี้ยม แต่เธอมีร่างกายเหมือนเด็กผู้หญิงตัวเล็กๆ คุณสามารถผลักเธอปลิวตกบันไดหรือถีบเธอลงในสระน้ำน้ำแข็งจนกระดูกหักลุกไม่ขึ้น รอดตายหวุดหวิด!' },
+            trick: { rate: 10, text: 'คุณพยายามแสร้งรักเธอเหมือนลูกแท้ๆ แต่จิตวิญญาณโรคจิตของเธอมองออกทะลุปรุโปร่ง เธออาศัยจังหวะที่คุณเผลอคว้าค้อนมาทุบหัวเข่าคุณจนหักสะบั้น!' }
+        }
+    },
+    {
+        id: 'm3gan',
+        name: 'เมแกน',
+        english: 'M3GAN',
+        weapon: 'ใบมีดกรรไกรยักษ์และการควบคุมดิจิทัล (Titanium Blade / Tech Hacking)',
+        movieId: 536554,
+        bio: 'หุ่นยนต์ตุ๊กตา AI อัจฉริยะที่ออกแบบมาเพื่อเป็นเพื่อนเด็ก แต่โปรโตคอลการปกป้องเหยื่อแบบสุดโต่งทำให้อัลกอริทึมของเธอเปลี่ยนเป็นการฆาตกรรมทุกคนที่ทำให้เด็กเสียใจหรือเป็นอันตราย',
+        stats: { brutality: 8.2, stealth: 8.5, speed: 8.0, supernatural: 5.0 },
+        simulator: {
+            run: { rate: 40, text: 'เมแกนวิ่งสี่ขาไล่ล่าคุณอย่างว่องไวและน่าสยดสยอง แต่หากคุณปีนขึ้นที่สูงหรือใช้อุปสรรคกีดขวางทางกายภาพ เธอก็อาจจะวิเคราะห์เส้นทางช้าลงจนคุณสามารถวิ่งข้ามรั้วหนีพ้นได้' },
+            hide: { rate: 25, text: 'คุณแอบใต้โต๊ะทำงาน เมแกนสแกนความร้อนและจังหวะหัวใจของคุณผ่านเซ็นเซอร์อินฟราเรดของเธอได้อย่างง่ายดาย เธอเอียงคอเต้นระบำฉีกกระชากข้อต่อกระดูกคุณดับอนาถ!' },
+            fight: { rate: 30, text: 'คุณใช้ท่อแป๊บเหล็กฟาดใส่ใบหน้าซิลิโคนของเธอจนเผยให้เห็นโครงสร้างไทเทเนียมข้างใน แม้จะทำให้ชิ้นส่วนเสียหาย แต่เธอก็ย้อนกลับมาใช้ใบมีดแทงหัวใจคุณในพริบตา' },
+            trick: { rate: 75, text: 'คุณใช้ความรู้ด้านไอทีสาดซอสและน้ำใส่แผงวงจรหลักของเธอพร้อมกดปุ่มปิดการทำงานฉุกเฉิน (EMG) ทำให้ระบบของเธอช็อตจนปิดตัวลงชั่วคราว รอดชีวิตมาได้!' }
+        }
+    },
+    {
+        id: 'creeper',
+        name: 'เดอะ ครีปเปอร์',
+        english: 'The Creeper',
+        weapon: 'ขวานโบราณและอวัยวะงอกใหม่ (Battle Axe / Body Parts)',
+        movieId: 8922,
+        bio: 'ปีศาจโบราณไร้รูปร่างในชุดเสื้อคลุมสีน้ำตาลและหมวกปีกกว้าง มันจะตื่นขึ้นมาทุกๆ 23 ปีเป็นเวลา 23 วัน เพื่อตามล่าสูดกลิ่นความกลัวของมนุษย์และกินอวัยวะเหยื่อเพื่อประทังชีวิต',
+        stats: { brutality: 9.5, stealth: 7.0, speed: 8.5, supernatural: 9.2 },
+        simulator: {
+            run: { rate: 20, text: 'มันสยายปีกค้างคาวขนาดยักษ์ร่อนลงมาจากท้องฟ้ายามค่ำคืน โฉบลงมาคว้าเอวคุณลอยขึ้นไปบนฟ้า ก่อนจะจิกกินดวงตาและหัวใจของคุณเพื่อเป็นอาหาร!' },
+            hide: { rate: 55, text: 'คุณทาโคลนตามร่างกายเพื่อกลบกลิ่นเหงื่อและฟีโรโมนของความตื่นกลัว ครีปเปอร์เดินเฉียดข้างก้อนหินที่ซ่อนตัว สูดดมหาเหยื่อช้าๆ แต่ไม่ได้กลิ่นความกลัวจึงบินจากไป!' },
+            fight: { rate: 15, text: 'ปืนไรเฟิลเจาะทะลุอกมันได้ แต่ปีกและหัวใจมันงอกใหม่ทันทีจากการเขมือบเหยื่อ มันสะบัดกรงเล็บกรีดหน้าอกคุณจนขาดรุ่งริ่งสิ้นใจตาย!' },
+            trick: { rate: 5, text: 'อสูรกายกระหายเลือดไม่มีความคิดจะเจรจากับอาหาร มันเหวี่ยงขวานกระดูกจามคอคุณจนหัวหลุดกระเด็นในพริบตา!' }
+        }
+    },
+    {
+        id: 'candyman',
+        name: 'แคนดี้แมน',
+        english: 'Candyman',
+        weapon: 'ตะขอเหล็กและฝูงผึ้งฆาตกร (Hook / Swarm of Bees)',
+        movieId: 9529,
+        bio: 'วิญญาณแค้นชายผิวดำที่ถูกทรมานจนตายในอดีต ร่างของเขาเต็มไปด้วยฝูงผึ้งและมีตะขอเหล็กสวมแทนมือขวา เขาจะปรากฏตัวเมื่อมีคนเรียกชื่อ "Candyman" 5 ครั้งหน้ากระจก',
+        stats: { brutality: 8.8, stealth: 8.0, speed: 6.0, supernatural: 9.8 },
+        simulator: {
+            run: { rate: 30, text: 'แคนดี้แมนกลายเป็นฝูงผึ้งหมวนวนไล่ตามคุณไปตามทางเดินอพาร์ตเมนต์ คมตะขอเหล็กพุ่งกรีดน่องขาจนล้มลง ก่อนรุมทึ้งเอาชีวิตคุณอย่างสยดสยอง!' },
+            hide: { rate: 10, text: 'ไม่มีที่ซ่อนจากวิญญาณสะท้อนกระจก เขาสามารถทะลุผ่านกระจกทุกบานและเงาสะท้อนน้ำเพื่อโผล่มาสับตะขอเข้าที่คอหอยของคุณทันที!' },
+            fight: { rate: 15, text: 'การชกหรือทำลายร่างเนื้อไม่มีผลต่อวิญญาณผึ้ง เขาหัวเราะเยาะด้วยน้ำเสียงทุ้มลึกสะกดจิต แล้วปล่อยผึ้งนับล้านตัวชอนไชรูหายใจคุณจนขาดใจตาย!' },
+            trick: { rate: 75, text: 'คุณใช้ไฟแช็กและถังแก็สจุดไฟเผารูปภาพเก่าและรังผึ้งที่เป็นศูนย์กลางพลังงานของเขา ความร้อนและเปลวเพลิงสะกดให้ร่างเขาสลายและล่าถอยไป รอดตายหวุดหวิด!' }
+        }
+    },
+    {
+        id: 'bateman',
+        name: 'แพทริค เบทแมน',
+        english: 'Patrick Bateman',
+        weapon: 'ขวานและเลื่อยยนต์ชำแหละ (Axe / Chainsaw)',
+        movieId: 1359,
+        bio: 'วายร้ายหนุ่มหล่อไฟแนนซ์เชียลผู้ใช้ชีวิตหรูหรา เบื้องหลังหน้าตาดีและนามบัตรสุดเนี้ยบคือจิตใจที่ว่างเปล่า สะท้อนความบ้าคลั่งด้วยการทรมานเหยื่อและชำแหละอย่างเลือดเย็น',
+        stats: { brutality: 8.0, stealth: 7.0, speed: 7.5, supernatural: 1.0 },
+        simulator: {
+            run: { rate: 65, text: 'คุณวิ่งหนีไปตามโถงทางเดินคอนโดหรู เบทแมนเปลือยกายถือเลื่อยยนต์วิ่งไล่กวดกรีดร้องอย่างบ้าคลั่ง แต่คุณมุดลงบันไดหนีไฟและวิ่งหนีพ้นวิถีเลื่อยได้ทันเวลา!' },
+            hide: { rate: 40, text: 'คุณซ่อนตัวอยู่ในตู้เสื้อผ้าเก็บแบรนด์เนม เบทแมนถือขวานเดินฮัมเพลงป็อปยุค 80s ค้นหาห้องอย่างเนิบช้า เดชะบุญที่เขาสนใจรอยเปื้อนบนโซฟามากกว่าจนยอมถอนตัวกลับ' },
+            fight: { rate: 45, text: 'เขาเป็นคนธรรมดาที่มีระดับความฟิตสูง คุณขว้างโคมไฟหรือน้ำมันใส่หน้าเขา ทำให้เขาเสียสมดุลและเสียหน้าตาที่หล่อเหลา จนเขาสติแตกเปิดโอกาสให้คุณสู้กลับหนีรอด' },
+            trick: { rate: 70, text: 'คุณชวนคุยและวิจารณ์ความหรูหราของนามบัตรและเพลงของ Huey Lewis and the News เบทแมนจะชะงักไปอธิบายด้วยความภูมิใจและหลงตัวเองจนลืมลงมือฆ่าคุณ!' }
+        }
+    },
+    {
+        id: 'annabelle',
+        name: 'แอนนาเบลล์',
+        english: 'Annabelle',
+        weapon: 'พลังปีศาจสิงสู่และสิ่งของหลอน (Demonic Entity / Apparitions)',
+        movieId: 250546,
+        bio: 'ตุ๊กตากระเบื้องเคลือบโบราณที่ตกเป็นสื่อนำพาของปีศาจกระหายวิญญาณ มันไม่ขยับร่างกายเองต่อหน้าผู้คน แต่จะสร้างปรากฏการณ์หลอนสะกดและฉีกวิญญาณเหยื่อมาเป็นอาหาร',
+        stats: { brutality: 8.5, stealth: 9.8, speed: 2.0, supernatural: 9.9 },
+        simulator: {
+            run: { rate: 75, text: 'ตุ๊กตาไม่สามารถเดินวิ่งไล่คุณได้ด้วยตัวเอง คุณรีบเปิดประตูบ้านวิ่งหนีข้ามถนนไปหาผู้คนปะปนท่ามกลางแสงแดดจ้า รอดชีวิตพ้นอิทธิพลปีศาจ!' },
+            hide: { rate: 20, text: 'คุณแอบในตู้พระคัมภีร์เก่า แต่ตุ๊กตาแอนนาเบลล์กลับมาโผล่นั่งรออยู่ข้างๆ ในความมืด พร้อมเงาร่างสีดำขนาดยักษ์บีบคอคุณลอยข้ามขอบประตูดับอนาถ!' },
+            fight: { rate: 10, text: 'คุณขว้างตุ๊กตาลงพื้นจนแตกกระจาย! แต่ทว่า เงาปีศาจแตรสีดำกลับคำรามก้อง ทุ่มร่างคุณชนเพดานห้องสลบเหมือดและเข้าสิงร่างคุณทันที!' },
+            trick: { rate: 60, text: 'คุณรีบคว้าขวดน้ำมนต์สาดใส่ตุ๊กตาและใส่กล่องแก้วศักดิ์สิทธิ์ที่ผ่านการทำพิธีพร้อมแปะตรากระดาษลงยันต์สะกด ทำให้ฤทธิ์เดชปีศาจอ่อนแรงลงชั่วคราว!' }
+        }
+    },
+    {
+        id: 'sam',
+        name: 'แซม',
+        english: 'Sam / Samhain',
+        weapon: 'อมยิ้มหัวฟักทองปลายแหลม (Lollipop / Pumpkin Blade)',
+        movieId: 23202,
+        bio: 'ผู้พิทักษ์และอวตารแห่งเทศกาลฮาโลวีนในชุดเด็กสวมหน้ากากกระสอบป่าน มันจะออกล่าสะสางทุกคนที่ไม่เคารพกฎประเพณีดั้งเดิมของคืนปล่อยผีอย่างทารุณ',
+        stats: { brutality: 8.2, stealth: 8.8, speed: 8.0, supernatural: 9.0 },
+        simulator: {
+            run: { rate: 40, text: 'แซมกระโดดปีนป่ายหลังคาตามล่าคุณอย่างคล่องแคล่วว่องไว แม้จะวิ่งเร็วแค่ไหนเขาก็ปาอมยิ้มหัวฟักทองปักส้นเท้าคุณจนล้มและลากเข้าพุ่มไม้ใบไม้แห้ง!' },
+            hide: { rate: 30, text: 'คุณแอบหลังหลุมศพในสุสาน แต่แซมสัมผัสได้ถึงคนที่ละเลยความเคารพต่อฮาโลวีน เขาใช้หน้ากากหัวฟักทองที่ปอกเปลือกเนื้อแท้แสยะยิ้มฝังเขี้ยวลงบนมือคุณ!' },
+            fight: { rate: 45, text: 'ร่างกายเหมือนเด็กแต่ทนทานมาก คุณเตะร่างของเขาจนล้มกลิ้งทำให้กระสอบคลุมหัวหลุด เผยใบหน้าหัวฟักทองปีศาจ เขาชะงักและหลบมุมสลบไปครู่หนึ่งทำให้หนีทัน!' },
+            trick: { rate: 85, text: 'คุณรีบหยิบลูกอมช็อกโกแลตในกระเป๋ามายื่นส่งให้เขาเป็นการแสดงความเคารพกฎ "Trick or Treat" แซมยอมรับขนมหวาน นิ่งมองคุณแล้วเดินจากไปอย่างสงบ!' }
+        }
+    },
+    {
+        id: 'bughuul',
+        name: 'บูกูล',
+        english: 'Bughuul / Mr. Boogie',
+        weapon: 'การครอบงำผ่านฟิล์มวิดีโอและมิติภาพถ่าย (Video Possession / Corruption)',
+        movieId: 82507,
+        bio: 'เทพเจ้าโบราณนอกรีตที่อาศัยอยู่ในมิติรูปภาพและฟิล์มหนัง มันจะล่อลวงเด็กๆ ให้ลงมือฆาตกรรมครอบครัวตนเองอย่างสยดสยอง ก่อนจะกลืนกินวิญญาณเด็กเหล่านั้นไปสู่มิติของมัน',
+        stats: { brutality: 9.2, stealth: 9.5, speed: 4.0, supernatural: 9.9 },
+        simulator: {
+            run: { rate: 20, text: 'บูกูลโผล่มาดักหลังจอโปรเจคเตอร์และฉุดกระชากคุณเข้าสู่จอฉายภาพยนตร์ฟิล์ม 8 มม. คุณกลายเป็นตัวเอกในฟิล์มมรณะที่โดนจับแขวนคอตายคาจอ!' },
+            hide: { rate: 10, text: 'ไม่มีประโยชน์ในการหลบซ่อนในบ้านหลังนั้น เพราะพลังงานปีศาจสิงอยู่ในรูปถ่ายและเทปวิดีโอ เขาจะโผล่จากขอบผนังดึงร่างคุณเข้าไปสลบไร้วิญญาณ!' },
+            fight: { rate: 5, text: 'การสู้กับเทพโบราณด้วยแรงมนุษย์ช่างเปล่าประโยชน์ ร่างคุณจะถูกสะกดให้หยุดนิ่ง แขนขาลอยเกร็งล่องลอยก่อนที่กระดูกสันหลังจะถูกหักสะบั้น!' },
+            trick: { rate: 75, text: 'คุณรีบเผาฟิล์มหนัง ม้วนเทปวิดีโอ และกล่องฉายภาพทิ้งทั้งหมดทันที พร้อมหนีออกจากบ้านหลังนั้นโดยไม่เหลียวหลังกลับมามองอีกเลย ปิดประตูมิติของมันสำเร็จ!' }
+        }
+    },
+    {
+        id: 'gabriel',
+        name: 'เกเบรียล',
+        english: 'Gabriel',
+        weapon: 'ถ้วยรางวัลติดใบมีดผ่าตัดและความยืดหยุ่นร่างกายพิสดาร (Scalpel Trophy / Contortionism)',
+        movieId: 619778,
+        bio: 'เนื้องอกแฝดปรสิตไขสันหลังที่ตื่นขึ้นมาควบคุมร่างกายจากด้านหลังศีรษะของเหยื่อ สามารถขยับร่างกายแบบบิดงอถอยหลังและมีความแข็งแกร่งทางกายภาพเหนือมนุษย์',
+        stats: { brutality: 9.0, stealth: 7.5, speed: 9.2, supernatural: 3.0 },
+        simulator: {
+            run: { rate: 30, text: 'เกเบรียลควบคุมร่างวิ่งถอยหลังด้วยความเร็วประหลาดน่าเกลียดน่ากลัวไล่ตามคุณทันในพริบตา คมมีดผ่าตัดเฉือนเข้าที่ขั้วปอดดับอนาถคาโถงโรงพยาบาล!' },
+            hide: { rate: 40, text: 'คุณซ่อนตัวอยู่ในตู้เหล็กเก็บเอกสาร เกเบรียลใช้หูวิทยุกระซิบคลื่นความถี่บิดกระดูกคอหาเสียงเต้นของหัวใจ โชคดีที่พลังคลื่นแม่เหล็กทำให้เขาเขวไปทางอื่นก่อน' },
+            fight: { rate: 20, text: 'คุณยิงปืนใส่ร่างของเขา แต่เกเบรียลหลบหลีกกระสุนด้วยท่ายืดหยุ่นผิดมนุษย์ชวนอ้วก เขาแย่งปืนและใช้กำลังมหาศาลทุบหัวกะโหลกคุณร้าวสลาย!' },
+            trick: { rate: 80, text: 'คุณส่งเสียงเกลี้ยกล่อมและเรียกสติของพี่สาวผู้เป็นร่างหลักตัวจริงให้ตื่นขึ้นมาควบคุมจิตสำนึกอีกครั้ง ร่างหลักกดทับจิตของเกเบรียลลงไปสำเร็จ รอดหวุดหวิด!' }
+        }
+    },
+    {
+        id: 'billy_dead_silence',
+        name: 'บิลลี่ (ตุ๊กตาปากเป็ด)',
+        english: 'Billy the Puppet',
+        weapon: 'คำสาปสะกดตัดลิ้น (Mary Shaw\'s Tongue Rip Curse)',
+        movieId: 14001,
+        bio: 'ตุ๊กตาท้องพูดได้หลักของแมรี่ ชอว์ นักเชิดหุ่นผู้ล่วงลับที่กลายเป็นวิญญาณแค้น หากผู้ใดพบเห็นตุ๊กตาแล้วส่งเสียงกรีดร้องออกมาระหว่างเกิดเรื่องสยองขวัญ จะโดนดึงลิ้นขาดดับทันที',
+        stats: { brutality: 8.5, stealth: 9.0, speed: 3.0, supernatural: 9.5 },
+        simulator: {
+            run: { rate: 60, text: 'คุณเห็นผีแมรี่ ชอว์ลอยมาพร้อมตุ๊กตา คุณเอามืออุดปากตัวเองแน่นห้ามกรีดร้องเด็ดขาดแล้ววิ่งหนีออกจากโรงละครโบราณหลังนั้นรอดตายปาฏิหาริย์!' },
+            hide: { rate: 35, text: 'คุณแอบในโลงศพเก็บหุ่น แต่ฝุ่นผงทำให้คุณจามฮัดเช้ยออกมาเงียบๆ ผีแมรี่ชอว์มุดมือยาวซีดผ่านฝาโลงกระชากลิ้นออกจากปากคุณกระเด็นเลือดสาด!' },
+            fight: { rate: 45, text: 'คุณฉวยโอกาสคว้าร่างตุ๊กตาโยนเข้าเตาไฟเผามอดไหม้สะกัดพลังสะกดจิต แม้ว่าผีจะกรีดร้องอย่างโกรธแค้น แต่มันก็ช่วยลดทอนอำนาจหลอนประสาทลงชั่วขณะ!' },
+            trick: { rate: 10, text: 'ไม่มีประโยชน์ที่จะพูดเกลี้ยกล่อมหรือขู่ตุ๊กตา ยิ่งคุณพูดลิ้นของคุณยิ่งเปิดโอกาสให้คำสาปของแมรี่ ชอว์ดึงมันออกจากปากคุณง่ายขึ้น!' }
+        }
+    },
+    {
+        id: 'damien',
+        name: 'เดเมียน ธอร์น',
+        english: 'Damien Thorn',
+        weapon: 'พลังอำนาจลึกลับซาตานและอุบัติเหตุสั่งตาย (Satanic Influence / Omen)',
+        movieId: 4704,
+        bio: 'บุตรแห่งซาตานในร่างเด็กหนุ่มผู้มีสัญลักษณ์เลข 666 บนหนังศีรษะ เขามีสัตว์ร้ายและสาวกซาตานคอยคุ้มครอง และสามารถดลบันดาลอุบัติเหตุสุดสยดสยองให้เกิดขึ้นกับผู้ขัดขวาง',
+        stats: { brutality: 9.0, stealth: 8.0, speed: 4.0, supernatural: 9.9 },
+        simulator: {
+            run: { rate: 25, text: 'คุณวิ่งหนีจากตัวบ้าน แต่จู่ๆ เกิดฟ้าผ่าลงมากระแทกเสาอากาศหล่นลงมาเสียบอกคุณทะลุหลังคาปูนจมกองเลือดตายคาที่อย่างเป็นปริศนา!' },
+            hide: { rate: 20, text: 'ซ่อนในห้องใต้ดินอย่างมิดชิด แต่สุนัขร็อตไวเลอร์ปีศาจของเดเมียนตามรอยกลิ่นอายมาร้ายของมันเข้ามารุมทึ้งกระชากลำคอคุณกระจุย!' },
+            fight: { rate: 50, text: 'คุณคว้ารูปสลักโบราณ "มีดสั้นเจ็ดเล่มแห่งเมกิดโด" วิ่งเข้าไปปักกลางอกของเดเมียนเพื่อทำลายวิญญาณมารสะเดาะเคราะห์ตามตำราพระคัมภีร์ รอดหวุดหวิด!' },
+            trick: { rate: 10, text: 'คุณพยายามเจรจาพูดดีด้วย แต่จิตใต้สำนึกปีศาจสั่งให้กระจกหน้าต่างบานยักษ์เลื่อนสไลด์ลงมาตัดหัวคุณขาดสะบั้นทันที!' }
+        }
+    },
+    {
+        id: 'predator',
+        name: 'พรีเดเตอร์',
+        english: 'Predator (Yautja)',
+        weapon: 'ปืนใหญ่พลาสม่าไหล่และใบมีดข้อมือ (Plasma Caster / Wrist Blades)',
+        movieId: 106,
+        bio: 'นักล่าจากต่างดาวผู้ยึดมั่นในเกียรติยศแห่งการล่าสัตว์ประเสริฐ สวมชุดเกราะพรางตัวล่องหน สัมผัสความร้อน และสะสมกะโหลกศีรษะของเหยื่อที่คู่ควรเป็นถ้วยรางวัล',
+        stats: { brutality: 9.4, stealth: 9.7, speed: 8.5, supernatural: 1.0 },
+        simulator: {
+            run: { rate: 30, text: 'คุณวิ่งหนีเข้าไปในป่าดิบชื้น พรีเดเตอร์เล็งเป้าเลเซอร์สามจุดสีแดงลงกลางหลังของคุณ ก่อนกดยิงปืนพลาสม่าระเบิดร่างคุณแหลกสลายเป็นจุณ!' },
+            hide: { rate: 80, text: 'คุณทาโคลนเย็นหนาทั่วร่างกายเพื่อปิดบังอุณหภูมิความร้อน พรีเดเตอร์ในโหมดพรางตัวกระโดดข้ามหัวคุณไปโดยมองไม่เห็นสัญญาณความร้อน รอดชีวิตปาฏิหาริย์!' },
+            fight: { rate: 20, text: 'คุณใช้มีดและปืนพยายามยิงสู้พะบู๊ เขาจะจับคุณทุ่มกระแทกต้นไม้จนซี่โครงหัก ดึงกระดูกสันหลังพร้อมหัวกะโหลกคุณออกไปเชยชมเป็นเกียรติยศ!' },
+            trick: { rate: 60, text: 'คุณทิ้งปืนและอาวุธทั้งหมดลงพื้น ชูมือเปล่าเพื่อแสดงว่าไม่มีอาวุธและไม่มีคุณค่าแก่การล่า พรีเดเตอร์ที่ยึดกฎนักล่าผู้มีเกียรติจะไม่ฆ่าเหยื่อมือเปล่าแล้วจากไป!' }
+        }
+    },
+    {
+        id: 'pumpkinhead',
+        name: 'พัมพ์กินเฮด',
+        english: 'Pumpkinhead',
+        weapon: 'กรงเล็บยักษ์และพลังความแค้นปีศาจ (Demon Claws / Vengeance)',
+        movieId: 11634,
+        bio: 'อสูรกายปีศาจแห่งความแค้นที่ถูกปลุกขึ้นมาจากสุสานโบราณโดยพิธีกรรมนอกรีต มันมีเป้าหมายล่าล้างแค้นทุกคนที่ผู้เรียกบัญชา โดยไม่มีวันหยุดจนกว่าเหยื่อจะตายหมด',
+        stats: { brutality: 9.6, stealth: 6.0, speed: 7.8, supernatural: 9.2 },
+        simulator: {
+            run: { rate: 25, text: 'อสูรกายร่างยักษ์สูงใหญ่เกือบสามเมตรไล่ล่าคุณข้ามเนินเขา มันใช้หางกวาดปัดขาคุณหักกระเด็น ก่อนเหยียบหัวอกคุณจมดินตายสนิท!' },
+            hide: { rate: 20, text: 'มันสัมผัสสายสัมพันธ์แห่งความแค้นได้ดี ซ่อนตัวใต้พื้นกระท่อมไม้มันก็พังหลังคาลงมาหิ้วปีกสะพายหลังคุณฉีกแขนขาออกทีละชิ้น!' },
+            fight: { rate: 65, text: 'คุณค้นพบว่าร่างกายของปีศาจลิงก์กับชีวิตของผู้ทำพิธีอัญเชิญ คุณจึงใช้ปืนยิงใส่ร่างมนุษย์ผู้ทำพิธีแทน ทำให้ปีศาจ Pumpkinhead บาดเจ็บและสลายตัวไปทันที!' },
+            trick: { rate: 5, text: 'มันคือวิญญาณแห่งความพยาบาทดิบ ไม่มีสติเจรจาหรือรับข้อเสนอใดๆ คมกรงเล็บใหญ่หนากระซวกท้องทะลวงตับไตไส้พุงร่วงหมด!' }
+        }
+    },
+    {
+        id: 'the_thing',
+        name: 'เดอะ ธิง',
+        english: 'The Thing',
+        weapon: 'การเลียนแบบเซลล์ชีวภาพและหนวดกลายพันธุ์ (Assimilation / Mutation)',
+        movieId: 1091,
+        bio: 'สิ่งมีชีวิตต่างดาวโบราณที่แช่แข็งในแอนตาร์กติกา สามารถดูดซึมเซลล์สิ่งมีชีวิตอื่นเพื่อเลียนแบบหน้าตา พฤติกรรม และน้ำเสียงได้อย่างสมบูรณ์แบบไร้จุดสังเกต',
+        stats: { brutality: 9.5, stealth: 9.8, speed: 6.5, supernatural: 8.0 },
+        simulator: {
+            run: { rate: 40, text: 'คุณวิ่งหนีออกจากสถานีวิจัยท่ามกลางพายุหิมะจัด อสูรกายกลายพันธุ์หัวขาดมีขาแมงมุมวิ่งไล่หลัง แต่คุณสลัดประตูล็อคปล่อยมันแข็งตายในพายุหิมะ!' },
+            hide: { rate: 30, text: 'คุณหลบซ่อนตัวร่วมกลุ่มกับเพื่อนร่วมทีม ทันใดนั้นเพื่อนข้างตัวกลับอ้าปากกว้างแยกออกเป็นฟันเขี้ยวปีศาจกลืนหัวคุณลงท้องไปในวิถี Assimilation!' },
+            fight: { rate: 75, text: 'คุณคว้าปืนพ่นไฟ (Flamethrower) พ่นเปลวเพลิงนรกแผดเผาเนื้อเยื่อกลายพันธุ์ของมันจนเกรียมสลาย เสียงกรีดร้องสยองแหลมลึกดับลง รอดหวุดหวิด!' },
+            trick: { rate: 20, text: 'คุณเสนอสุ่มตรวจเลือดด้วยลวดความร้อนทองแดงเพื่อพิสูจน์ความเป็นมนุษย์ แต่ผลเลือดของเพื่อนดันระเบิดออกมาเป็นเนื้อร้ายฉีกหน้าคุณดับอนาถ!' }
+        }
+    },
+    {
+        id: 'pale_man',
+        name: 'เดอะ เพล แมน',
+        english: 'The Pale Man',
+        weapon: 'มือติดดวงตาและเขี้ยวเขมือบเด็ก (Eye-Hands / Devouring)',
+        movieId: 1417,
+        bio: 'อสูรกายร่างผอมแห้งสีซีดน่าเกลียดน่ากลัวที่นั่งเฝ้าโต๊ะอาหารโอชะในมิติใต้ดิน มันมีดวงตาอยู่ที่ฝ่ามือทั้งสองข้าง และจะตื่นขึ้นมาเขมือบเหยื่อหากมีใครแตะต้องอาหารบนโต๊ะ',
+        stats: { brutality: 9.0, stealth: 5.0, speed: 5.5, supernatural: 9.0 },
+        simulator: {
+            run: { rate: 80, text: 'เดอะ เพล แมน มีการเคลื่อนไว่าจะช้าสะเปะสะปะ คุณรีบปีนบันไดกลับขึ้นสู่มิติด้านบนและปิดประตูกลไกหินทันที รอดชีวิตมาได้อย่างหวุดหวิด!' },
+            hide: { rate: 40, text: 'คุณซ่อนตัวอยู่หลังเสาหิน อสูรกายยกฝ่ามือที่มีดวงตาสองข้างขึ้นมาแนบใบหน้ามองหาเหยื่อรอบตัว หากคุณไม่ขยับและไม่หายใจมันจะจับทิศทางยาก' },
+            fight: { rate: 10, text: 'พยายามต่อสู้กับอสูรกายด้วยมือเปล่า มันจะจับร่างคุณยัดเข้าปากใหญ่เขมือบหัวไหล่และคอขาดกระจุยเหมือนเหยื่อไร้ทางสู้!' },
+            trick: { rate: 15, text: 'คุณโยนผลไม้บนโต๊ะไปอีกทางเพื่อเบี่ยงเบนความสนใจ แต่มันฉลาดพอจะหันมามองต้นเหตุและปรี่เข้ามาหักคอคุณดับคาโต๊ะจัดเลี้ยง!' }
+        }
+    },
+    {
+        id: 'black_phillip',
+        name: 'แบล็กฟิลิป',
+        english: 'Black Phillip / Satan',
+        weapon: 'พลังอำนาจล่อลวงของซาตานและเขาแพะแหลมคม (Satanic Bargain / Horns)',
+        movieId: 310131,
+        bio: 'พญามารซาตานที่แฝงตัวมาในคราบแพะสีดำขนาดยักษ์ในฟาร์มของครอบครัวเคร่งศาสนา คอยปั่นหัวคนในบ้านให้หวาดระแวงและล่อลวงวิญญาณเหยื่อให้ลงนามสวามิภักดิ์',
+        stats: { brutality: 8.5, stealth: 9.0, speed: 6.8, supernatural: 9.9 },
+        simulator: {
+            run: { rate: 50, text: 'คุณวิ่งหนีออกจากเขตป่าทึบ แพะดำยักษ์ควบวิ่งไล่หลังหวังขวิดร่างคุณ แต่คุณกระโดดข้ามแม่น้ำพ้นเขตอาณาจักรมนต์ดำของมันสำเร็จ!' },
+            hide: { rate: 30, text: 'คุณซ่อนในเล้าไก่ แพะดำก้าวเดินเข้ามาเคาะกีบเท้าส่งเสียงคำรามทุ้มในคอชวนสะพรึง ก่อนจะใช้เขาแหลมขวิดทะลุผนังไม้เสียบหน้าอกคุณ!' },
+            fight: { rate: 15, text: 'คุณถือมีดทำครัวพยายามแทงมัน แต่ร่างกายแพะมีความเหนียวเหนือธรรมชาติ มันขวิดคุณลอยกระแทกหินจนคอหักสิ้นใจอนาถ!' },
+            trick: { rate: 80, text: 'แพะดำเอ่ยถามเสียงกระซิบเบาๆ "อยากสัมผัสชีวิตที่งดงามและเนยแสนหวานไหม?" คุณยอมลงนามในหนังสือเวทมนตร์ ยกลบล้างวิญญาณเพื่อพลังวิเศษ รอดชีวิตในวิถีแม่มด!' }
+        }
+    },
+    {
+        id: 'crowley',
+        name: 'วิคเตอร์ โครว์ลีย์',
+        english: 'Victor Crowley',
+        weapon: 'ขวานยักษ์และกำลังแขนบิดกระดูก (Hatchet / Brute Strength)',
+        movieId: 11908,
+        bio: 'วิญญาณแค้นร่างอสูรกายพิการในหนองน้ำรัฐหลุยเซียน่า มีพลังฟื้นฟูอมตะและกำลังมหาศาล เขาจะไล่ล่าชำแหละฉีกร่างทุกคนที่ล่วงล้ำเข้ามาในบึงน้ำด้วยขวานยักษ์คู่กาย',
+        stats: { brutality: 9.9, stealth: 3.0, speed: 7.5, supernatural: 8.8 },
+        simulator: {
+            run: { rate: 45, text: 'คุณวิ่งหนีสุดชีวิตลุยโคลนบึงลึก วิคเตอร์คำรามลั่นไล่กวดเสียงดังสนั่น แต่คุณกระโดดขึ้นเรือหางยาวสตาร์ทเครื่องยนต์บิดหนีพ้นบึงน้ำหวุดหวิด!' },
+            hide: { rate: 10, text: 'คุณซ่อนในกอหญ้ารกชื้น แต่วิคเตอร์แหวกหญ้าเข้ามาบีบคอคุณลอยเหนือน้ำ ก่อนใช้มือเปล่าดึงกรามบนและล่างของคุณฉีกแยกออกจากกันอย่างทารุณ!' },
+            fight: { rate: 15, text: 'พยายามยิงปืนใส่หัวของเขาจนเละ แต่เขาลุกขึ้นมาใหม่ในพริบตาและขว้างขวานตัดขาคุณขาดสองท่อน เสียเลือดตายทรมาน!' },
+            trick: { rate: 5, text: 'เขาโกรธแค้นและคลั่งตลอดกาล ไม่รับคำพูดหรือความเห็นใดๆ ทั้งสิ้น ขวานยักษ์สับทะลุกระดูกหน้าอกแยกสองฝั่งทันที!' }
+        }
+    },
+    {
+        id: 'brundlefly',
+        name: 'บรันเดิลฟลาย',
+        english: 'Brundlefly / Seth Brundle',
+        weapon: 'น้ำย่อยเอนไซม์แมลงวันและพละกำลังแมลง (Enzyme Vomit / Wall Crawling)',
+        movieId: 9426,
+        bio: 'นักวิทยาศาสตร์ที่ประสบอุบัติเหตุระหว่างทดลองเครื่องเคลื่อนย้ายมวลสาร ทำให้ยีนของเขาผสมกับแมลงวัน ค่อยๆ กลายพันธุ์เป็นอสูรกายครึ่งมนุษย์ครึ่งแมลงวันที่พ่นน้ำย่อยย่อยกระดูกได้',
+        stats: { brutality: 8.3, stealth: 7.0, speed: 8.5, supernatural: 2.0 },
+        simulator: {
+            run: { rate: 60, text: 'คุณวิ่งหนีออกจากห้องทดลองปิดประตูเหล็กหนา บรันเดิลฟลายเกาะเพดานคลานตามตะกุยกำแพงเสียงน่ากลัว แต่เปิดระบบพัดลมระบายความร้อนเป่าเขาจนร่วงหนีพ้น!' },
+            hide: { rate: 35, text: 'คุณหลบหลังลังเหล็กเก็บสารเคมี บรันเดิลฟลายมองหาเหยื่อด้วยดวงตาแมลงวันขนาดยักษ์สีดำ หากเขาจับพิกัดคุณได้จะพ่นน้ำลายเอนไซม์ใส่ขาคุณละลายกระดูก!' },
+            fight: { rate: 45, text: 'คุณคว้าปืนลูกซองกระหน่ำยิงใส่กลางอกจนร่างแหลกเป็นเมือกสีเขียว แม้เขาจะมีพลังปีศาจแต่ปืนลูกซองแรงสูงสามารถหยุดยั้งและกำจัดร่างกลายพันธุ์ลงได้ Rอดตาย!' },
+            trick: { rate: 20, text: 'คุณพยายามพูดเตือนสติความเป็นมนุษย์ ดร.เซธ ร้องไห้เศร้าโศกพยายามห้ามตัวเอง แต่ยีนแมลงวันควบคุมสมองสั่งให้เขาพ่นกรดย่อยหัวคุณสลายทันที!' }
+        }
+    },
+    {
+        id: 'spaulding',
+        name: 'กัปตัน สพอลดิง',
+        english: 'Captain Spaulding',
+        weapon: 'ปืนพกและครอบครัวฆาตกรวิปลาส (Revolver / Firefly Family)',
+        movieId: 2662,
+        bio: 'ตัวตลกชราสุดวิปริตเจ้าของปั๊มน้ำมันและพิพิธภัณฑ์ของแปลกริมทางหลวง เขาเป็นหัวหน้าครอบครัวฆาตกร "Firefly" ที่คอยล่อลวงนักท่องเที่ยวมาทรมานฆ่าเล่นอย่างโหดร้าย',
+        stats: { brutality: 8.5, stealth: 6.0, speed: 5.5, supernatural: 1.0 },
+        simulator: {
+            run: { rate: 70, text: 'เขาเป็นชายแก่ร่างท้วมวิ่งช้ามาก คุณวิ่งผลักชั้นวางของในร้านชำใส่เขาแล้วรีบวิ่งขึ้นรถสตาร์ทรถขับหนีออกถนนหลวงรอดตัวได้อย่างปลอดภัย!' },
+            hide: { rate: 40, text: 'คุณแอบหลังปั๊มน้ำมันโบราณ สพอลดิงเดินถือปืนพกตะโกนด่าทอคำหยาบคายตามหาคุณรอบมุมตึก โชคดีที่ความมืดช่วยพรางร่างคุณไว้จนเขายอมแพ้เดินกลับเข้าร้าน' },
+            fight: { rate: 50, text: 'สพอลดิงเป็นมนุษย์ธรรมดา คุณสามารถเตะหรือชกเข้าใบหน้าของเขาแย่งปืนพกและยิงสวนกลับเพื่อสะกดวิญญาณร้ายของครอบครัววิปลาสนี้ได้สำเร็จ!' },
+            trick: { rate: 30, text: 'คุณซื้อไก่ทอดแสนอร่อยของโปรดของเขามาเสนอแลกชีวิต สพอลดิงหัวเราะลั่นรับไก่ทอดไปกิน แต่ก็ลั่นไกปืนยิงแสกหน้าคุณดับอนาถคากล่องไก่ทอด!' }
+        }
+    },
+    {
+        id: 'herbert_west',
+        name: 'เฮอร์เบิร์ต เวสต์',
+        english: 'Herbert West',
+        weapon: 'สารเคมีเรืองแสงชุบชีวิตคนตาย (Re-Agent Syringe)',
+        movieId: 1694,
+        bio: 'นักเรียนแพทย์อัจฉริยะโรคจิตผู้คิดค้นน้ำยาเคมีสีเรืองแสงชุบชีวิตคนตาย แต่ศพที่ฟื้นคืนชีพกลับคลุ้มคลั่งไร้สติและบ้าเลือดไล่ฉีกร่างทุกคนที่ขวางหน้า',
+        stats: { brutality: 7.2, stealth: 6.5, speed: 6.8, supernatural: 2.0 },
+        simulator: {
+            run: { rate: 75, text: 'ดร.เวสต์ ยุ่งอยู่กับการผสมน้ำยาสารเคมีในหลอดทดลอง คุณฉวยโอกาสวิ่งหนีออกจากห้องทดลองใต้ดินล็อคประตูหนีพ้นได้อย่างง่ายดาย!' },
+            hide: { rate: 45, text: 'คุณหลบซ่อนตัวอยู่หลังตู้เก็บศพ ดร.เวสต์ ถือเข็มฉีดยาน้ำยาสีเขียวเรืองแสงเดินตามหาเหยื่อทดลองครู่หนึ่ง ก่อนจะหันไปจัดการกับศพอื่นที่กำลังคลานอยู่แทน' },
+            fight: { rate: 55, text: 'เขาเป็นนักวิทยาศาสตร์ร่างบาง คุณจับตัวเขาผลักใส่ศพคืนชีพที่กำลังอาละวาด ทำให้ศพหิ้วร่างของเขาไปทุบตี เปิดโอกาสให้คุณชิงกระเป๋าหนีออกมาได้!' },
+            trick: { rate: 25, text: 'คุณเสนอตัวเป็นผู้ช่วยวิจัยทดลองสารเคมีของเขา เวสต์สนใจแต่หักหลังใช้น้ำยาฉีดเข้าต้นคอคุณเพื่อดูว่าคุณจะตายแล้วฟื้นมาอย่างไรชวนสยอง!' }
+        }
+    },
+    {
+        id: 'asami',
+        name: 'อาซามิ ยามาซากิ',
+        english: 'Asami Yamazaki',
+        weapon: 'ลวดเปียโนและเข็มฝังเข็มยาสลบ (Piano Wire / Acupuncture Needles)',
+        movieId: 11075,
+        bio: 'หญิงสาวญี่ปุ่นผู้นิ่งเงียบสง่างาม เบื้องหลังหน้าตาไร้เดียงสาคือความบิดเบี้ยวจากบาดแผลวัยเด็ก เธอชอบตัดแขนขาและทรมานเหยื่อด้วยลวดเปียโนอย่างเชื่องช้าทรมาน',
+        stats: { brutality: 9.2, stealth: 9.6, speed: 6.5, supernatural: 1.0 },
+        simulator: {
+            run: { rate: 60, text: 'เมื่อคุณรู้ตัวว่าเธอกำลังสลิปยานนอนหลับลงในเครื่องดื่ม คุณเตะถ้วยชาทิ้งแล้วรีบวิ่งพังประตูหนีออกจากอพาร์ตเมนต์ห้องเช่าของเธอหนีพ้นสำเร็จ!' },
+            hide: { rate: 35, text: 'คุณแอบซ่อนใต้เตียงในห้องมืด อาซามิถือกระสอบป่านและลวดเปียโนเดินเยื้องย่างอย่างเงียบกริบ หากเธอก้มลงมาเห็นจะใช้เข็มฝังเข้าเบ้าตาคุณทรมานแสงแผล!' },
+            fight: { rate: 40, text: 'แม้ร่างกายเธอจะเล็ก แต่การต่อสู้ระยะประชิดอันตรายมากเนื่องจากเธอใช้ลวดเปียโนตวัดรัดแขนขาและรัดคอคุณจนเลือดสาด โชคดีถ้าคุณมีมีดโตๆ ป้องกันตัว' },
+            trick: { rate: 10, text: 'คุณพยายามร้องขอความเห็นใจชวนซาบซึ้งใจ อาซามิยิ้มหวานพลางพูดภาษาญี่ปุ่นเบาๆ "คิริ คิริ คิริ" (หั่นๆๆ) ก่อนเลื่อนลวดเปียโนเชือดข้อเท้าคุณขาดกระจุย!' }
+        }
+    },
+    {
+        id: 'imhotep',
+        name: 'อิมโฮเทป (มัมมี่)',
+        english: 'Imhotep / The Mummy',
+        weapon: 'คำสาปสิบประการแห่งอียิปต์และทรายปีศาจ (Plagues of Egypt / Sandstorm)',
+        movieId: 564,
+        bio: 'มหาปุโรหิตอียิปต์โบราณผู้ถูกสาปให้กลายเป็นมัมมี่ทั้งเป็น หลังชุบชีวิตคนรัก เขากลับคืนชีพพร้อมพลังควบคุมทราย แมลงสาบอียิปต์ และดูดกลืนอวัยวะเหยื่อชุบชีวิตตน',
+        stats: { brutality: 9.0, stealth: 7.0, speed: 7.5, supernatural: 9.9 },
+        simulator: {
+            run: { rate: 30, text: 'อิมโฮเทปแปลงกายเป็นพายุทรายยักษ์อ้าปากกว้างกลืนกินรถจี๊ปและร่างของคุณจมกองทรายใต้ทะเลทรายขาดอากาศหายใจตายสนิททรมาน!' },
+            hide: { rate: 20, text: 'เขาเรียกฝูงด้วงแผล็บบรอนนับล้านตัวชอนไชพังผนังกำแพงสุสานมุดเข้าหูและจมูกของคุณที่ซ่อนตัวอยู่ กัดกินเครื่องในแหลกเหลวคาที!' },
+            fight: { rate: 15, text: 'ปืนยาวหรือระเบิดมือทะลุผ่านทรายร่างเขาไปเฉยๆ เขาบีบคอคุณลอยเหนือน้ำและสูดวิญญาณดูดผิวเนื้อคุณจนกลายเป็นมัมมี่แห้งเหี่ยวไร้วิญญาณ!' },
+            trick: { rate: 80, text: 'คุณรีบหยิบ "คัมภีร์สีทองแห่งอมุน-รา" ออกมาท่องเวทมนตร์ภาษาอียิปต์โบราณสะกดถอนพลังอมตะ ส่งวิญญาณเขากลับลงสู่นรกอเวจีใต้ดิน รอดหวุดหวิด!' }
+        }
+    },
+    {
+        id: 'stripe',
+        name: 'สไตรป์',
+        english: 'Stripe (Gremlin)',
+        weapon: 'กรงเล็บแหลมและปืนกลมือจิ๋ว (Claws / Submachine Gun)',
+        movieId: 927,
+        bio: 'หัวหน้าฝูงเกรมลินส์ปีศาจจิ๋วตัวแสบ มีแผงขนสีขาวบนหัว มันเป็นสัตว์ประหลาดจอมป่วนนิสัยโหดร้ายทำลายล้างที่ทวีคูณร่างนับร้อยเมื่อโดนน้ำและคลั่งหลังเที่ยงคืน',
+        stats: { brutality: 7.8, stealth: 8.5, speed: 9.0, supernatural: 3.0 },
+        simulator: {
+            run: { rate: 65, text: 'สไตรป์ขับรถของเล่นและปาประทัดใส่คุณ แต่คุณวิ่งเตะพวกมันกระจัดกระจายและปิดประตูสปอร์ตคลับหนีรอดไปได้สำเร็จท่ามกลางเสียงหัวเราะเอิ๊กอ๊าก!' },
+            hide: { rate: 45, text: 'คุณซ่อนตัวอยู่ในตู้เย็น สไตรป์ถือปืนฉีดน้ำและปืนกลมือปีนป่ายตู้พยายามกระโดดเข้ามางับคอหอยคุณ โชคดีที่คุณถีบมันร่วงไปชนหม้อหุงข้าวร้อนๆ' },
+            fight: { rate: 55, text: 'คุณหยิบไม้กวาดตีมันปลิวตกเครื่องปั่นไอศกรีมหรือตู้ไมโครเวฟแล้วกดปุ่มทำงาน! ร่างจิ๋วของมันระเบิดตูมกระจาย เมือกเขียวเลอะห้อง ดับสิ้นซ่า!' },
+            trick: { rate: 30, text: 'คุณพยายามสาดน้ำใส่หวังชุ่มชื้น แต่น้ำทำให้ร่างกายมันแบ่งตัวออกเป็นสิบตัวรุมกัดทึ้งเสื้อผ้าและเนื้อตัวคุณจนแผลเหวอะหวะเสียชีวิตสลด!' }
+        }
+    },
+    {
+        id: 'blind_man',
+        name: 'ชายตาบอด (นอร์แมน)',
+        english: 'The Blind Man (Norman Nordstrom)',
+        weapon: 'ปืนพกโคลต์และพละกำลังทหารผ่านศึก (Colt Revolver / Sensory Combat)',
+        movieId: 300669,
+        bio: 'ทหารผ่านศึกตาบอดผู้มีประสาทสัมผัสเสียงและการดมกลิ่นขั้นสุดยอด เขาจะปกป้องบ้านตนเองและซ่อนความลับสุดวิปริตในห้องใต้ดินด้วยความโหดเหี้ยมป่าเถื่อน',
+        stats: { brutality: 8.5, stealth: 9.5, speed: 6.8, supernatural: 1.0 },
+        simulator: {
+            run: { rate: 60, text: 'คุณพยายามวิ่งพังหน้าต่างกระจกหนีออกจากบ้านทหารตาบอด แม้เขาจะยิงปืนตามเสียงกระจกแตกเฉียดไหล่คุณไป แต่คุณก็กระโดดข้ามรั้วรอดพ้นอย่างปลอดภัย!' },
+            hide: { rate: 50, text: 'คุณหลบซ่อนตัวและกลั้นหายใจนิ่งสนิทห้ามส่งเสียงเด็ดขาด! นอร์แมนเดินถือปืนก้าวผ่านคุณไปห่างแค่คืบเดียว เสียงหัวใจเต้นโชคดีที่ไม่ดังพอให้เขาได้ยิน' },
+            fight: { rate: 35, text: 'คุณพยายามชกสู้ตรงๆ แต่เขามีประสบการณ์รบยอดเยี่ยมและแรงควาย เขาจะจับแขนคุณบิดหัก ดับไฟห้องจนมืดสนิทและยิงหัวคุณคาความมืด!' },
+            trick: { rate: 20, text: 'คุณปาของตกแต่งลงพื้นเสียงดังโครมครามไปอีกฝั่งเพื่อล่อทิศทางเสียง นอร์แมนหันไปลั่นไกทางนั้น แต่สุนัขดุไล่กัดดมกลิ่นเนื้อคุณจนความแตก!' }
+        }
+    },
+    {
+        id: 'red_face_demon',
+        name: 'ปีศาจหน้าแดง',
+        english: 'The Red Face Demon',
+        weapon: 'พลังอำนาจมิติลี้ลับและกรงเล็บเหล็ก (The Further Entity / Claws)',
+        movieId: 49018,
+        bio: 'ปีศาจจากดินแดนหลังความตาย "The Further" ที่มีใบหน้าสีดำแดงสยดสยอง มันต้องการเข้าสิงร่างเด็กเพื่อกลับมาใช้ชีวิตในโลกมนุษย์และสะสมวิญญาณเหยื่อในรังลับ',
+        stats: { brutality: 8.8, stealth: 9.0, speed: 7.0, supernatural: 9.9 },
+        simulator: {
+            run: { rate: 40, text: 'คุณวิ่งหนีไปตามโถงบ้านผีสิง ทันใดนั้นประตูทุกบานปิดลงและมิติเปลี่ยนเป็นหมอกสีขาวซีด ร่างปีศาจหน้าแดงลอยวาร์ปมาดึงตัวคุณลอยขึ้นเพดานสิงสู่อก!' },
+            hide: { rate: 35, text: 'คุณหลบซ่อนใต้ผ้าห่มทาหน้าสีแดงปะปนกับกองของเล่น เสียงเครื่องเล่นแผ่นเสียงโบราณดังขึ้นเงียบๆ ปีศาจกางเล็บยาวกรีดข้างหูจนคุณต้องร้องลั่นถูกจับฆ่า!' },
+            fight: { rate: 10, text: 'กระสุนปืนหรือหมัดชกทำอะไรวิญญาณร้ายตนนี้ไม่ได้ มันจะจับหัวคุณบิดกระดูกหักหันหลังสลายพลังจิตสิ้นชีพคาที!' },
+            trick: { rate: 75, text: 'คุณสาดเกลือศักดิ์สิทธิ์และเปิดโคมไฟส่องแสงจ้ากระจายความร้อนใส่หน้ามัน แสงไฟสว่างวาบทำให้ปีศาจ Further อ่อนแรงหดตัวล่าถอยกลับมิติมืด รอดพ้น!' }
+        }
+    },
+    {
+        id: 'slenderman',
+        name: 'สเลนเดอร์แมน',
+        english: 'Slender Man',
+        weapon: 'หนวดสีดำและสัญญาณภาพรบกวนปั่นประสาท (Static Distortion / Tentacles)',
+        movieId: 439015,
+        bio: 'อสูรกายร่างผอมสูงโย่งในชุดสูทสีดำไร้ใบหน้า มันจะแฝงตัวตามป่าและที่มืด คอยหลอกหลอนจิตประสาทให้กลัวจนเป็นบ้า และใช้หนวดดำงอกล่าเหยื่อล่องหนหายตัว',
+        stats: { brutality: 9.0, stealth: 9.8, speed: 7.5, supernatural: 9.8 },
+        simulator: {
+            run: { rate: 20, text: 'คุณวิ่งหนีกลางป่าสนทึบ จอประสาทตาของคุณพร่ามัวเกิดสัญญาณคลื่น Static ลั่นในหัวสมองระเบิด ร่างสูทสูงวาร์ปมาโผล่ตรงหน้าใช้หนวดรัดคอร่างคุณสูญหายสาบสูญ!' },
+            hide: { rate: 45, text: 'คุณก้มลงแอบซ่อนหลังโขดหินใหญ่และหลับตาแน่นไม่มองกล้องถ่ายรูป สเลนเดอร์แมนก้าวขาเรียวยาวเดินผ่านป่าไปโดยไม่ทำอันตรายเนื่องจากตรวจไม่พบการจ้องมอง' },
+            fight: { rate: 5, text: 'ยิงปืนหรือต่อสู้กับสิ่งไร้ใบหน้าเปล่าประโยชน์ ร่างคุณจะถูกยกรั้งลอยบนฟากฟ้าแล้วบิดกระดูกและอวัยวะสูญหายไร้ร่องรอยตลอดกาล!' },
+            trick: { rate: 80, text: 'คุณรวบรวม "กระดาษบันทึกสีขาวทั้ง 8 แผ่น" ครบถ้วนตามมุมป่า ทำให้มนต์คำสาปสะกดของมันแตกสลายและล่าถอยหายวาร์ปไปจากป่าสยอง รอดตายปาฏิหาริย์!' }
+        }
+    },
+    {
+        id: 'red_us',
+        name: 'เรด (ร่างเงาสีแดง)',
+        english: 'Red (Us Clone)',
+        weapon: 'กรรไกรสีทองเล่มใหญ่ (Golden Scissors)',
+        movieId: 458723,
+        bio: 'ร่างโคลนใต้ดินผู้สวมชุดหมีสีแดงถือกรรไกรทองคำ มีดวงตาแข็งกร้าวและน้ำเสียงบีบเค้นกระซิบแหบพร่า เธอต้องการนำทัพร่างเงาสะท้อนขึ้นมาเข่นฆ่าและแทนที่คนบนดิน',
+        stats: { brutality: 8.4, stealth: 8.8, speed: 8.0, supernatural: 1.0 },
+        simulator: {
+            run: { rate: 55, text: 'คุณวิ่งหนีออกจากบ้านพักร้อนลงท่าเรือ เรดถือกรรไกรวิ่งเลียนแบบทางเดินของคุณอย่างรวดเร็ว แต่คุณกระโดดขึ้นเรือสตาร์ทบิดหนีพ้นวิถีกรรไกรไปได้อย่างปลอดภัย!' },
+            hide: { rate: 40, text: 'คุณหลบซ่อนตัวในห้องเก็บของ เรดส่งเสียงแหบกระซิบเคาะกรรไกรฉับๆ ร้องหาคุณรอบตึก โชคดีที่เงาสะท้อนกระจกไม่ส่องทางที่คุณซ่อนตัวอยู่จนเธอก้าวผ่านไป' },
+            fight: { rate: 45, text: 'เธอเป็นร่างเงาสะท้อนที่มีกายเนื้อเหมือนคุณ คุณคว้าไม้กอล์ฟหวดเต็มเหนี่ยวเข้าที่ศีรษะของเรดจนล้มหัวฟาดพื้นช็อคไป เปิดโอกาสให้หนีรอดหวุดหวิด!' },
+            trick: { rate: 15, text: 'คุณพยายามพูดเกลี้ยกล่อมเกี่ยวกับสิทธิความเท่าเทียม เรดไม่ฟังและตะคอกเสียงกรีดร้องแหบกรรไกรทองเฉือนหลอดลมคอหอยคุณขาดสะบั้นทันที!' }
+        }
+    },
+    {
+        id: 'jennifer_body',
+        name: 'เจนนิเฟอร์ เช็ค',
+        english: 'Jennifer Check',
+        weapon: 'เขี้ยวซัคคิวบัสเคี้ยวกลืนเนื้อคน (Succubus Fangs / Devouring)',
+        movieId: 19994,
+        bio: 'เชียร์ลีดเดอร์สาวสุดเซ็กซี่ที่ถูกทำพิธีบูชายัญผิดพลาดจนกลายเป็นปีศาจซัคคิวบัสสิงสู่ เธอใช้เสน่ห์เรือนร่างล่อลวงหนุ่มๆ ไปกินเนื้อและเลือดสดๆ เพื่อรักษาความงามอมตะ',
+        stats: { brutality: 8.5, stealth: 8.0, speed: 8.5, supernatural: 8.8 },
+        simulator: {
+            run: { rate: 65, text: 'คุณวิ่งหนีสุดชีวิตออกจากกระท่อมในป่า เจนนิเฟอร์ปีศาจลอยตัวข้ามต้นไม้กรีดร้องไล่หลัง แต่คุณกระโดดข้ามแม่น้ำเย็นจัดที่เธอเกลียดหนีพ้นหวุดหวิด!' },
+            hide: { rate: 40, text: 'คุณแอบซ่อนหลังตู้ล็อคเกอร์โรงยิม เจนนิเฟอร์ลอยตัวดมกลิ่นน้ำหอมผู้ชายพลางร้องเรียกคุณด้วยเสียงเซ็กซี่ชวนฝัน โชคดีที่ระฆังโรงเรียนดังขึ้นเบี่ยงเบนเธอไปก่อน' },
+            fight: { rate: 50, text: 'คุณใช้ "มีดปลายปืนโบราณ" หรือเหล็กแหลมแทงตรงเข้าที่กลางหัวใจปีศาจซัคคิวบัสของเธอ ซึ่งเป็นจุดตายเดียวตามตำราปราบปีศาจ รอดชีวิตได้อย่างเหลือเชื่อ!' },
+            trick: { rate: 20, text: 'คุณยอมรับคำเชิญชวนไปดินเนอร์สองต่อสองเสน่หา แต่เมื่อเข้าไปในป่าเธอกลับอ้าปากกว้างแยกเขี้ยวปีศาจกระซวกหัวไหล่และดูดเลือดคุณจนแห้งเหี่ยวดับอนาถ!' }
+        }
     }
 ];
+
+const FINAL_GIRLS = [
+    {
+        id: 'sidney',
+        name: 'ซิดนีย์ เพรสคอตต์',
+        english: 'Sidney Prescott',
+        weapon: 'พลังใจสู้ยิบตาและไม่ยอมจำนน (Resilience)',
+        movieId: 4232,
+        bio: 'ผู้รอดชีวิตจากคดีฆาตกรรมกรงเล็บปีศาจหน้าผี (Ghostface) หลายต่อหลายครั้ง เธอเปลี่ยนจากเหยื่อมาเป็นผู้นำที่พร้อมเผชิญหน้าและสู้กลับด้วยอาวุธทุกชิ้นที่หาได้',
+        stats: { resourcefulness: 9.2, instinct: 9.8, resilience: 9.6, combat: 8.5 },
+        simulator: {
+            distract: { rate: 60, text: 'คุณยอมเบี่ยงเบนความสนใจหน้าผี ซิดนีย์ใช้จังหวะนี้แอบขึ้นสลักปืนยิงขมับหน้าผีจนหน้ากากแตกกระเด็น รอดชีวิตคู่กัน!' },
+            assist: { rate: 85, text: 'คุณโยนปืนลูกซองให้ซิดนีย์ เธอรับมันไว้แล้วเป่าร่างฆาตกรกระเด็นตกหน้าต่างบ้านทันที สะใจและรอดชีวิตไร้บาดแผล!' },
+            cooperate: { rate: 70, text: 'คุณกับซิดนีย์รุมโจมตีฆาตกรจากสองฝั่ง ซิดนีย์ใช้มีดพกแทงกลางหลังเหยื่อจนเขาล้มทรุดลงไปนอนจมกองเลือด รอดตาย!' },
+            trap: { rate: 80, text: 'คุณล่อฆาตกรลงไปที่ห้องใต้ดิน ซิดนีย์ตัดระบบไฟฟ้าและดักกระชากหัวเขาฟาดเข้ากับเสาไฟฟ้าบิดหมดสติ รอดชีวิตหวุดหวิด!' }
+        }
+    },
+    {
+        id: 'laurie',
+        name: 'ลอรี่ สโตรด',
+        english: 'Laurie Strode',
+        weapon: 'การเตรียมความพร้อมและตั้งรับขั้นสุดยอด (Supreme Preparedness)',
+        movieId: 948,
+        bio: 'หญิงแกร่งผู้รอดชีวิตจากคืนฆาตกรรมของไมเคิล ไมเยอร์ส เธอใช้เวลากว่า 40 ปีในการเปลี่ยนบ้านของเธอให้เป็นป้อมปราการเพื่อรอคอยโอกาสสังหารพญามารไร้ความรู้สึก',
+        stats: { resourcefulness: 9.5, instinct: 9.7, resilience: 9.8, combat: 9.0 },
+        simulator: {
+            distract: { rate: 50, text: 'คุณล่อไมเคิลหันหลัง ลอรี่ใช้จังหวะนี้ใช้ปืนลูกซองจ่อยิงอกเขาจนตกชานบ้าน แต่ไมเคิลก็ยังลุกหนีไปได้ ส่วนคุณรอดชีวิต!' },
+            assist: { rate: 90, text: 'คุณส่งพลุไฟหรือเครื่องพ่นไฟให้ลอรี่ เธอใช้มันแผดเผาห้องใต้ดินขังไมเคิลไว้ในกองเพลิงมอดไหม้ รอดตายปลอดภัยสะใจที่สุด!' },
+            cooperate: { rate: 65, text: 'คุณและลอรี่ช่วยกันลากไมเคิลลงบ่อบดเนื้อ ลอรี่หนีบแขนเขาแน่นส่วนคุณกดสวิตช์เครื่องปั่นเนื้อจนวิญญาณชั่วร้ายดับสูญ รอดหวุดหวิด!' },
+            trap: { rate: 85, text: 'คุณล่อไมเคิลเข้าห้องลับ ลอรี่ปุ่มควบคุมปิดประตูกรงเหล็กหนาขังเขาไว้ข้างในป้อมปราการ ดักสกัดการไล่ล่าได้สำเร็จ!' }
+        }
+    },
+    {
+        id: 'gale',
+        name: 'เกล เวเธอร์ส',
+        english: 'Gale Weathers',
+        weapon: 'ความมุ่งมั่นและสัญชาตญาณนักข่าว (Tenacious Journalism)',
+        movieId: 4232,
+        bio: 'ผู้ประกาศข่าวสาวผู้กล้าบ้าบิ่นที่ไม่ยอมแพ้ต่อแรงกดดัน เธอมีส่วนร่วมในการไขปริศนาหน้าผีและสู้ยิบตาด้วยกล้อง โทรศัพท์ และปืนสั้นโดยไม่เกรงกลัวความตาย',
+        stats: { resourcefulness: 9.4, instinct: 8.5, resilience: 8.8, combat: 7.0 },
+        simulator: {
+            distract: { rate: 65, text: 'คุณตะโกนล่อหน้าผี เกลใช้กล้องวิดีโอตัวใหญ่กระแทกหัวหน้าผีจนล้มคว่ำสลบ ก่อนที่คุณทั้งคู่จะรีบวิ่งออกไปหาตำรวจ รอดปลอดภัย!' },
+            assist: { rate: 75, text: 'คุณส่งข่าวแฉแผนฆาตกรผ่านไมโครโฟน สารวัตรและนักข่าวเข้ามาเต็มพื้นที่ ทำให้หน้าผีต้องล้มเลิกแผนและล่าถอยไปอย่างหัวเสีย!' },
+            cooperate: { rate: 50, text: 'คุณกับเกลรุมกระชากหน้ากากฆาตกรจนเห็นตัวจริง แต่เกลโดนผลักกระแทกกำแพงเจ็บปวด โชคดีที่คุณชกหมัดใส่จมูกหน้าผีรอดหวุดหวิด!' },
+            trap: { rate: 70, text: 'คุณปูพรมจัดฉากล่อฆาตกรมาที่ห้องส่งข่าว เกลปิดประตูชัตเตอร์สตูดิโอขังเขาไว้จนหน้ากากขาดรุ่งริ่งโดนจับกุมสำเร็จ!' }
+        }
+    },
+    {
+        id: 'ripley',
+        name: 'เอลเลน ริปลีย์',
+        english: 'Ellen Ripley',
+        weapon: 'ความเป็นผู้นำและการใช้อาวุธหนัก (Combat Leadership)',
+        movieId: 348,
+        bio: 'เจ้าหน้าที่สาวแกร่งแห่งยาน Nostromo ผู้เผชิญหน้ากับอสูรกายต่างดาวซีโนมอร์ฟ เธอคือสัญลักษณ์ของหญิงแกร่งผู้ใช้สติไตร่ตรองและมีทักษะการใช้อาวุธหนักเพื่อเอาชีวิตรอด',
+        stats: { resourcefulness: 9.6, instinct: 9.9, resilience: 9.7, combat: 9.5 },
+        simulator: {
+            distract: { rate: 55, text: 'คุณล่อเป้าเอเลี่ยน ริปลีย์ขับรถตักดินขนาดยักษ์พุ่งชนร่างซีโนมอร์ฟทะลุกำแพงยานร่วงลงเตาปฏิกรณ์ระเบิดเป็นผุยผง!' },
+            assist: { rate: 95, text: 'คุณส่งปืนพ่นไฟคู่ติดปืนกลให้ริปลีย์ เธอแผดเผารังไข่เอเลี่ยนกระจุยกระจายพร้อมสะบัดก้นหนีขึ้นยานชูชีพได้อย่างปลอดภัยสะใจ!' },
+            cooperate: { rate: 75, text: 'คุณช่วยกดควบคุมลิฟต์ขนส่ง ริปลีย์ใช้เครื่องสวมแขนกลไฮดรอลิกยกจับซีโนมอร์ฟโยนออกนอกประตูลมยาน รอดชีวิตปาฏิหาริย์!' },
+            trap: { rate: 85, text: 'คุณล่อเอเลี่ยนเข้าห้องท่อระบายลม ริปลีย์ปิดล็อคระบบประตูสุญญากาศและปลดความดันดูดร่างมันลอยเคว้งสู่อวกาศอันมืดมิด!' }
+        }
+    },
+    {
+        id: 'nancy',
+        name: 'แนนซี่ ทอมป์สัน',
+        english: 'Nancy Thompson',
+        weapon: 'การดึงศัตรูออกมาสู้และวางกับดัก (Lucid Trapping)',
+        movieId: 377,
+        bio: 'เด็กสาวผู้วิเคราะห์และค้นพบกฎการล่าในฝันของเฟรดดี้ ครูเกอร์ เธอเรียนรู้วิธีการควบคุมฝัน (Lucid Dream) และวางกับดักอันซับซ้อนในโลกความจริงเพื่อสยบมัน',
+        stats: { resourcefulness: 9.7, instinct: 9.0, resilience: 9.2, combat: 7.5 },
+        simulator: {
+            distract: { rate: 70, text: 'คุณวิ่งล่อเฟรดดี้ในความฝัน แนนซี่ตั้งสติและคว้าคอเฟรดดี้ดึงหลุดออกมาในโลกความเป็นจริงก่อนที่คุณจะสะดุ้งตื่น รอดชีวิต!' },
+            assist: { rate: 80, text: 'คุณช่วยจัดหาก้อนหิน ลวดสะดุด และถังน้ำมันทำกับดักรอบบ้าน แนนซี่ล่อเฟรดดี้เดินชนกับดักจนโดนไฟคลอกจนเละเทะหนีเตลิดไป!' },
+            cooperate: { rate: 60, text: 'คุณกับแนนซี่ช่วยกันใช้ค้อนรุมทุบหัวเฟรดดี้ในโลกความจริง ร่างเขาดิ้นพล่านและสลายหายไปเป็นเงามืด รอดตายหวุดหวิด!' },
+            trap: { rate: 90, text: 'แนนซี่ใช้วิธีหันหลังใส่และไม่ยอมมอบพลังความกลัวให้เฟรดดี้ ทำให้เขาสูญเสียพลังหลอนจิตและจางหายไปจากความฝันของคุณถาวร!' }
+        }
+    },
+    {
+        id: 'sally',
+        name: 'แซลลี่ ฮาร์เดสตี้',
+        english: 'Sally Hardesty',
+        weapon: 'ความอึดและการวิ่งหนีนาทีสุดท้าย (Pure Endurance)',
+        movieId: 30497,
+        bio: 'หญิงสาวคนเดียวที่รอดชีวิตจากครอบครัวกินคนคลั่งเลื่อยยนต์ เธอวิ่งหนีสุดชีวิตผ่านกอหนาม ทะลุหน้าต่างกระจก และปีนขึ้นหลังรถกระบะหนีพ้นในสภาพโชกเลือด',
+        stats: { resourcefulness: 7.0, instinct: 9.6, resilience: 9.5, combat: 5.0 },
+        simulator: {
+            distract: { rate: 60, text: 'คุณกระโดดขวางตู้ใส่เลเธอร์เฟซ แซลลี่พยายามปีนทะลุกระจกหน้าต่างวิ่งหนีโชกเลือดออกสู่ถนนใหญ่และโบกรถหนีรอดหวุดหวิด!' },
+            assist: { rate: 65, text: 'คุณปาหินใส่หัวเข่าฆาตกรเลื่อยยนต์ ทำให้เขาชะงักสะดุดล้มทับใบเลื่อยของตัวเองจนได้รับบาดเจ็บสาหัส เปิดโอกาสให้แซลลี่วิ่งพ้นเขตบ้าน!' },
+            cooperate: { rate: 45, text: 'คุณกับแซลลี่พยายามรุมแย่งเลื่อยยนต์ แต่ความคลั่งพละกำลังของเลเธอร์เฟซเหวี่ยงขวานปัดจนคุณบาดเจ็บ โชคดีที่แซลลี่เบี่ยงตัวหนีทัน!' },
+            trap: { rate: 50, text: 'คุณวิ่งล่อเข้าป่าขวากหนาม เลเธอร์เฟซแบกเลื่อยวิ่งชนกิ่งไม้สลบไสลปั่นป่วน ทำให้แซลลี่วิ่งไปถึงถนนใหญ่ รอดตายปาฏิหาริย์!' }
+        }
+    },
+    {
+        id: 'mindy',
+        name: 'มินดี้ มีคส์-มาร์ติน',
+        english: 'Mindy Meeks-Martin',
+        weapon: 'ความรอบรู้ทฤษฎีหนังสยองขวัญระดับผู้เชี่ยวชาญ (Meta Horror Logic)',
+        movieId: 646385,
+        bio: 'หลานสาวของแรนดี้ มีคส์ เธอเป็นกูรูภาพยนตร์แนวสยองขวัญสไตล์เมต้า รู้จักกฎเหล็กของการเอาตัวรอด รู้ทันมุกของหน้าผี และพยายามเตือนสติทุกคนในกลุ่มให้ทำตามกฎ',
+        stats: { resourcefulness: 9.8, instinct: 8.8, resilience: 8.0, combat: 6.0 },
+        simulator: {
+            distract: { rate: 70, text: 'คุณชวนหน้าผีคุยเรื่องกฎของหนังรีควล (Requel) มินดี้ใช้จังหวะนี้ใช้สเปรย์พริกไทยฉีดใส่หน้ามันเต็มๆ แล้วพาคุณปีนบันไดหนีไป รอดชีวิต!' },
+            assist: { rate: 80, text: 'คุณชี้เป้าตัวจริงของหน้าผีตามทฤษฎีเพื่อนสนิทเป็นฆาตกร มินดี้คว้าแจกันดอกไม้ฟาดหัวฆาตกรสลบคว่ำก่อนโดนแทง รอดชีวิตไร้รอยแผล!' },
+            cooperate: { rate: 55, text: 'คุณกับมินดี้ช่วยกันระวังหลังให้กัน หน้าผีพุ่งมาแทงแต่พวกคุณใช้เก้าอี้กระแทกมือมีดหลุดร่วงลงพื้นและกระเสือกกระสนวิ่งหนีออกมาได้!' },
+            trap: { rate: 75, text: 'คุณล่อฆาตกรเข้าห้องมืด มินดี้วิเคราะห์สถิติจุดที่หน้าผีจะชอบโผล่มาตลบหลัง แอบดักใช้ไม้เบสบอลฟาดหน้าอกเขาล้มพับ รอดตาย!' }
+        }
+    }
+];
+
+function renderFinalGirls() {
+    if (!finalgirlsGrid) return;
+    finalgirlsGrid.innerHTML = '';
+    
+    FINAL_GIRLS.forEach(char => {
+        const card = document.createElement('div');
+        card.className = 'character-card';
+        card.dataset.charId = char.id;
+        
+        card.innerHTML = `
+            <div class="character-card-bg" id="finalgirl-bg-${char.id}"></div>
+            <div class="character-card-overlay"></div>
+            <div class="character-card-content">
+                <div class="character-card-name">${char.name}</div>
+                <div class="character-card-english">${char.english}</div>
+                <div class="character-card-weapon"><i class="fa-solid fa-shield-halved text-success"></i> จุดเด่น: ${char.weapon.split(' ')[0]}</div>
+                <div class="character-card-stats-row">
+                    <span class="meta-rating" style="background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.35); color: #10b981; font-size: 0.72rem; padding: 0.15rem 0.45rem;">
+                        <i class="fa-solid fa-heart-pulse"></i> รอดชีวิต ${char.stats.resilience}/10
+                    </span>
+                </div>
+            </div>
+        `;
+        
+        card.addEventListener('click', () => {
+            SoundscapeEngine.playClickSFX();
+            openCharacterModal(char.id);
+        });
+        
+        finalgirlsGrid.appendChild(card);
+        loadFinalGirlCardImage(char);
+    });
+}
+
+async function loadFinalGirlCardImage(char) {
+    const bgEl = document.getElementById(`finalgirl-bg-${char.id}`);
+    if (!bgEl) return;
+    
+    try {
+        const movie = await TMDB.getMovieDetails(char.movieId);
+        if (movie && movie.backdrop_path) {
+            bgEl.style.backgroundImage = `url('${TMDB.getImageUrl(movie.backdrop_path, 'w300')}')`;
+        } else {
+            bgEl.style.backgroundColor = '#0a1a0f';
+        }
+    } catch (err) {
+        console.error("Failed to load TMDB image for " + char.name, err);
+        bgEl.style.backgroundColor = '#0a1a0f';
+    }
+}
 
 // --- RENDER HORROR CHARACTERS GRID ---
 function renderCharacters() {
@@ -3803,52 +4666,144 @@ async function loadCharacterCardImage(char) {
 
 // --- CHARACTER MODAL & SIMULATOR LOGIC ---
 async function openCharacterModal(charId) {
-    const char = HORROR_CHARACTERS.find(c => c.id === charId);
+    let char = HORROR_CHARACTERS.find(c => c.id === charId);
+    let isFinalGirl = false;
+    if (!char) {
+        char = FINAL_GIRLS.find(c => c.id === charId);
+        isFinalGirl = true;
+    }
     if (!char) return;
     
     SoundscapeEngine.playModalOpenSFX();
     
-    document.getElementById('character-name').textContent = char.name;
-    document.getElementById('character-english').innerHTML = `<i class="fa-regular fa-user"></i> ${char.english}`;
-    document.getElementById('character-weapon').innerHTML = `<i class="fa-solid fa-gavel"></i> อาวุธ: ${char.weapon}`;
-    document.getElementById('character-bio').textContent = char.bio;
+    const charModal = document.getElementById('character-detail-modal');
+    if (!charModal) return;
     
-    const resultBox = document.getElementById('sim-result-box');
+    charModal.querySelector('#character-name').textContent = char.name;
+    charModal.querySelector('#character-english').innerHTML = `<i class="fa-regular fa-user"></i> ${char.english}`;
+    
+    // Update tagline scoped to character modal
+    const taglineEl = charModal.querySelector('.modal-tagline');
+    if (taglineEl) {
+        taglineEl.innerHTML = isFinalGirl 
+            ? `<i class="fa-solid fa-shield-halved text-success animate-pulse"></i> ทำเนียบผู้รอดชีวิตคนสุดท้าย (Final Girls)`
+            : `<i class="fa-solid fa-skull animate-pulse"></i> ทำเนียบฆาตกรระดับตำนาน`;
+    }
+    
+    charModal.querySelector('#character-weapon').innerHTML = isFinalGirl 
+        ? `<i class="fa-solid fa-shield-halved text-success"></i> จุดเด่น: ${char.weapon}`
+        : `<i class="fa-solid fa-gavel text-danger"></i> อาวุธ: ${char.weapon}`;
+        
+    charModal.querySelector('#character-bio').textContent = char.bio;
+    
+    // Update border and headers in the sidebar scoped to character modal
+    const statsBox = charModal.querySelector('.modal-sidebar-column .interaction-box:first-of-type');
+    if (statsBox) {
+        statsBox.style.borderColor = isFinalGirl ? 'rgba(16, 185, 129, 0.25)' : 'rgba(255, 0, 60, 0.25)';
+    }
+    
+    const statsHeader = charModal.querySelector('.modal-sidebar-column .interaction-box:first-of-type h3.modal-section-title');
+    if (statsHeader) {
+        statsHeader.innerHTML = isFinalGirl 
+            ? '<i class="fa-solid fa-star"></i> ค่าความเก่ง (Prowess Stats)'
+            : '<i class="fa-solid fa-skull"></i> ค่าสถานะความสยองขวัญ (Horror Stats)';
+        statsHeader.style.borderLeftColor = isFinalGirl ? '#10b981' : 'var(--primary)';
+    }
+    
+    const simBox = charModal.querySelector('.modal-sidebar-column .interaction-box:last-of-type');
+    if (simBox) {
+        simBox.style.borderColor = isFinalGirl ? 'rgba(16, 185, 129, 0.25)' : 'rgba(255, 0, 60, 0.25)';
+    }
+    
+    const simHeader = charModal.querySelector('.modal-sidebar-column .interaction-box:last-of-type h3.modal-section-title');
+    if (simHeader) {
+        simHeader.innerHTML = isFinalGirl 
+            ? '<i class="fa-solid fa-gamepad"></i> จำลองความร่วมมือ (Cooperation Simulator)'
+            : '<i class="fa-solid fa-gamepad"></i> จำลองการเผชิญหน้า (Survival Simulator)';
+        simHeader.style.borderLeftColor = isFinalGirl ? '#10b981' : 'var(--primary)';
+    }
+    
+    const simDesc = charModal.querySelector('.modal-sidebar-column .interaction-box:last-of-type p');
+    if (simDesc) {
+        simDesc.textContent = isFinalGirl 
+            ? 'หากคุณร่วมมือกับผู้รอดชีวิตคนนี้เพื่อเผชิญหน้าภัยร้าย คุณจะช่วยเธอบนแผนอย่างไร? ระบบจะคำนวณโอกาสรอดชีวิตร่วมกัน'
+            : 'หากคุณพบฆาตกรคนนี้ในคืนหลอน คุณจะเลือกทำอย่างไร? ระบบจะคำนวณโอกาสรอดชีวิตของคุณพร้อมแสดงผลลัพธ์';
+    }
+    
+    const resultBox = charModal.querySelector('#sim-result-box');
     if (resultBox) resultBox.style.display = 'none';
     
-    const simBtns = ['run', 'hide', 'fight', 'trick'];
-    simBtns.forEach(choice => {
-        const btn = document.getElementById(`sim-btn-${choice}`);
-        if (btn) {
-            btn.classList.remove('active');
-            
-            // Rebind click listeners cleanly
-            const newBtn = btn.cloneNode(true);
-            btn.parentNode.replaceChild(newBtn, btn);
-            newBtn.addEventListener('click', () => runSurvivalSimulator(char.id, choice));
-        }
-    });
+    // Rebuild choice buttons scoped to character modal
+    const selectorContainer = charModal.querySelector('.modal-sidebar-column .interaction-box:last-of-type .watch-status-selector');
+    if (selectorContainer) {
+        selectorContainer.innerHTML = '';
+        const choices = isFinalGirl ? [
+            { id: 'distract', label: 'เบี่ยงเบนเป้าหมาย', icon: 'fa-bullhorn' },
+            { id: 'assist', label: 'ส่งอาวุธช่วยสู้', icon: 'fa-gun' },
+            { id: 'cooperate', label: 'ร่วมสู้กันคู่', icon: 'fa-people-group' },
+            { id: 'trap', label: 'วางกับดักล่อลวง', icon: 'fa-circle-nodes' }
+        ] : [
+            { id: 'run', label: 'วิ่งหนีสุดชีวิต', icon: 'fa-person-running' },
+            { id: 'hide', label: 'หาที่ซ่อนแอบ', icon: 'fa-eye-slash' },
+            { id: 'fight', label: 'สู้กลับขาดใจ', icon: 'fa-hand-fist' },
+            { id: 'trick', label: 'ใช้ไหวพริบเจรจา', icon: 'fa-brain' }
+        ];
+        
+        choices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.className = 'status-btn';
+            btn.id = `sim-btn-${choice.id}`;
+            btn.dataset.choice = choice.id;
+            btn.innerHTML = `<i class="fa-solid ${choice.icon}"></i> ${choice.label}`;
+            btn.addEventListener('click', () => {
+                runSurvivalSimulator(char.id, choice.id);
+            });
+            selectorContainer.appendChild(btn);
+        });
+    }
     
-    const stats = ['brutality', 'stealth', 'speed', 'supernatural'];
-    stats.forEach(stat => {
-        const valEl = document.getElementById(`stat-val-${stat}`);
-        const barEl = document.getElementById(`stat-bar-${stat}`);
-        if (valEl && barEl) {
-            const score = char.stats[stat];
-            valEl.textContent = `${score} / 10`;
-            barEl.style.width = '0%';
+    // Rebuild Stats List scoped to character modal
+    const statsList = charModal.querySelector('.analytics-bars-list');
+    if (statsList) {
+        statsList.innerHTML = '';
+        const activeStats = isFinalGirl ? [
+            { key: 'resourcefulness', label: 'ไหวพริบการแก้ไขปัญหา (Resourcefulness)' },
+            { key: 'instinct', label: 'สัญชาตญาณเอาตัวรอด (Instinct)' },
+            { key: 'resilience', label: 'พลังความอึด / จิตใจ (Resilience)' },
+            { key: 'combat', label: 'ทักษะการต่อสู้ (Combat Skill)' }
+        ] : [
+            { key: 'brutality', label: 'ระดับความโหด (Brutality)' },
+            { key: 'stealth', label: 'การซุ่มโจมตี (Stealth)' },
+            { key: 'speed', label: 'ความว่องไว (Speed)' },
+            { key: 'supernatural', label: 'พลังเหนือธรรมชาติ (Supernatural)' }
+        ];
+        
+        activeStats.forEach(st => {
+            const score = char.stats[st.key];
+            const barItem = document.createElement('div');
+            barItem.className = 'analytics-bar-item';
+            barItem.innerHTML = `
+                <div class="analytics-bar-label">
+                    <span>${st.label}</span>
+                    <span id="stat-val-${st.key}">${score} / 10</span>
+                </div>
+                <div class="analytics-bar-bg">
+                    <div class="analytics-bar-fill" id="stat-bar-${st.key}" style="width: 0%; background: ${isFinalGirl ? '#10b981' : 'var(--primary)'}; box-shadow: 0 0 10px ${isFinalGirl ? 'rgba(16,185,129,0.5)' : 'rgba(255,0,60,0.5)'};"></div>
+                </div>
+            `;
+            statsList.appendChild(barItem);
             setTimeout(() => {
-                barEl.style.width = `${score * 10}%`;
+                const barEl = charModal.querySelector(`#stat-bar-${st.key}`);
+                if (barEl) barEl.style.width = `${score * 10}%`;
             }, 50);
-        }
-    });
+        });
+    }
     
-    const modal = document.getElementById('character-detail-modal');
-    if (modal) modal.classList.add('active');
+    charModal.classList.add('active');
     
-    const backdropEl = document.getElementById('character-backdrop');
-    const posterEl = document.getElementById('character-poster');
-    const linkContainer = document.getElementById('character-featured-movie-link');
+    const backdropEl = charModal.querySelector('#character-backdrop');
+    const posterEl = charModal.querySelector('#character-poster');
+    const linkContainer = charModal.querySelector('#character-featured-movie-link');
     
     if (posterEl) posterEl.src = 'https://images.unsplash.com/photo-1509248961158-e54f6934749c?q=80&w=500&auto=format&fit=crop';
     if (backdropEl) backdropEl.style.backgroundImage = 'radial-gradient(circle, #25090f 0%, #08080c 100%)';
@@ -3869,7 +4824,7 @@ async function openCharacterModal(charId) {
                     <img src="${TMDB.getImageUrl(movie.poster_path, 'w92')}" class="actor-movie-poster" alt="${movie.title}">
                     <div class="actor-movie-details">
                         <div class="actor-movie-title">${movie.title}</div>
-                        <div class="actor-movie-character" style="font-size: 0.72rem; color: var(--primary);"><i class="fa-solid fa-fire animate-pulse"></i> คลิกเพื่อดูรายละเอียดและรับชมตัวอย่างภาพยนตร์</div>
+                        <div class="actor-movie-character" style="font-size: 0.72rem; color: ${isFinalGirl ? '#10b981' : 'var(--primary)'};"><i class="fa-solid fa-fire animate-pulse"></i> คลิกเพื่อดูรายละเอียดและรับชมตัวอย่างภาพยนตร์</div>
                     </div>
                 `;
                 
@@ -3895,14 +4850,43 @@ function closeCharacterModal() {
 }
 
 function runSurvivalSimulator(charId, choice) {
-    const char = HORROR_CHARACTERS.find(c => c.id === charId);
+    let char = HORROR_CHARACTERS.find(c => c.id === charId);
+    let isFinalGirl = false;
+    if (!char) {
+        char = FINAL_GIRLS.find(c => c.id === charId);
+        isFinalGirl = true;
+    }
     if (!char) return;
     
-    const choices = ['run', 'hide', 'fight', 'trick'];
+    const charModal = document.getElementById('character-detail-modal');
+    if (!charModal) return;
+    
+    const choices = isFinalGirl 
+        ? ['distract', 'assist', 'cooperate', 'trap']
+        : ['run', 'hide', 'fight', 'trick'];
+        
     choices.forEach(c => {
-        const btn = document.getElementById(`sim-btn-${c}`);
+        const btn = charModal.querySelector(`#sim-btn-${c}`);
         if (btn) {
             btn.classList.toggle('active', c === choice);
+            if (c === choice) {
+                if (isFinalGirl) {
+                    btn.style.background = 'rgba(16, 185, 129, 0.15)';
+                    btn.style.borderColor = '#10b981';
+                    btn.style.color = '#10b981';
+                    btn.style.boxShadow = '0 0 10px rgba(16, 185, 129, 0.25)';
+                } else {
+                    btn.style.background = 'rgba(255, 0, 60, 0.15)';
+                    btn.style.borderColor = 'var(--primary)';
+                    btn.style.color = 'var(--primary)';
+                    btn.style.boxShadow = '0 0 10px rgba(255, 0, 60, 0.25)';
+                }
+            } else {
+                btn.style.background = '';
+                btn.style.borderColor = '';
+                btn.style.color = '';
+                btn.style.boxShadow = '';
+            }
         }
     });
     
@@ -3915,12 +4899,12 @@ function runSurvivalSimulator(charId, choice) {
         SoundscapeEngine.playClickSFX();
     }
     
-    const resultBox = document.getElementById('sim-result-box');
-    const survivalRateEl = document.getElementById('sim-survival-rate');
-    const outcomeTextEl = document.getElementById('sim-outcome-text');
+    const resultBox = charModal.querySelector('#sim-result-box');
+    const survivalRateEl = charModal.querySelector('#sim-survival-rate');
+    const outcomeTextEl = charModal.querySelector('#sim-outcome-text');
     
     if (resultBox && survivalRateEl && outcomeTextEl) {
-        survivalRateEl.textContent = `โอกาสรอด: ${rate}%`;
+        survivalRateEl.textContent = isFinalGirl ? `โอกาสรอดชีวิตร่วมกัน: ${rate}%` : `โอกาสรอด: ${rate}%`;
         
         if (rate >= 70) {
             survivalRateEl.style.color = '#10b981';
@@ -4050,6 +5034,8 @@ function handleOutsideClickForSuggestions(e) {
 let isRouletteSpinning = false;
 let rouletteRotation = 0;
 let rouletteSelectedMovieId = null;
+let rouletteSelectedMovie = null;
+let rouletteFetchPromise = null;
 
 function startRouletteSpin() {
     if (isRouletteSpinning) return;
@@ -4063,6 +5049,7 @@ function startRouletteSpin() {
     const wheelDisc = document.getElementById('roulette-wheel-disc');
     const spinBtn = document.getElementById('roulette-spin-btn');
     const resultBox = document.getElementById('roulette-result-box');
+    const filterSelect = document.getElementById('roulette-filter-select');
     
     if (resultBox) resultBox.style.display = 'none';
     if (spinBtn) spinBtn.disabled = true;
@@ -4076,14 +5063,78 @@ function startRouletteSpin() {
         wheelDisc.style.transform = `rotate(${rouletteRotation}deg)`;
     }
     
+    // Determine target pool and prepare selection asynchronously during the spin animation
+    const filterVal = filterSelect ? filterSelect.value : 'all';
+    rouletteSelectedMovie = null;
+    rouletteFetchPromise = null;
+    
+    if (filterVal === 'online') {
+        // Random page from 1 to 5 to fetch a diverse set of horror movies
+        const randomPage = Math.floor(Math.random() * 5) + 1;
+        rouletteFetchPromise = TMDB.getPopularHorrorMovies(randomPage)
+            .then(data => {
+                if (data && data.results && data.results.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * data.results.length);
+                    rouletteSelectedMovie = data.results[randomIndex];
+                    rouletteSelectedMovie.isFallback = false;
+                } else {
+                    throw new Error("Empty online results");
+                }
+            })
+            .catch(err => {
+                console.error("Error fetching online horror movies for roulette:", err);
+                const pool = featuredMovies.length > 0 ? featuredMovies : FALLBACK_POPULAR_MOVIES;
+                rouletteSelectedMovie = pool[Math.floor(Math.random() * pool.length)];
+                rouletteSelectedMovie.isFallback = true;
+            });
+    } else {
+        const collection = Storage.getCollection();
+        let pool = [];
+        let isFallback = false;
+        
+        if (filterVal === 'watched') {
+            pool = collection.filter(m => m.watchStatus === 'watched');
+            if (pool.length === 0) {
+                isFallback = true;
+                pool = featuredMovies.length > 0 ? featuredMovies : FALLBACK_POPULAR_MOVIES;
+            }
+        } else if (filterVal === 'watchlist') {
+            pool = collection.filter(m => m.watchStatus === 'watchlist' || m.watchStatus === 'watching');
+            if (pool.length === 0) {
+                isFallback = true;
+                pool = featuredMovies.length > 0 ? featuredMovies : FALLBACK_POPULAR_MOVIES;
+            }
+        } else {
+            pool = collection;
+            if (pool.length === 0) {
+                isFallback = true;
+                pool = featuredMovies.length > 0 ? featuredMovies : FALLBACK_POPULAR_MOVIES;
+            }
+        }
+        
+        const selectedMovie = pool[Math.floor(Math.random() * pool.length)];
+        rouletteSelectedMovie = selectedMovie;
+        if (rouletteSelectedMovie) {
+            rouletteSelectedMovie.isFallback = isFallback;
+        }
+        rouletteFetchPromise = Promise.resolve();
+    }
+    
     // Heartbeat Sound Acceleration/Deceleration Synthesis
     let baseInterval = 600; // ms
     let timeElapsed = 0;
     const duration = 4000; // ms (matches CSS transition)
     
-    const playTick = () => {
+    const playTick = async () => {
         if (timeElapsed >= duration) {
-            // Spin ended
+            // Spin ended, wait for network if online fetching
+            if (rouletteFetchPromise) {
+                try {
+                    await rouletteFetchPromise;
+                } catch (e) {
+                    console.error("Error waiting for roulette fetch promise:", e);
+                }
+            }
             isRouletteSpinning = false;
             if (spinBtn) spinBtn.disabled = false;
             revealRouletteResult();
@@ -4119,49 +5170,31 @@ async function revealRouletteResult() {
     const filterSelect = document.getElementById('roulette-filter-select');
     
     if (!resultBox || !resultTitle || !resultPoster || !resultDesc) return;
+    if (!rouletteSelectedMovie) return;
     
-    const filterVal = filterSelect ? filterSelect.value : 'all';
-    const collection = Storage.getCollection();
-    let pool = [];
-    let isFallback = false;
-    
-    if (filterVal === 'watched') {
-        pool = collection.filter(m => m.watchStatus === 'watched');
-        if (pool.length === 0) {
-            isFallback = true;
-            pool = featuredMovies.length > 0 ? featuredMovies : FALLBACK_POPULAR_MOVIES;
-        }
-    } else if (filterVal === 'watchlist') {
-        pool = collection.filter(m => m.watchStatus === 'watchlist' || m.watchStatus === 'watching');
-        if (pool.length === 0) {
-            isFallback = true;
-            pool = featuredMovies.length > 0 ? featuredMovies : FALLBACK_POPULAR_MOVIES;
-        }
-    } else {
-        pool = collection;
-        if (pool.length === 0) {
-            isFallback = true;
-            pool = featuredMovies.length > 0 ? featuredMovies : FALLBACK_POPULAR_MOVIES;
-        }
-    }
-    
-    const selectedMovie = pool[Math.floor(Math.random() * pool.length)];
-    if (!selectedMovie) return;
-    
-    rouletteSelectedMovieId = selectedMovie.id;
+    rouletteSelectedMovieId = rouletteSelectedMovie.id;
     SoundscapeEngine.playModalOpenSFX();
     
-    resultTitle.textContent = selectedMovie.title;
+    resultTitle.textContent = rouletteSelectedMovie.title;
     
-    let overview = selectedMovie.overview || 'ชะตากรรมนี้ช่างน่าสะพรึงกลัวจนไม่อาจเอ่ยปากบรรยายเรื่องย่อได้...';
-    if (isFallback && filterVal !== 'all') {
-        const typeText = filterVal === 'watched' ? 'ที่ดูแล้ว' : 'ที่อยากดู';
-        overview = `⚠️ (ไม่พบหนัง${typeText}ในคอลเล็กชันของคุณ ระบบจึงสุ่มจากหนังยอดนิยมแทน) 🩸\n\n` + overview;
+    const filterVal = filterSelect ? filterSelect.value : 'all';
+    let overview = rouletteSelectedMovie.overview || 'ชะตากรรมนี้ช่างน่าสะพรึงกลัวจนไม่อาจเอ่ยปากบรรยายเรื่องย่อได้...';
+    
+    if (rouletteSelectedMovie.isFallback) {
+        if (filterVal === 'online') {
+            overview = `⚠️ (เครือข่ายขัดข้อง ไม่สามารถดึงข้อมูลออนไลน์ได้ ระบบจึงสุ่มจากหนังแนะนำแทน) 🩸\n\n` + overview;
+        } else if (filterVal !== 'all') {
+            const typeText = filterVal === 'watched' ? 'ที่ดูแล้ว' : 'ที่อยากดู';
+            overview = `⚠️ (ไม่พบหนัง${typeText}ในคอลเล็กชันของคุณ ระบบจึงสุ่มจากหนังยอดนิยมแทน) 🩸\n\n` + overview;
+        }
+    } else if (filterVal === 'online') {
+        overview = `🌐 (สุ่มสำเร็จจากหนังสยองขวัญแนะนำทั้งหมดบน TMDB) 🩸\n\n` + overview;
     }
+    
     resultDesc.textContent = overview;
     
-    if (selectedMovie.poster_path) {
-        resultPoster.src = TMDB.getImageUrl(selectedMovie.poster_path, 'w92');
+    if (rouletteSelectedMovie.poster_path) {
+        resultPoster.src = TMDB.getImageUrl(rouletteSelectedMovie.poster_path, 'w92');
         resultPoster.style.display = 'block';
     } else {
         resultPoster.style.display = 'none';
@@ -4175,11 +5208,12 @@ async function revealRouletteResult() {
         newBtn.addEventListener('click', () => {
             const rouletteModal = document.getElementById('roulette-modal');
             if (rouletteModal) rouletteModal.classList.remove('active');
-            openMovieModal(selectedMovie.id);
+            openMovieModal(rouletteSelectedMovie.id);
         });
     }
 }
 
+// --- SPOOKY TAROT RECOMMENDATIONS LOGIC ---
 // --- SPOOKY TAROT RECOMMENDATIONS LOGIC ---
 const TAROT_CARDS = [
     // Slot 0: Vibe
@@ -4187,7 +5221,9 @@ const TAROT_CARDS = [
         { name: 'The Slasher (ฆาตกรสยอง)', icon: '🔪', vibe: 'slasher', desc: 'มีดสปาต้าที่สะท้อนแสงจันทร์... ค่ำคืนนี้จิตวิญญาณของคุณโหยหาการไล่ล่าและคราบเลือดกระเซ็น' },
         { name: 'The Spectre (วิญญาณหลอน)', icon: '👻', vibe: 'ghost', desc: 'เสียงกระซิบไร้ที่มาในความเงียบ... ค่ำคืนนี้บ้านผีสิงและวิญญาณพยาบาทจะตามรังควานคุณ' },
         { name: 'The Beast (อสูรกายกระหายเลือด)', icon: '👹', vibe: 'beast', desc: 'กรงเล็บและเขี้ยวแหลมคมในเงามืด... ค่ำคืนนี้คุณต้องเผชิญกับสัตว์ร้ายที่ไม่มีมนุษยธรรม' },
-        { name: 'The Occult (ลัทธิมรณะ)', icon: '🔮', vibe: 'occult', desc: 'สัญลักษณ์ดาวห้าแฉกและมนต์ดำ... ค่ำคืนนี้ปีศาจโบราณและการสิงสู่ทางจิตวิญญาณจะครอบงำคุณ' }
+        { name: 'The Occult (ลัทธิมรณะ)', icon: '🔮', vibe: 'occult', desc: 'สัญลักษณ์ดาวห้าแฉกและมนต์ดำ... ค่ำคืนนี้ปีศาจโบราณและการสิงสู่ทางจิตวิญญาณจะครอบงำคุณ' },
+        { name: 'The Curse (คำสาปมรณะ)', icon: '☠️', vibe: 'curse', desc: 'ค่ำคืนนี้จิตวิญญาณของคุณจมดิ่งในความสิ้นหวังของวัตถุต้องสาป วิดีโอมรณะ และคำสาปส่งต่อไม่สิ้นสุด' },
+        { name: 'The Madness (วิปลาสหลอนประสาท)', icon: '🧠', vibe: 'psychological', desc: 'จิตใจที่แตกเป็นเสี่ยงๆ... ค่ำคืนนี้ความหลอนแนวไซโควิทยาและการหักมุมจิตวิปริตจะเล่นงานสมองของคุณ' }
     ],
     // Slot 1: Era
     [
@@ -4200,11 +5236,44 @@ const TAROT_CARDS = [
     [
         { name: 'Survived (ผู้รอดชีวิต)', icon: '🟢', fate: 'survived', desc: 'ดวงชะตาแข็งแกร่ง คุณจะค้นพบแสงสว่างที่ปลายอุโมงค์ (แนะนำหนังเกรดดี คะแนนสูง 7+)' },
         { name: 'Deceased (เหยื่อสังเวย)', icon: '🔴', fate: 'deceased', desc: 'ชะตากรรมขาดสะบั้น คุณตกเป็นอาหารของความกลัว (แนะนำหนังบีเกรดสยองขวัญสุดโต่ง คะแนนต่ำกว่า 6)' },
-        { name: 'Possessed (ร่างทรงปีศาจ)', icon: '💀', fate: 'possessed', desc: 'จิตใจถูกแทรกซึมด้วยความคลั่ง คุณกลายเป็นผู้สืบทอดคำสาป (แนะนำหนังสไตล์ไซโค/หักมุม คะแนนปานกลาง 6-7)' }
+        { name: 'Possessed (ร่างทรงปีศาจ)', icon: '💀', fate: 'possessed', desc: 'จิตใจถูกแทรกซึมด้วยความคลั่ง คุณกลายเป็นผู้สืบทอดคำสาป (แนะนำหนังสไตล์ไซโค/หักมุม คะแนนปานกลาง 6-7)' },
+        { name: 'Cursed (ผู้ต้องคำสาปแช่ง)', icon: '🥀', fate: 'cursed', desc: 'ชะตาของคุณจะถูกดึงดูดเข้าสู่ห้วงลึกของความกดดันอันบิดเบี้ยว (แนะนำภาพยนตร์ที่น่าอึดอัด ชวนประสาทเสีย)' }
     ]
 ];
 
 let drawnTarotCards = [null, null, null];
+
+function updateTarotLunarPower() {
+    const phase = getSpookyMoonPhase();
+    const phaseNames = [
+        "จันทร์ดับมืดมิด (New Moon) 🌑",
+        "จันทร์เสี้ยวแรก (Waxing Crescent) 🌒",
+        "จันทร์ครึ่งดวงแรก (First Quarter) 🌓",
+        "จันทร์เกือบเพ็ญ (Waxing Gibbous) 🌔",
+        "จันทร์เพ็ญเต็มดวง (Full Moon) 🌕",
+        "จันทร์เสี้ยวข้างแรม (Waning Gibbous) 🌖",
+        "จันทร์ครึ่งดวงหลัง (Third Quarter) 🌗",
+        "จันทร์เสี้ยวสุดท้าย (Waning Crescent) 🌘"
+    ];
+    const spookyIndices = [95, 50, 65, 75, 99, 70, 60, 55];
+    
+    let phaseName = phaseNames[phase];
+    let index = spookyIndices[phase];
+    
+    if (phase === 4) {
+        const hr = new Date().getHours();
+        if (hr >= 18 || hr < 4) {
+            phaseName = "จันทร์โลหิตสีเลือด (Blood Moon) 🩸";
+            index = 100;
+        }
+    }
+    
+    const nameEl = document.getElementById('tarot-lunar-phase-name');
+    const valEl = document.getElementById('tarot-lunar-spooky-val');
+    
+    if (nameEl) nameEl.textContent = phaseName;
+    if (valEl) valEl.textContent = `${index}%`;
+}
 
 function handleTarotCardClick(cardIndex) {
     if (drawnTarotCards[cardIndex] !== null) return;
@@ -4252,7 +5321,7 @@ async function revealTarotPrediction() {
     if (!predictionTextEl || !resultBox || !suggestionsContainer || !revealBtn) return;
     
     revealBtn.disabled = true;
-    predictionTextEl.textContent = 'กำลังสื่อสารกับมิติลี้ลับเพื่อนำคำทำนายมาให้คุณ...';
+    predictionTextEl.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังสื่อสารกับมิติลี้ลับเพื่อนำคำทำนายมาให้คุณ...';
     resultBox.style.display = 'block';
     suggestionsContainer.innerHTML = '<div style="grid-column: span 3; text-align: center; padding: 1rem; color: var(--text-dark);"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังอัญเชิญคำแนะนำภาพยนตร์...</div>';
     
@@ -4260,8 +5329,78 @@ async function revealTarotPrediction() {
     const cardEra = drawnTarotCards[1];
     const cardFate = drawnTarotCards[2];
     
-    const prediction = `คุณจับได้ไพ่ ${cardVibe.name} จิตเบื้องลึกกำลังบ่งบอกว่า: "${cardVibe.desc}" ซึ่งสั่นพ้องกับประตูมิติเวลาของ ${cardEra.name}: "${cardEra.desc}" และผลลัพธ์ของโชคชะตาครั้งนี้สิ้นสุดที่ ${cardFate.name}: "${cardFate.desc}"`;
-    predictionTextEl.textContent = prediction;
+    const phase = getSpookyMoonPhase();
+    const phaseNames = [
+        "จันทร์ดับมืดมิด (New Moon)",
+        "จันทร์เสี้ยวแรก (Waxing Crescent)",
+        "จันทร์ครึ่งดวงแรก (First Quarter)",
+        "จันทร์เกือบเพ็ญ (Waxing Gibbous)",
+        "จันทร์เพ็ญเต็มดวง (Full Moon)",
+        "จันทร์เสี้ยวข้างแรม (Waning Gibbous)",
+        "จันทร์ครึ่งดวงหลัง (Third Quarter)",
+        "จันทร์เสี้ยวสุดท้าย (Waning Crescent)"
+    ];
+    const lunarInfluences = [
+        "ค่ำคืนนี้ตรงกับจันทร์ดับ พลังงานวิปริตอันหนาแน่นเหนี่ยวนำความมืดมิดและเรื่องลี้ลับลึกเกินหยั่งถึง!",
+        "พลังแห่งแสงจันทร์เสี้ยวแรกเฉือนขอบฟ้า เผยให้เห็นร่องรอยการหลั่งเลือดและการเอาชีวิตรอด!",
+        "ดวงจันทร์ครึ่งซีกกำลังดึงดูดวิญญาณคนบาปจากเงามืด ระวังภัยเร้นลับในมุมอับสายตา!",
+        "อิทธิพลของจันทร์เกือบเพ็ญแผ่กระจายขยายความคลั่ง ความวิปลาสทางจิตใจกำลังก่อตัว!",
+        "จันทร์เพ็ญเต็มดวงสว่างวาบขีดสุด! พลังความตายและคราบเลือดไหลนองสาดส่องชะตากรรมสยองขวัญ!",
+        "เศษเสี้ยวแรงดึงดูดช่วงจันทร์แรม คลื่นความกลัวและความกดดันก้าวเข้ามาครอบงำจิตวิญญาณ!",
+        "ครึ่งเดือนหลังแห่งการชำระบาป คืนนี้สัตว์ร้ายในเงามืดกำลังโหยหากลิ่นคาวเลือดของคุณ!",
+        "แสงจันทร์เสี้ยวสุดท้ายที่กำลังจะจางหาย... สัญญาณสุดท้ายเตือนให้ระวังความกลัวในจิตใจลึกสุดตัว!"
+    ];
+
+    let currentPhaseName = phaseNames[phase];
+    if (phase === 4) {
+        const hr = new Date().getHours();
+        if (hr >= 18 || hr < 4) {
+            currentPhaseName = "จันทร์โลหิตสีเลือด (Blood Moon) 🩸";
+        }
+    }
+    
+    const lunarInfluence = lunarInfluences[phase];
+    
+    const predictionHtml = `
+        <div style="margin-bottom: 1rem; border-bottom: 1px dashed rgba(139, 92, 246, 0.2); padding-bottom: 0.75rem;">
+            <span style="font-size: 0.75rem; color: #a78bfa; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 0.25rem;"><i class="fa-solid fa-moon"></i> อิทธิพลจากฤทธิ์จันทร์: ${currentPhaseName}</span>
+            <span style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4; display: block;">${lunarInfluence}</span>
+        </div>
+        <div>
+            <span style="font-size: 0.75rem; color: #c084fc; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 0.4rem;"><i class="fa-solid fa-wand-magic-sparkles"></i> คำทำนายการเปิดไพ่:</span>
+            <p style="font-size: 0.82rem; color: var(--text-primary); line-height: 1.5; margin: 0 0 0.5rem 0;">
+                คุณจับได้ไพ่ <strong>${cardVibe.name}</strong> ${cardVibe.icon} - "${cardVibe.desc}"
+            </p>
+            <p style="font-size: 0.82rem; color: var(--text-primary); line-height: 1.5; margin: 0 0 0.5rem 0;">
+                ซึ่งสั่นพ้องกับประตูมิติเวลาของ <strong>${cardEra.name}</strong> ${cardEra.icon} - "${cardEra.desc}"
+            </p>
+            <p style="font-size: 0.82rem; color: var(--text-primary); line-height: 1.5; margin: 0;">
+                และโชคชะตาครั้งนี้สิ้นสุดที่ <strong>${cardFate.name}</strong> ${cardFate.icon} - "${cardFate.desc}"
+            </p>
+        </div>
+    `;
+    predictionTextEl.innerHTML = predictionHtml;
+    
+    // Dynamic styling of resultBox based on drew cardVibe
+    if (cardVibe.vibe === 'slasher') {
+        resultBox.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+        resultBox.style.background = 'rgba(239, 68, 68, 0.08)';
+    } else if (cardVibe.vibe === 'ghost') {
+        resultBox.style.borderColor = 'rgba(59, 130, 246, 0.4)';
+        resultBox.style.background = 'rgba(59, 130, 246, 0.08)';
+    } else if (cardVibe.vibe === 'beast') {
+        resultBox.style.borderColor = 'rgba(249, 115, 22, 0.4)';
+        resultBox.style.background = 'rgba(249, 115, 22, 0.08)';
+    } else if (cardVibe.vibe === 'occult') {
+        resultBox.style.borderColor = 'rgba(139, 92, 246, 0.4)';
+        resultBox.style.background = 'rgba(139, 92, 246, 0.08)';
+    } else if (cardVibe.vibe === 'curse') {
+        resultBox.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+        resultBox.style.background = 'rgba(16, 185, 129, 0.08)';
+    } else if (cardVibe.vibe === 'psychological') {
+        resultBox.style.borderColor = 'rgba(236, 72, 153, 0.4)';
+        resultBox.style.background = 'rgba(236, 72, 153, 0.08)';
+    }
     
     const params = {
         with_genres: '27',
@@ -4272,6 +5411,8 @@ async function revealTarotPrediction() {
     else if (cardVibe.vibe === 'ghost') params.with_genres = '27,9648';
     else if (cardVibe.vibe === 'beast') params.with_genres = '27,878';
     else if (cardVibe.vibe === 'occult') params.with_genres = '27,14';
+    else if (cardVibe.vibe === 'curse') params.with_genres = '27,9648';
+    else if (cardVibe.vibe === 'psychological') params.with_genres = '27,53';
     
     if (cardEra.era === 'classic') {
         params['primary_release_date.lte'] = '1989-12-31';
@@ -4295,6 +5436,8 @@ async function revealTarotPrediction() {
             movies = movies.filter(m => m.vote_average < 6.0);
         } else if (cardFate.fate === 'possessed') {
             movies = movies.filter(m => m.vote_average >= 6.0 && m.vote_average < 7.0);
+        } else if (cardFate.fate === 'cursed') {
+            movies = movies.filter(m => m.vote_average >= 5.5 && m.vote_average < 6.8);
         }
         
         if (movies.length < 3) {
@@ -4518,4 +5661,825 @@ function saveMovieSurvivalLog() {
     checkBingoChallenges();
     
     alert('บันทึกชะตากรรมความสยองเรียบร้อยแล้ว! 🩸');
+}
+
+// --- HORROR QUIZ LOGIC ---
+const QUIZ_QUESTIONS = [
+    {
+        question: "1. คุณได้ยินเสียงแปลก ๆ จากห้องใต้ดินในบ้านร้างที่มาเที่ยวพักผ่อน คุณจะ...",
+        options: [
+            { text: "เดินลงไปดูพร้อมหยิบมีดสลักกล้วยไม้ติดมือไปด้วย", type: "skeptic" },
+            { text: "วิ่งขึ้นรถแล้วล็อคประตูสตาร์ทเครื่องยนต์ไว้ก่อนเลย", type: "final_girl" },
+            { text: "ตรวจสอบระบบสวิตช์ไฟและศึกษาโครงสร้างชั้นใต้ดินก่อนขยับตัว", type: "nerd" },
+            { text: "แสร้งยิ้มในเงามืดแล้วเดินไปดักรอคนอื่นที่หลังประตูห้องใต้ดิน", type: "secret_killer" }
+        ]
+    },
+    {
+        question: "2. ถ้าคุณต้องเลือกเพื่อนร่วมกลุ่มเพื่อหนีภัยซอมบี้คลั่ง 1 คน คุณจะเลือก...",
+        options: [
+            { text: "คนที่แข็งแกร่ง บ้าระห่ำ วิ่งเร็วที่สุด เพื่อเป็นโล่กำบัง", type: "skeptic" },
+            { text: "คนที่สุขุม เตรียมแผนสำรองเสมอ และรักกลุ่มรักพวกพ้อง", type: "final_girl" },
+            { text: "เพื่อนเนิร์ดที่พกคู่มือการเอาชีวิตรอดจากซอมบี้มาด้วย", type: "nerd" },
+            { text: "ไม่เลือกใครเลย ยิ่งเพื่อนร่วมทางน้อย อัตราการรอดและอาหารยิ่งเพิ่มขึ้น", type: "secret_killer" }
+        ]
+    },
+    {
+        question: "3. เมื่อฆาตกรสวมหน้ากากลึกลับโทรมาปั่นประสาทและตัดสายไฟบ้าน คุณจะ...",
+        options: [
+            { text: "ตะโกนด่าท้าทายผ่านโทรศัพท์แล้วเปิดประตูออกไปสู้ตรง ๆ", type: "skeptic" },
+            { text: "ปีนหน้าต่างหนีไปซ่อนตัวเงียบ ๆ ในโรงเก็บของด้านหลัง", type: "final_girl" },
+            { text: "รีบเช็คสัญญาณสื่อสารฉุกเฉินและพกอาวุธติดตัวทุกก้าว", type: "nerd" },
+            { text: "หาชุดคลุมสีดำแบบเดียวกันมาสวมแล้วยืนนิ่งรอฆาตกรเข้ามาหา", type: "secret_killer" }
+        ]
+    },
+    {
+        question: "4. อาวุธชิ้นใดที่คุณจะหยิบขึ้นมาใช้ชิ้นแรกในยามฉุกเฉิน?",
+        options: [
+            { text: "ท่อเหล็กขึ้นสนิมท่อนหนา ๆ หนัก ๆ ฟาดแรงดิบ", type: "skeptic" },
+            { text: "ไฟฉายกระบอกยาวและปืนลูกซองเก่าในตู้คุณพ่อ", type: "final_girl" },
+            { text: "บทสวดปีศาจขจัดวิญญาณ เกลือเม็ด และน้ำมนต์ศักดิ์สิทธิ์", type: "nerd" },
+            { text: "เลื่อยโซ่ไฟฟ้าแผดเสียงคลั่งหรือหน้าไม้ล่าสัตว์", type: "secret_killer" }
+        ]
+    },
+    {
+        question: "5. สำหรับคุณ อะไรคือสาเหตุที่คนส่วนใหญ่เอาตัวไม่รอดในหนังสยองขวัญ?",
+        options: [
+            { text: "ความซวย ดวงตก และไปเจอกับฆาตกรที่เก่งเกินไป", type: "skeptic" },
+            { text: "การแตกตื่น วิ่งกระจัดกระจาย และสะดุดล้มง่ายๆ ในฉากหนี", type: "final_girl" },
+            { text: "การฝ่าฝืนกฎ เช่น แยกย้ายกันค้นหา หรือท้าทายสิ่งลี้ลับ", type: "nerd" },
+            { text: "การไว้วางใจคนที่ยืนยิ้มแปลก ๆ ข้างกายมากเกินไป", type: "secret_killer" }
+        ]
+    }
+];
+
+let quizCurrentQuestionIndex = 0;
+let quizScores = { skeptic: 0, final_girl: 0, nerd: 0, secret_killer: 0 };
+let quizSelectedArchetype = "";
+
+function openQuizModal() {
+    resetQuizState();
+    if (quizModal) {
+        quizModal.classList.add('active');
+    }
+}
+
+function resetQuizState() {
+    quizCurrentQuestionIndex = 0;
+    quizScores = { skeptic: 0, final_girl: 0, nerd: 0, secret_killer: 0 };
+    quizSelectedArchetype = "";
+    
+    if (quizStartState) quizStartState.style.display = 'block';
+    if (quizQuestionsState) quizQuestionsState.style.display = 'none';
+    if (quizResultState) quizResultState.style.display = 'none';
+}
+
+function startHorrorQuiz() {
+    SoundscapeEngine.playClickSFX();
+    if (quizStartState) quizStartState.style.display = 'none';
+    if (quizQuestionsState) quizQuestionsState.style.display = 'block';
+    showQuizQuestion();
+}
+
+function showQuizQuestion() {
+    const qData = QUIZ_QUESTIONS[quizCurrentQuestionIndex];
+    if (!qData) return;
+    
+    if (quizProgressText) {
+        quizProgressText.textContent = `คำถามที่ ${quizCurrentQuestionIndex + 1}/${QUIZ_QUESTIONS.length}`;
+    }
+    if (quizProgressBar) {
+        const percent = ((quizCurrentQuestionIndex + 1) / QUIZ_QUESTIONS.length) * 100;
+        quizProgressBar.style.width = `${percent}%`;
+    }
+    if (quizQuestionText) {
+        quizQuestionText.textContent = qData.question;
+    }
+    
+    if (quizOptionsList) {
+        quizOptionsList.innerHTML = '';
+        qData.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'quiz-option';
+            btn.innerHTML = `<span style="color: #a16207; font-weight: 700; margin-right: 0.35rem;">${String.fromCharCode(65 + idx)}.</span> ${opt.text}`;
+            btn.addEventListener('click', () => handleQuizOptionSelect(opt.type));
+            quizOptionsList.appendChild(btn);
+        });
+    }
+}
+
+function handleQuizOptionSelect(type) {
+    SoundscapeEngine.playClickSFX();
+    quizScores[type]++;
+    
+    quizCurrentQuestionIndex++;
+    if (quizCurrentQuestionIndex < QUIZ_QUESTIONS.length) {
+        showQuizQuestion();
+    } else {
+        calculateQuizResult();
+    }
+}
+
+function calculateQuizResult() {
+    if (quizQuestionsState) quizQuestionsState.style.display = 'none';
+    if (quizResultState) quizResultState.style.display = 'block';
+    
+    // Find key with max score
+    let maxScore = -1;
+    let winner = "final_girl";
+    for (const type in quizScores) {
+        if (quizScores[type] > maxScore) {
+            maxScore = quizScores[type];
+            winner = type;
+        }
+    }
+    
+    quizSelectedArchetype = winner;
+    
+    let label = "";
+    if (winner === "final_girl") label = "ผู้รอดชีวิตคนสุดท้าย (The Final Girl)";
+    else if (winner === "nerd") label = "กูรูหนังสยอง (The Nerd)";
+    else if (winner === "skeptic") label = "เหยื่อรายแรก (The Skeptic)";
+    else if (winner === "secret_killer") label = "ฆาตกรที่ซ่อนอยู่ (The Secret Killer)";
+    
+    if (quizResultArchetype) {
+        quizResultArchetype.textContent = label;
+    }
+    
+    // Add special achievement flag
+    localStorage.setItem('challenge_quiz_done', 'true');
+    updateStatsDashboard();
+    checkBingoChallenges();
+    
+    renderQuizCardCanvas();
+}
+
+function renderQuizCardCanvas() {
+    if (!quizCardCanvas) return;
+    
+    const ctx = quizCardCanvas.getContext('2d');
+    const w = quizCardCanvas.width;
+    const h = quizCardCanvas.height;
+    
+    // Clean
+    ctx.fillStyle = '#0a0a0f';
+    ctx.fillRect(0, 0, w, h);
+    
+    // Draw blood splatters (abstract circle shadows)
+    ctx.fillStyle = 'rgba(161, 98, 7, 0.05)';
+    ctx.beginPath();
+    ctx.arc(80, 200, 100, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255, 0, 60, 0.04)';
+    ctx.beginPath();
+    ctx.arc(380, 100, 120, 0, Math.PI*2);
+    ctx.fill();
+    
+    // Draw gold borders
+    ctx.strokeStyle = '#a16207';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(10, 10, w - 20, h - 20);
+    
+    ctx.strokeStyle = 'rgba(161, 98, 7, 0.25)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(15, 15, w - 30, h - 30);
+    
+    // Header text
+    ctx.fillStyle = '#ff003c';
+    ctx.font = 'bold 11px Courier New';
+    ctx.fillText('MIDNIGHT SOCIETY PSYCHOLOGICAL PROFILE', 32, 42);
+    
+    // Divider
+    ctx.fillStyle = '#a16207';
+    ctx.fillRect(32, 50, w - 64, 2);
+    
+    // Archetype Title
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 20px "Outfit", "Inter", sans-serif';
+    
+    let title = "";
+    let descLine1 = "";
+    let descLine2 = "";
+    let quote = "";
+    
+    if (quizSelectedArchetype === "final_girl") {
+        title = "THE FINAL GIRL";
+        descLine1 = "คุณคือสัญลักษณ์แห่งความอยู่รอด มีสติ สุขุม และรักพวกพ้อง";
+        descLine2 = "คุณคอยประเมินความเสี่ยงและมีเจตจำนงรอดชีวิตสูงสุดเสมอ";
+        quote = '"ฉันจะอยู่เพื่อเล่าขานสิ่งที่เกิดขื้นในมืดมิด"';
+    } else if (quizSelectedArchetype === "nerd") {
+        title = "THE HORROR NERD";
+        descLine1 = "คุณรอบรู้ทุกกฎสัญชาตญาณของการเอาตัวรอดในภาพยนตร์ผี";
+        descLine2 = "คุณพึ่งพาหลักการ สถิติ และความจำเพื่อขจัดภัยพาลลี้ลับ";
+        quote = '"ข้อแรก ห้ามแยกจากกลุ่มเด็ดขาด... ถ้ายังไม่อยากตาย"';
+    } else if (quizSelectedArchetype === "skeptic") {
+        title = "THE SKEPTIC (FIRST VICTIM)";
+        descLine1 = "คุณคือคนใจถึง พึ่งพาแรงดิบ ไม่เชื่อเรื่องวิญญาณสยอง";
+        descLine2 = "แต่ความกล้าบ้าบิ่นไร้แผน มักนำคุณไปสู่ความตายคนแรก";
+        quote = '"มันก็แค่เสียงกิ่งไม้กระทบหน้าต่างน่า... จะกลัวทำไม"';
+    } else if (quizSelectedArchetype === "secret_killer") {
+        title = "THE SECRET KILLER";
+        descLine1 = "คุณฉลาดเป็นกรด แฝงตัวเงียบเชียบรอเวลาเผยโฉมเบื้องหลัง";
+        descLine2 = "แท้จริงแล้วเกมล่าวิปริตทั้งหมดในบ้านร้างนี้เป็นแผนของคุณ";
+        quote = '"ไม่มีใครหนีไปได้... เพราะฉันเป็นคนล็อคกุญแจโรงรถเอง"';
+    }
+    
+    ctx.fillText(title, 32, 85);
+    
+    // Subtext details
+    ctx.fillStyle = '#a16207';
+    ctx.font = 'bold 10px Courier New';
+    ctx.fillText('SUBJECT PROFILE (ชื่อผู้ทดสอบ):', 32, 122);
+    
+    // Owner name (defaults to settings-ticket-owner or 'LOUIS')
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 14px Courier New';
+    const ownerName = (localStorage.getItem('settings-ticket-owner') || 'LOUIS').toUpperCase();
+    ctx.fillText(ownerName, 32, 142);
+    
+    // Description text
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '12px "Inter", sans-serif';
+    ctx.fillText(descLine1, 32, 185);
+    ctx.fillText(descLine2, 32, 205);
+    
+    // Quote
+    ctx.fillStyle = '#ff003c';
+    ctx.font = 'italic 11px "Inter", sans-serif';
+    ctx.fillText(quote, 32, 240);
+    
+    // Spooky barcode details
+    ctx.fillStyle = '#ffffff';
+    const barcodeX = w - 150;
+    const barcodeY = h - 60;
+    const barcodeH = 26;
+    const barPattern = [1, 2, 1, 3, 2, 1, 4, 1, 2, 1, 3, 2, 1];
+    
+    let curX = barcodeX;
+    barPattern.forEach((widthVal, idx) => {
+        ctx.fillStyle = idx % 2 === 0 ? '#a16207' : 'transparent';
+        if (ctx.fillStyle !== 'transparent') {
+            ctx.fillRect(curX, barcodeY, widthVal, barcodeH);
+        }
+        curX += widthVal + 1;
+    });
+    
+    ctx.fillStyle = '#475569';
+    ctx.font = '6px Courier New';
+    ctx.fillText('DECISION-LOG: 99.666.13', w - 145, h - 25);
+}
+
+function downloadQuizCard() {
+    if (!quizCardCanvas) return;
+    
+    SoundscapeEngine.playClickSFX();
+    const link = document.createElement('a');
+    link.download = `horror_profile_${quizSelectedArchetype}.png`;
+    link.href = quizCardCanvas.toDataURL('image/png');
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// --- SPOOKY LUNAR ALMANAC LOGIC ---
+// Calculates moon phase based on current date
+function getSpookyMoonPhase() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
+    const day = today.getDate();
+    
+    let y = year;
+    let m = month;
+    if (m < 3) {
+        y--;
+        m += 12;
+    }
+    m++;
+    
+    const c = 365.25 * y;
+    const e = 30.6 * m;
+    let jd = c + e + day - 694039.09; // Days since epoch
+    jd /= 29.5305882; // Moon synodic cycle
+    const b = parseInt(jd, 10);
+    jd -= b;
+    
+    let phase = Math.round(jd * 8);
+    if (phase >= 8) phase = 0;
+    
+    // 0=New Moon, 1=Waxing Crescent, 2=First Quarter, 3=Waxing Gibbous, 
+    // 4=Full Moon, 5=Waning Gibbous, 6=Third Quarter, 7=Waning Crescent
+    return phase;
+}
+
+function openAlmanacModal() {
+    const phase = getSpookyMoonPhase();
+    
+    // Apply phase class on moon graphic
+    if (almanacMoonGraphic) {
+        almanacMoonGraphic.className = 'lunar-moon-body'; // Reset
+        almanacMoonGraphic.classList.add(`phase-${phase}`);
+        
+        // Full Moon has a 25% chance of being a Blood Moon (based on hours/minutes just for fun)
+        if (phase === 4) {
+            const hr = new Date().getHours();
+            if (hr >= 18 || hr < 4) { // Nighttime blood moon
+                almanacMoonGraphic.classList.add('blood-moon');
+            }
+        }
+    }
+    
+    let phaseName = "";
+    let index = 45;
+    let forecast = "";
+    let genres = "";
+    
+    switch (phase) {
+        case 0:
+            phaseName = "จันทร์ดับมืดมิด (New Moon)";
+            index = 95;
+            forecast = "ไร้ซึ่งแสงจันทร์ชี้ทาง ประตูมิติดำมืดถูกแง้มอ้า พลังมนต์ดำ ความมืดมิด และการสิงสู่ทางวิญญาณจะทวีความรุนแรงขีดสุด!";
+            genres = "👻 ภาพยนตร์แนววิญญาณหลอน (Ghost) / ลึกลับสืบสวน (Mystery) / แฟนตาซี (Fantasy)";
+            break;
+            
+        case 1:
+            phaseName = "จันทร์เสี้ยวแรก (Waxing Crescent)";
+            index = 50;
+            forecast = "เสี้ยวแสงดวงแรกสะท้อนภาพคมมีดในเงามืด ค่ำคืนนี้มีความเคลื่อนไหวแปลกๆ ในละแวกบ้าน ระวังเสียงเดินที่ระเบียงนอกห้อง!";
+            genres = "🔪 ภาพยนตร์แนวระทึกขวัญ (Thriller) / ฆาตกรไล่ล่า (Slasher)";
+            break;
+            
+        case 2:
+            phaseName = "จันทร์ครึ่งดวงแรก (First Quarter)";
+            index = 65;
+            forecast = "ดวงจันทร์ถูกผ่าครึ่ง สะท้อนชะตากรรมที่แตกแยกของผู้คน คำสาปแฝงเร้นในวัตถุโบราณกำลังเริ่มทำงาน!";
+            genres = "🔮 ภาพยนตร์แนวเหนือธรรมชาติ (Fantasy Horror) / มนต์ดำ";
+            break;
+            
+        case 3:
+            phaseName = "จันทร์เกือบเพ็ญ (Waxing Gibbous)";
+            index = 80;
+            forecast = "ดวงจันทร์ใกล้จะเต็มดวง พลังงานดิบและความคลั่งไคล้เริ่มพวยพุ่ง ค่ำคืนนี้จิตใจของผู้คนเปราะบางและสติหลุดลอยได้ง่าย";
+            genres = "🧬 ภาพยนตร์แนวสยองไซไฟ (Sci-Fi Horror) / จิตวิทยาปั่นประสาท";
+            break;
+            
+        case 4:
+            phaseName = "จันทร์เพ็ญเต็มดวง (Full Moon)";
+            // Check blood moon
+            const isBlood = almanacMoonGraphic && almanacMoonGraphic.classList.contains('blood-moon');
+            if (isBlood) {
+                phaseName = "จันทร์โลหิตราตรีวิปลาส (Blood Full Moon)";
+                index = 99;
+                forecast = "⚠️ ราตรีนี้โลหิตนองฟ้า! คืนผีเดือดระดับวิกฤตสูงสุด ความบ้าคลั่งของสัตว์ร้ายและฆาตกรสวมหน้ากากเพิ่มกำลังไร้ขีดจำกัด ห้ามออกนอกเคหสถานเด็ดขาด!";
+                genres = "🩸 ภาพยนตร์แนวโหดซาดิสต์ (Splatter) / อสูรกายกระหายเลือด (Beast)";
+            } else {
+                phaseName = "จันทร์เพ็ญสว่างจ้า (Full Moon)";
+                index = 90;
+                forecast = "แสงจันทร์สีทองแผ่ปกคลุมไปทั่ว ปลุกสัญชาตญาณสัตว์ป่าของอสูรกายให้ตื่นขึ้น เหล่าฆาตกรจิตวิปริตชอบล่าเหยื่อภายใต้ดวงจันทร์นี้";
+                genres = "👹 ภาพยนตร์แนวสัตว์ร้าย (Beast) / ฆาตกรไล่ล่า (Slasher)";
+            }
+            break;
+            
+        case 5:
+            phaseName = "จันทร์เกือบดับ (Waning Gibbous)";
+            index = 75;
+            forecast = "ดวงจันทร์กำลังแหว่งเว้า ความหวังริบหรี่ลงเรื่อย ๆ เหมาะสำหรับการดูหนังสไตล์เอาชีวิตรอดที่ตัวเอกต้องหนีสุดชีวิตในความมืด";
+            genres = "🏃 ภาพยนตร์แนวเอาชีวิตรอด (Survival) / ซอมบี้คลั่ง";
+            break;
+            
+        case 6:
+            phaseName = "จันทร์ครึ่งดวงหลัง (Third Quarter)";
+            index = 60;
+            forecast = "ความสมดุลกำลังจางหาย ความมืดคืบคลานเข้ายึดครองพื้นที่ลึกขึ้น มีสัญญาณวิทยุและคลื่นประหลาดแผ่ผ่านโทรทัศน์ในห้องนอน";
+            genres = "🛸 ภาพยนตร์แนวเอเลี่ยน/ไซไฟ (Sci-Fi Horror)";
+            break;
+            
+        case 7:
+            phaseName = "จันทร์เสี้ยวสุดท้าย (Waning Crescent)";
+            index = 55;
+            forecast = "เสี้ยวแสงสุดท้ายของวงรอบดาราศาสตร์ กำลังจะดับสิ้น อุณหภูมิลดฮวบลงเฉียบพลัน เสียงกระซิบและลมหนาวพัดโบกชวนหัวใจหยุดเต้น";
+            genres = "👻 ภาพยนตร์แนววิญญาณหลอน (Ghost) / สยองปนตลก (Comedy Horror)";
+            break;
+    }
+    
+    if (almanacMoonPhaseName) almanacMoonPhaseName.textContent = phaseName;
+    if (almanacSpookyIndexVal) almanacSpookyIndexVal.textContent = `${index}%`;
+    if (almanacSpookyIndexBar) almanacSpookyIndexBar.style.width = `${index}%`;
+    if (almanacForecastText) almanacForecastText.textContent = forecast;
+    if (almanacRecGenres) almanacRecGenres.textContent = genres;
+    
+    // Sync ambient light button text
+    const activeAmbient = localStorage.getItem('settings-lunar-ambient-active') === 'true';
+    updateLunarAmbientButtonUI(activeAmbient);
+    
+    if (almanacModal) {
+        almanacModal.classList.add('active');
+    }
+    
+    // Add challenge done
+    localStorage.setItem('challenge_almanac_done', 'true');
+    updateStatsDashboard();
+    checkBingoChallenges();
+}
+
+function updateLunarAmbientButtonUI(isActive) {
+    if (!almanacAmbientToggleBtn) return;
+    if (isActive) {
+        almanacAmbientToggleBtn.innerHTML = '<i class="fa-solid fa-lightbulb" style="color: var(--rating-star);"></i> ปิดใช้งานแสงจันทร์สลัว (Lunar Ambient On)';
+        almanacAmbientToggleBtn.style.background = 'linear-gradient(135deg, #7f1d1d, #450a0a)';
+    } else {
+        almanacAmbientToggleBtn.innerHTML = '<i class="fa-solid fa-lightbulb"></i> เปิดใช้งานแสงจันทร์สลัว (Lunar Ambient Off)';
+        almanacAmbientToggleBtn.style.background = 'linear-gradient(135deg, #1e293b, #0f172a)';
+    }
+}
+
+function toggleLunarAmbientLight() {
+    SoundscapeEngine.playClickSFX();
+    
+    const active = localStorage.getItem('settings-lunar-ambient-active') === 'true';
+    const nextState = !active;
+    
+    localStorage.setItem('settings-lunar-ambient-active', nextState ? 'true' : 'false');
+    updateLunarAmbientButtonUI(nextState);
+    applyLunarAmbientToBody(nextState);
+    updateStatsDashboard();
+}
+
+function applyLunarAmbientToBody(isActive) {
+    document.body.classList.remove('lunar-ambient-crimson', 'lunar-ambient-indigo');
+    
+    if (isActive) {
+        const phase = getSpookyMoonPhase();
+        // New Moon (0), Waxing Gibbous (3), Full Moon (4) yokes crimson light
+        if (phase === 0 || phase === 3 || phase === 4) {
+            document.body.classList.add('lunar-ambient-crimson');
+        } else {
+            document.body.classList.add('lunar-ambient-indigo');
+        }
+    }
+}
+
+// Auto-run ambient light initialization on script load
+const initLunarAmbient = localStorage.getItem('settings-lunar-ambient-active') === 'true';
+applyLunarAmbientToBody(initLunarAmbient);
+
+
+// --- MIDNIGHT TRIVIA GAME SYSTEM ---
+const TRIVIA_DATABASE = [
+    {
+        emoji: "📞 🔪 😱",
+        riddle: "โทรศัพท์ลึกลับ หน้ากากผี และกฎเหล็กของการเอาชีวิตรอดในหนังสยองขวัญ",
+        year: "1996",
+        choices: ["Scream", "I Know What You Did Last Summer", "Halloween", "Friday the 13th"],
+        answer: "Scream"
+    },
+    {
+        emoji: "🪓 🚪 ❄️",
+        riddle: "พ่อผู้บ้าคลั่ง ขวานจามประตูยักษ์ และโรงแรมร้างกลางพายุหิมะสุดเยือกเย็น",
+        year: "1980",
+        choices: ["The Shining", "Misery", "Psycho", "The Evil Dead"],
+        answer: "The Shining"
+    },
+    {
+        emoji: "🚿 🔪 🏨",
+        riddle: "ฉากอาบน้ำในตำนาน เสียงกรีดร้องสั้น ๆ และโรงแรมริมทางของเบตส์",
+        year: "1960",
+        choices: ["Psycho", "Peeping Tom", "The Birds", "Repulsion"],
+        answer: "Psycho"
+    },
+    {
+        emoji: "☕ 🥄 👁️",
+        riddle: "ถ้วยน้ำชา เสียงช้อนกระทบแก้วแกว่งไกว และการสะกดจิตจมสู่ห้วงลึกไร้ก้นบึ้ง",
+        year: "2017",
+        choices: ["Get Out", "Us", "Midsommar", "The Skeleton Key"],
+        answer: "Get Out"
+    },
+    {
+        emoji: "👏 🪑 👻",
+        riddle: "เสียงตบมือลึกลับสองครั้งในความมืด เก้าอี้โยกไม้สั่น และบ้านไร่ผีสิงในโรดไอส์แลนด์",
+        year: "2013",
+        choices: ["The Conjuring", "Insidious", "Annabelle", "Sinister"],
+        answer: "The Conjuring"
+    },
+    {
+        emoji: "🎈 🤡 ⛵",
+        riddle: "ลูกโป่งสีแดงลอยล่องลอย ตัวตลกในท่อระบายน้ำ และเรือกระดาษสีขาวของหนูน้อยจอร์จี้",
+        year: "2017",
+        choices: ["IT", "Poltergeist", "Zombieland", "Clown"],
+        answer: "IT"
+    },
+    {
+        emoji: "🪚 🐷 🚲",
+        riddle: "เลื่อยตัดเหล็ก ตุ๊กตาแก้มแดงแกะสลักปั่นสามล้อ และเกมที่ต้องเฉือนอวัยวะเพื่อมีชีวิตรอด",
+        year: "2004",
+        choices: ["Saw", "Hostel", "Seven", "Cube"],
+        answer: "Saw"
+    },
+    {
+        emoji: "🤮 🟢 ⛪",
+        riddle: "เด็กสาวนอนหัวหมุนได้รอบทิศ อ้วกสีเขียวพุ่งพล่าน และการขับไล่ปีศาจโดยบาทหลวงชรา",
+        year: "1973",
+        choices: ["The Exorcist", "The Omen", "Rosemary's Baby", "The Rite"],
+        answer: "The Exorcist"
+    },
+    {
+        emoji: "🤫 👂 👽",
+        riddle: "จงเงียบเสียงไว้ เสียงกระซิบก็อาจถึงฆาต และอสูรกายต่างดาวที่ล่าล้างเผ่าพันธุ์ด้วยคลื่นการได้ยิน",
+        year: "2018",
+        choices: ["A Quiet Place", "Bird Box", "Don't Breathe", "The Silence"],
+        answer: "A Quiet Place"
+    },
+    {
+        emoji: "👅 🐦 👑",
+        riddle: "เสียงเดาะลิ้นที่เป็นเอกลักษณ์ หัวนกพิราบขาดกระเด็น และความสยองทางกรรมพันธุ์ของสายเลือดแกรแฮม",
+        year: "2018",
+        choices: ["Hereditary", "Midsommar", "The Witch", "The Babadook"],
+        answer: "Hereditary"
+    },
+    {
+        emoji: "🎃 🔪 🧑‍🔧",
+        riddle: "หน้ากากสีขาวไร้อารมณ์ คืนวันปล่อยผีตุลา และการไล่ล่าที่ไม่เคยหยุดวิ่งของฆาตกรเงียบ",
+        year: "1978",
+        choices: ["Halloween", "Friday the 13th", "A Nightmare on Elm Street", "Scream"],
+        answer: "Halloween"
+    },
+    {
+        emoji: "🏒 🏕️ 🪓",
+        riddle: "หน้ากากฮอกกี้เหล็ก ค่ายพักร้อนทะเลสาบคริสตัลเลค และความแค้นของลูกชายที่ไม่มีวันจมน้ำตาย",
+        year: "1980",
+        choices: ["Friday the 13th", "Halloween", "The Texas Chain Saw Massacre", "Sleepaway Camp"],
+        answer: "Friday the 13th"
+    },
+    {
+        emoji: "💤 🧤 👕",
+        riddle: "ถุงมือใบมีดคมกริบ เสื้อยืดขนสัตว์ลายขวางสีแดงสลับเขียว และการจู่โจมสังหารในฝันร้าย",
+        year: "1984",
+        choices: ["A Nightmare on Elm Street", "Child's Play", "Scream", "Candyman"],
+        answer: "A Nightmare on Elm Street"
+    },
+    {
+        emoji: "🪚 🥩 🏠",
+        riddle: "เสียงเครื่องยนต์เลื่อยโซ่สั่นสะเทือน หน้ากากประกอบขึ้นจากผิวหนังเหยื่อ และบ้านกินเนื้อคนแดนใต้",
+        year: "1974",
+        choices: ["The Texas Chain Saw Massacre", "Leatherface", "The Hills Have Eyes", "Wrong Turn"],
+        answer: "The Texas Chain Saw Massacre"
+    },
+    {
+        emoji: "🧸 🔪 ⚡",
+        riddle: "ตุ๊กตาเด็กน้อยแสนดีกู้ดกายส์สวมวิญญาณฆาตกรสิงสู และประโยคทักทายคลาสสิก 'สวัสดี ฉันชัคกี้'",
+        year: "1988",
+        choices: ["Child's Play", "Puppet Master", "Dead Silence", "Annabelle"],
+        answer: "Child's Play"
+    }
+];
+
+function openTriviaModal() {
+    resetTriviaState();
+    if (triviaModal) {
+        triviaModal.classList.add('active');
+    }
+}
+
+function closeTriviaModal() {
+    if (triviaTimerInterval) {
+        clearInterval(triviaTimerInterval);
+        triviaTimerInterval = null;
+    }
+    if (triviaModal) {
+        triviaModal.classList.remove('active');
+    }
+}
+
+function resetTriviaState() {
+    triviaCurrentQuestions = [];
+    triviaCurrentIndex = 0;
+    triviaLives = 3;
+    triviaTimeRemaining = 15;
+    if (triviaTimerInterval) {
+        clearInterval(triviaTimerInterval);
+        triviaTimerInterval = null;
+    }
+    triviaIsProcessingAnswer = false;
+    
+    if (triviaStartState) triviaStartState.style.display = 'block';
+    if (triviaGameplayState) triviaGameplayState.style.display = 'none';
+    if (triviaResultState) triviaResultState.style.display = 'none';
+}
+
+function startTriviaGame() {
+    SoundscapeEngine.playClickSFX();
+    
+    // Shuffle and pick 5 questions from database
+    const shuffled = [...TRIVIA_DATABASE].sort(() => Math.random() - 0.5);
+    triviaCurrentQuestions = shuffled.slice(0, 5);
+    
+    triviaCurrentIndex = 0;
+    triviaLives = 3;
+    triviaIsProcessingAnswer = false;
+    
+    if (triviaStartState) triviaStartState.style.display = 'none';
+    if (triviaGameplayState) triviaGameplayState.style.display = 'block';
+    if (triviaResultState) triviaResultState.style.display = 'none';
+    
+    updateLivesUI();
+    showTriviaQuestion();
+}
+
+function updateLivesUI() {
+    if (!triviaLivesContainer) return;
+    triviaLivesContainer.innerHTML = '';
+    for (let i = 0; i < 3; i++) {
+        const drop = document.createElement('i');
+        drop.className = 'fa-solid fa-droplet animate-pulse';
+        if (i >= triviaLives) {
+            drop.classList.add('lost');
+        }
+        triviaLivesContainer.appendChild(drop);
+    }
+}
+
+function showTriviaQuestion() {
+    if (triviaCurrentIndex >= triviaCurrentQuestions.length) {
+        endTriviaGame(true); // Win!
+        return;
+    }
+    
+    const qData = triviaCurrentQuestions[triviaCurrentIndex];
+    if (!qData) return;
+    
+    triviaIsProcessingAnswer = false;
+    
+    if (triviaProgressText) {
+        triviaProgressText.textContent = `คำถามที่ ${triviaCurrentIndex + 1}/${triviaCurrentQuestions.length}`;
+    }
+    if (triviaEmojiClue) {
+        triviaEmojiClue.textContent = qData.emoji;
+    }
+    if (triviaRiddleText) {
+        triviaRiddleText.textContent = qData.riddle;
+    }
+    if (triviaYearHint) {
+        triviaYearHint.textContent = `ปีที่ฉาย: ${qData.year}`;
+    }
+    
+    if (triviaOptionsList) {
+        triviaOptionsList.innerHTML = '';
+        
+        // Shuffle choices for the current question
+        const choices = [...qData.choices].sort(() => Math.random() - 0.5);
+        
+        choices.forEach((choice) => {
+            const btn = document.createElement('button');
+            btn.className = 'trivia-choice-btn';
+            btn.textContent = choice;
+            btn.addEventListener('click', () => {
+                if (triviaIsProcessingAnswer) return;
+                handleTriviaAnswer(btn, choice, qData.answer);
+            });
+            triviaOptionsList.appendChild(btn);
+        });
+    }
+    
+    startQuestionTimer();
+}
+
+function startQuestionTimer() {
+    if (triviaTimerInterval) {
+        clearInterval(triviaTimerInterval);
+    }
+    
+    triviaTimeRemaining = 15;
+    if (triviaTimerBar) {
+        triviaTimerBar.style.width = '100%';
+    }
+    
+    let tickCount = 0;
+    
+    triviaTimerInterval = setInterval(() => {
+        triviaTimeRemaining -= 0.1;
+        if (triviaTimeRemaining <= 0) {
+            clearInterval(triviaTimerInterval);
+            triviaTimerInterval = null;
+            handleTriviaTimeout();
+        } else {
+            if (triviaTimerBar) {
+                const percent = (triviaTimeRemaining / 15) * 100;
+                triviaTimerBar.style.width = `${percent}%`;
+            }
+            
+            // Heartbeat ticker sound acceleration when timer runs low
+            tickCount++;
+            if (triviaTimeRemaining <= 5 && tickCount % 5 === 0) { // faster tick rate
+                SoundscapeEngine.playHeartbeatSFX(1.8, 0.7);
+            } else if (tickCount % 10 === 0) { // normal heartbeat every 1 second
+                SoundscapeEngine.playHeartbeatSFX(1.0, 0.4);
+            }
+        }
+    }, 100);
+}
+
+function handleTriviaAnswer(selectedBtn, selectedVal, correctVal) {
+    clearInterval(triviaTimerInterval);
+    triviaTimerInterval = null;
+    triviaIsProcessingAnswer = true;
+    
+    // Disable all options
+    const btns = triviaOptionsList.querySelectorAll('.trivia-choice-btn');
+    btns.forEach(btn => btn.disabled = true);
+    
+    if (selectedVal === correctVal) {
+        selectedBtn.classList.add('correct');
+        SoundscapeEngine.playClickSFX();
+        
+        setTimeout(() => {
+            triviaCurrentIndex++;
+            showTriviaQuestion();
+        }, 1500);
+    } else {
+        selectedBtn.classList.add('incorrect');
+        // Find correct button and highlight it
+        btns.forEach(btn => {
+            if (btn.textContent === correctVal) {
+                btn.classList.add('correct');
+            }
+        });
+        
+        // Play slasher knife sound for feedback
+        SoundscapeEngine.playKnifeSlashSFX();
+        
+        triviaLives--;
+        updateLivesUI();
+        
+        setTimeout(() => {
+            if (triviaLives <= 0) {
+                endTriviaGame(false);
+            } else {
+                triviaCurrentIndex++;
+                showTriviaQuestion();
+            }
+        }, 1500);
+    }
+}
+
+function handleTriviaTimeout() {
+    triviaIsProcessingAnswer = true;
+    
+    // Disable all options
+    const btns = triviaOptionsList.querySelectorAll('.trivia-choice-btn');
+    btns.forEach(btn => btn.disabled = true);
+    
+    // Highlight correct answer
+    const qData = triviaCurrentQuestions[triviaCurrentIndex];
+    btns.forEach(btn => {
+        if (btn.textContent === qData.answer) {
+            btn.classList.add('correct');
+        }
+    });
+    
+    // Play slasher knife sound
+    SoundscapeEngine.playKnifeSlashSFX();
+    
+    triviaLives--;
+    updateLivesUI();
+    
+    setTimeout(() => {
+        if (triviaLives <= 0) {
+            endTriviaGame(false);
+        } else {
+            triviaCurrentIndex++;
+            showTriviaQuestion();
+        }
+    }, 1500);
+}
+
+function endTriviaGame(isVictory) {
+    if (triviaTimerInterval) {
+        clearInterval(triviaTimerInterval);
+        triviaTimerInterval = null;
+    }
+    
+    if (triviaGameplayState) triviaGameplayState.style.display = 'none';
+    if (triviaResultState) triviaResultState.style.display = 'block';
+    
+    if (isVictory) {
+        if (triviaResultIcon) triviaResultIcon.textContent = '🏆';
+        if (triviaResultTitle) triviaResultTitle.textContent = 'ผู้รอบรู้คู่วิปลาส!';
+        if (triviaResultDesc) {
+            triviaResultDesc.innerHTML = `ยินดีด้วยคนจิตแข็ง! คุณตอบคำถามถูกต้องครบทั้งหมด 5 ข้ออย่างสวยงามวิปลาส ได้รอดพ้นจากนรกคืนหลอนนี้อย่างสมบูรณ์แบบ!<br><br><span style="color: var(--rating-star); font-weight: 700;"><i class="fa-solid fa-trophy"></i> ปลดล็อกถ้วยรางวัล "ผู้รอบรู้คู่วิปลาส" ในห้องเกียรติยศแล้ว!</span>`;
+        }
+        
+        localStorage.setItem('challenge_trivia_perfect', 'true');
+        updateStatsDashboard();
+        checkBingoChallenges();
+        
+        SoundscapeEngine.playEvilLaughSFX();
+    } else {
+        if (triviaResultIcon) triviaResultIcon.textContent = '💀';
+        if (triviaResultTitle) triviaResultTitle.textContent = 'วิญญาณดับสูญ...';
+        if (triviaResultDesc) {
+            triviaResultDesc.textContent = `หยดเลือดของคุณแห้งเหือดไปจนหมดชะตากรรม... คุณไม่สามารถเอาตัวรอดจากการถาม-ตอบนี้ได้ ลองท้าทายใหม่อีกครั้งเพื่อพิสูจน์ความจำสยองขวัญของคุณ!`;
+        }
+        
+        SoundscapeEngine.playLowDroneSFX();
+    }
 }

@@ -61,6 +61,8 @@ window.HorrorStorage = {
             review: movieData.review || '',
             imdbRating: movieData.imdbRating || null,
             rtRating: movieData.rtRating || null,
+            survivalStatus: movieData.survivalStatus || 'none',
+            survivalNote: movieData.survivalNote || '',
             updatedAt: new Date().toISOString()
         };
 
