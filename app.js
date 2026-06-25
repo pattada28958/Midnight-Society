@@ -92,6 +92,49 @@ const FALLBACK_POPULAR_MOVIES = [
     }
 ];
 
+const PUBLIC_DOMAIN_MOVIES = [
+    {
+        id: 198,
+        title: "Nosferatu",
+        thaiTitle: "นอสเฟอราตู: ตำนานแวมไพร์รายแรก",
+        year: 1922,
+        duration: "1 ชั่วโมง 34 นาที",
+        description: "ภาพยนตร์แวมไพร์เงียบระดับตำนานดัดแปลงจากดราคูลา นำเสนอภาพลักษณ์แวมไพร์ที่ผอมโซ ซีดเซียว และน่าสยดสยองที่สุดชิ้นหนึ่งในประวัติศาสตร์ภาพยนตร์โลก",
+        videoUrl: "https://www.youtube.com/embed/FC6jVamE4BY",
+        rating: "7.9"
+    },
+    {
+        id: 10331,
+        title: "Night of the Living Dead",
+        thaiTitle: "ซากดิบเคี้ยวคน",
+        year: 1968,
+        duration: "1 ชั่วโมง 36 นาที",
+        description: "จุดเริ่มต้นของซอมบี้ยุคใหม่โดย George A. Romero เมื่อผู้คนหนีตายเข้าไปขังตัวเองในบ้านร้างท่ามกลางฝูงคนตายที่ฟื้นคืนชีพขึ้นมารุมทึ้งเนื้อสดๆ",
+        videoUrl: "https://www.youtube.com/embed/5g83DsswKQA",
+        rating: "7.8"
+    },
+    {
+        id: 203,
+        title: "The Cabinet of Dr. Caligari",
+        thaiTitle: "ห้องตู้ของดร. คาลิการี",
+        year: 1920,
+        duration: "1 ชั่วโมง 17 นาที",
+        description: "ภาพยนตร์สยองขวัญเงียบแนวเยอรมันเอ็กซ์เพรสชันนิสม์ เล่าเรื่องราวนักสะกดจิตวิปริตที่ใช้คนเดินละเมอไปก่อคดีฆาตกรรม",
+        videoUrl: "https://www.youtube.com/embed/AP3S51L24BY",
+        rating: "8.0"
+    },
+    {
+        id: 32724,
+        title: "White Zombie",
+        thaiTitle: "พิศวาสซอมบี้",
+        year: 1932,
+        duration: "1 ชั่วโมง 9 นาที",
+        description: "ภาพยนตร์ซอมบี้เรื่องแรกของโลก นำแสดงโดย Bela Lugosi เล่าเรื่องราวนายแพทย์มนต์ดำแห่งเฮติที่เปลี่ยนหญิงสาวให้กลายเป็นทาสไร้วิญญาณ",
+        videoUrl: "https://www.youtube.com/embed/41X1W-nQxoc",
+        rating: "6.3"
+    }
+];
+
 const HORROR_FRANCHISES = [
     {
         id: "conjuring",
@@ -458,6 +501,16 @@ const charactersGrid = document.getElementById('characters-grid');
 const tabFinalGirls = document.getElementById('tab-finalgirls');
 const finalgirlsTabContainer = document.getElementById('finalgirls-tab-container');
 const finalgirlsGrid = document.getElementById('finalgirls-grid');
+const tabCinema = document.getElementById('tab-cinema');
+const cinemaTabContainer = document.getElementById('cinema-tab-container');
+const cinemaHeroWrapper = document.getElementById('cinema-hero-wrapper');
+const cinemaMovieGrid = document.getElementById('cinema-movie-grid');
+const cinemaPlayerModal = document.getElementById('cinema-player-modal');
+const cinemaPlayerCloseBtn = document.getElementById('cinema-player-close-btn');
+const cinemaVideoIframe = document.getElementById('cinema-video-iframe');
+const cinemaPlayerTitle = document.getElementById('cinema-player-title');
+const cinemaPlayerMeta = document.getElementById('cinema-player-meta');
+const cinemaPlayerDesc = document.getElementById('cinema-player-desc');
 const createPlaylistBtn = document.getElementById('create-playlist-btn');
 const playlistModal = document.getElementById('playlist-modal');
 const playlistCloseBtn = document.getElementById('playlist-close-btn');
@@ -824,6 +877,7 @@ function setupEventListeners() {
     if (tabPlaylists) tabPlaylists.addEventListener('click', () => switchTab('playlists'));
     if (tabCharacters) tabCharacters.addEventListener('click', () => switchTab('characters'));
     if (tabFinalGirls) tabFinalGirls.addEventListener('click', () => switchTab('finalgirls'));
+    if (tabCinema) tabCinema.addEventListener('click', () => switchTab('cinema'));
     tabDiscover.addEventListener('click', () => switchTab('discover'));
 
     // Search trigger
@@ -858,6 +912,13 @@ function setupEventListeners() {
     movieDetailModal.addEventListener('click', (e) => {
         if (e.target === movieDetailModal) closeMovieModal();
     });
+
+    if (cinemaPlayerCloseBtn && cinemaPlayerModal) {
+        cinemaPlayerCloseBtn.addEventListener('click', closeCinemaPlayer);
+        cinemaPlayerModal.addEventListener('click', (e) => {
+            if (e.target === cinemaPlayerModal) closeCinemaPlayer();
+        });
+    }
 
     // Trailer Modal triggers
     modalTrailerBtn.addEventListener('click', playMovieTrailer);
@@ -1275,6 +1336,7 @@ function switchTab(tabName, preserveDiscoverCategory = false) {
     if (tabPlaylists) tabPlaylists.classList.toggle('active', activeTab === 'playlists');
     if (tabCharacters) tabCharacters.classList.toggle('active', activeTab === 'characters');
     if (tabFinalGirls) tabFinalGirls.classList.toggle('active', activeTab === 'finalgirls');
+    if (tabCinema) tabCinema.classList.toggle('active', activeTab === 'cinema');
     tabDiscover.classList.toggle('active', activeTab === 'discover');
 
     // Reset controls input values on tab switch
@@ -1299,6 +1361,7 @@ function switchTab(tabName, preserveDiscoverCategory = false) {
     if (franchisesTabContainer) franchisesTabContainer.style.display = 'none';
     if (charactersTabContainer) charactersTabContainer.style.display = 'none';
     if (finalgirlsTabContainer) finalgirlsTabContainer.style.display = 'none';
+    if (cinemaTabContainer) cinemaTabContainer.style.display = 'none';
     if (heroBanner) heroBanner.style.display = 'none';
     if (statsPanel) statsPanel.style.display = 'none';
     if (horrorActionsRow) horrorActionsRow.style.display = 'none';
@@ -1337,6 +1400,9 @@ function switchTab(tabName, preserveDiscoverCategory = false) {
     } else if (activeTab === 'finalgirls') {
         if (finalgirlsTabContainer) finalgirlsTabContainer.style.display = 'block';
         renderFinalGirls();
+    } else if (activeTab === 'cinema') {
+        if (cinemaTabContainer) cinemaTabContainer.style.display = 'block';
+        renderCinemaTab();
     } else if (activeTab === 'discover') {
         if (controlPanel) {
             controlPanel.style.display = 'flex';
@@ -1661,12 +1727,12 @@ async function fetchAndRenderDiscover() {
                 sectionTitle.innerHTML = `<i class="fa-solid fa-ghost"></i> ค้นพบภาพยนตร์ตามตัวเลือกของคุณ`;
                 
                 const discoverParams = {
-                    with_genres: '27',
+                    with_genres: TMDB.HORROR_GENRE_ID,
                     page: discoverPage
                 };
                 
                 if (genreFilter.value) {
-                    discoverParams.with_genres = `27,${genreFilter.value}`;
+                    discoverParams.with_genres = `${TMDB.HORROR_GENRE_ID},${genreFilter.value}`;
                 }
                 
                 if (yearFilter.value) {
@@ -1730,7 +1796,7 @@ async function fetchAndRenderDiscover() {
             else if (discoverCategory) {
                 const todayStr = new Date().toISOString().split('T')[0];
                 let params = {
-                    with_genres: '27',
+                    with_genres: TMDB.HORROR_GENRE_ID,
                     page: discoverPage
                 };
                 
@@ -1747,7 +1813,7 @@ async function fetchAndRenderDiscover() {
                     sectionTitle.innerHTML = `<i class="fa-solid fa-ghost text-danger"></i> ภาพยนตร์ หลอนฮิตแนะนำ (Popular Hits) <button class="btn-primary" id="clear-discover-category-btn" style="padding: 0.3rem 0.60rem; font-size: 0.75rem; border-radius: 6px; margin-left: 0.75rem; box-shadow: none; width: fit-content; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-solid fa-arrow-left"></i> ย้อนกลับ</button>`;
                 } else if (discoverCategory === 'all_horror') {
                     params.sort_by = 'popularity.desc';
-                    sectionTitle.innerHTML = `<i class="fa-solid fa-skull-crossbones text-danger"></i> หนังสยองขวัญทั้งหมด (All Horror) <button class="btn-primary" id="clear-discover-category-btn" style="padding: 0.3rem 0.60rem; font-size: 0.75rem; border-radius: 6px; margin-left: 0.75rem; box-shadow: none; width: fit-content; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-solid fa-arrow-left"></i> ย้อนกลับ</button>`;
+                    sectionTitle.innerHTML = `<i class="fa-solid fa-skull-crossbones text-danger"></i> ภาพยนตร์ทั้งหมด (All Horror & Thriller) <button class="btn-primary" id="clear-discover-category-btn" style="padding: 0.3rem 0.60rem; font-size: 0.75rem; border-radius: 6px; margin-left: 0.75rem; box-shadow: none; width: fit-content; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-solid fa-arrow-left"></i> ย้อนกลับ</button>`;
                 }
                 
                 const response = await TMDB.fetchFromTMDB('/discover/movie', params);
@@ -5039,6 +5105,157 @@ async function loadFinalGirlCardImage(char) {
     }
 }
 
+// --- RENDER MIDNIGHT CINEMA TAB & VIDEO PLAYER ---
+async function renderCinemaTab() {
+    if (!cinemaHeroWrapper || !cinemaMovieGrid) return;
+    
+    cinemaHeroWrapper.innerHTML = '<div style="padding: 3rem; color: var(--text-dark);"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังเตรียมโรงหนัง...</div>';
+    cinemaMovieGrid.innerHTML = '';
+    
+    try {
+        // Render all movie cards in the grid
+        for (const movie of PUBLIC_DOMAIN_MOVIES) {
+            const card = document.createElement('div');
+            card.className = 'movie-card';
+            card.style.aspectRatio = '2/3.3'; // Consistent with default movie cards
+            
+            // Temporary loading innerHTML
+            card.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #0c0c10; color: var(--text-dark);">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                </div>
+            `;
+            cinemaMovieGrid.appendChild(card);
+            
+            // Asynchronously fetch details for each card
+            TMDB.getMovieDetails(movie.id).then(details => {
+                const posterUrl = TMDB.getImageUrl(details.poster_path, 'w342');
+                const voteAverage = details.vote_average ? details.vote_average.toFixed(1) : movie.rating;
+                
+                card.innerHTML = `
+                    <img class="movie-poster" src="${posterUrl}" alt="${movie.thaiTitle}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0;">
+                    <div class="cinema-card-play-overlay">
+                        <div class="play-icon-circle"><i class="fa-solid fa-play"></i></div>
+                    </div>
+                    <div class="card-badges" style="z-index: 4;">
+                        <span class="rating-badge"><i class="fa-solid fa-star"></i> TMDB ${voteAverage}</span>
+                    </div>
+                    <div class="movie-details" style="z-index: 4; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 70%, rgba(0,0,0,0) 100%);">
+                        <h4 class="movie-title-card" style="font-size: 0.85rem; color: #fff; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0.2rem;">${movie.thaiTitle}</h4>
+                        <div class="movie-meta-details" style="font-size: 0.7rem; color: var(--text-secondary);">${movie.year} | ${movie.duration}</div>
+                    </div>
+                `;
+                
+                card.addEventListener('click', () => {
+                    SoundscapeEngine.playClickSFX();
+                    openCinemaPlayer(movie.id);
+                });
+            }).catch(err => {
+                console.error("Failed to load TMDB details for cinema movie ID " + movie.id, err);
+                const fallbackPoster = 'https://images.unsplash.com/photo-1509248961158-e54f6934749c?q=80&w=500&auto=format&fit=crop';
+                card.innerHTML = `
+                    <img class="movie-poster" src="${fallbackPoster}" alt="${movie.thaiTitle}">
+                    <div class="cinema-card-play-overlay">
+                        <div class="play-icon-circle"><i class="fa-solid fa-play"></i></div>
+                    </div>
+                    <div class="card-badges">
+                        <span class="rating-badge"><i class="fa-solid fa-star"></i> TMDB ${movie.rating}</span>
+                    </div>
+                    <div class="movie-details">
+                        <h4 class="movie-title-card">${movie.thaiTitle}</h4>
+                        <div class="movie-meta-details">${movie.year} | ${movie.duration}</div>
+                    </div>
+                `;
+                card.addEventListener('click', () => {
+                    SoundscapeEngine.playClickSFX();
+                    openCinemaPlayer(movie.id);
+                });
+            });
+        }
+        
+        // Render Featured Movie Billboard
+        const featuredMovie = PUBLIC_DOMAIN_MOVIES[0];
+        const featuredDetails = await TMDB.getMovieDetails(featuredMovie.id);
+        const featuredBackdrop = TMDB.getImageUrl(featuredDetails.backdrop_path, 'original');
+        const featuredRating = featuredDetails.vote_average ? featuredDetails.vote_average.toFixed(1) : featuredMovie.rating;
+        
+        cinemaHeroWrapper.style.backgroundImage = `url('${featuredBackdrop}')`;
+        cinemaHeroWrapper.innerHTML = `
+            <div class="cinema-hero-overlay"></div>
+            <div class="cinema-hero-content">
+                <div class="hero-tagline" style="font-size: 0.78rem; text-transform: uppercase; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.5rem; letter-spacing: 1px;">
+                    <i class="fa-solid fa-fire text-danger animate-pulse"></i> ภาพยนตร์คลาสสิกแนะนำประจำสัปดาห์
+                </div>
+                <h1 class="hero-title" style="font-size: 2.2rem; color: #fff; font-weight: 800; font-family: 'Outfit', sans-serif; text-transform: uppercase; margin-bottom: 0.5rem; text-shadow: 0 0 20px rgba(229, 9, 20, 0.6);">${featuredMovie.thaiTitle}</h1>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem; display: flex; gap: 0.75rem; align-items: center; font-weight: 500;">
+                    <span><i class="fa-regular fa-calendar"></i> ${featuredMovie.year}</span> | 
+                    <span><i class="fa-regular fa-clock"></i> ${featuredMovie.duration}</span> | 
+                    <span class="meta-rating" style="background: rgba(229, 9, 20, 0.15); border-color: rgba(229, 9, 20, 0.3); color: var(--primary); padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.75rem;"><i class="fa-solid fa-star"></i> TMDB ${featuredRating}</span>
+                </p>
+                <p class="hero-description" style="-webkit-line-clamp: 3; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; font-size: 0.85rem; line-height: 1.55; color: var(--text-secondary); margin-bottom: 1.25rem; max-width: 580px;">${featuredMovie.description}</p>
+                <button class="cinema-hero-play-btn" id="cinema-featured-watch-btn">
+                    <i class="fa-solid fa-play"></i> รับชมภาพยนตร์เต็มเรื่อง
+                </button>
+            </div>
+        `;
+        
+        document.getElementById('cinema-featured-watch-btn').addEventListener('click', () => {
+            SoundscapeEngine.playClickSFX();
+            openCinemaPlayer(featuredMovie.id);
+        });
+
+    } catch (e) {
+        console.error("Failed to render cinema tab content", e);
+        cinemaHeroWrapper.innerHTML = '<div style="padding: 3rem; color: var(--text-secondary); text-align: center;"><i class="fa-solid fa-wifi-slash"></i> ไม่สามารถเชื่อมต่อกับหอภาพยนตร์ออนไลน์ได้ชั่วคราว ลองใหม่อีกครั้งในภายหลังครับ 🩸</div>';
+    }
+}
+
+function openCinemaPlayer(movieId) {
+    const movie = PUBLIC_DOMAIN_MOVIES.find(m => m.id === movieId);
+    if (!movie) return;
+    
+    // Set text contents
+    if (cinemaPlayerTitle) cinemaPlayerTitle.textContent = movie.thaiTitle;
+    if (cinemaPlayerDesc) cinemaPlayerDesc.textContent = movie.description;
+    
+    // Set meta tags
+    if (cinemaPlayerMeta) {
+        cinemaPlayerMeta.innerHTML = `
+            <span><i class="fa-regular fa-calendar"></i> ${movie.year}</span> | 
+            <span><i class="fa-regular fa-clock"></i> ${movie.duration}</span>
+        `;
+    }
+    
+    // Load YouTube video with Closed Captions forced in Thai
+    if (cinemaVideoIframe) {
+        const videoUrlWithCC = `${movie.videoUrl}?autoplay=1&hl=th&cc_lang_pref=th&cc_load_policy=1&rel=0`;
+        cinemaVideoIframe.src = videoUrlWithCC;
+    }
+    
+    // Open modal
+    if (cinemaPlayerModal) {
+        cinemaPlayerModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeCinemaPlayer() {
+    // Clear iframe src to stop video playing
+    if (cinemaVideoIframe) {
+        cinemaVideoIframe.src = '';
+    }
+    
+    // Close modal
+    if (cinemaPlayerModal) {
+        cinemaPlayerModal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+window.openCinemaPlayer = openCinemaPlayer;
+window.closeCinemaPlayer = closeCinemaPlayer;
+window.renderCinemaTab = renderCinemaTab;
+
 // --- RENDER HORROR FRANCHISES CHECKLIST TRACKER ---
 function showFranchisesListView() {
     activeFranchiseId = null;
@@ -6007,7 +6224,7 @@ async function revealTarotPrediction() {
     }
     
     const params = {
-        with_genres: '27',
+        with_genres: TMDB.HORROR_GENRE_ID,
         page: 1
     };
     

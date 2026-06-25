@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Midnight Society - คอลเล็กชันหนังสยองขวัญส่วนตัว</title>
+    <title>Midnight Society - คอลเล็กชันภาพยนตร์สยองขวัญและระทึกขวัญ</title>
     
     <!-- FontAwesome for spooky and clean icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,25 +24,28 @@
             
             <nav>
                 <button class="nav-tab active" id="tab-home" data-tab="home">
-                    <i class="fa-solid fa-house"></i> หน้าหลัก
+                    <i class="fa-solid fa-house"></i> <span class="tab-text">หน้าหลัก</span>
                 </button>
                 <button class="nav-tab" id="tab-discover" data-tab="discover">
-                    <i class="fa-solid fa-magnifying-glass"></i> ค้นหา
+                    <i class="fa-solid fa-magnifying-glass"></i> <span class="tab-text">ค้นหา</span>
                 </button>
                 <button class="nav-tab" id="tab-collection" data-tab="collection">
-                    <i class="fa-solid fa-film"></i> คอลเล็กชัน
+                    <i class="fa-solid fa-film"></i> <span class="tab-text">คอลเล็กชัน</span>
                 </button>
                 <button class="nav-tab" id="tab-franchises" data-tab="franchises">
-                    <i class="fa-solid fa-clapperboard"></i> มหากาพย์หลอน
+                    <i class="fa-solid fa-clapperboard"></i> <span class="tab-text">มหากาพย์หลอน</span>
                 </button>
                 <button class="nav-tab" id="tab-playlists" data-tab="playlists">
-                    <i class="fa-solid fa-skull"></i> เพลย์ลิสต์
+                    <i class="fa-solid fa-skull"></i> <span class="tab-text">เพลย์ลิสต์</span>
                 </button>
                 <button class="nav-tab" id="tab-characters" data-tab="characters">
-                    <i class="fa-solid fa-mask"></i> ฆาตกร
+                    <i class="fa-solid fa-mask"></i> <span class="tab-text">ฆาตกร</span>
                 </button>
                 <button class="nav-tab" id="tab-finalgirls" data-tab="finalgirls">
-                    <i class="fa-solid fa-shield-halved"></i> Final Girls
+                    <i class="fa-solid fa-shield-halved"></i> <span class="tab-text">Final Girls</span>
+                </button>
+                <button class="nav-tab" id="tab-cinema" data-tab="cinema">
+                    <i class="fa-solid fa-ticket"></i> <span class="tab-text">โรงหนังหลอน</span>
                 </button>
             </nav>
             
@@ -332,7 +335,7 @@
                     </div>
                     <div class="slider-section">
                         <div class="slider-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                            <h3 class="slider-title" style="margin-bottom: 0;"><i class="fa-solid fa-skull-crossbones text-danger"></i> หนังสยองขวัญทั้งหมด (All Horror)</h3>
+                            <h3 class="slider-title" style="margin-bottom: 0;"><i class="fa-solid fa-skull-crossbones text-danger"></i> ภาพยนตร์ทั้งหมด (All Horror & Thriller)</h3>
                             <button class="view-all-link-btn" data-category="all_horror"><i class="fa-solid fa-eye"></i> ดูทั้งหมด <i class="fa-solid fa-chevron-right"></i></button>
                         </div>
                         <div class="slider-container" id="slider-all-horror"></div>
@@ -390,6 +393,19 @@
                     <h3 class="slider-title" style="margin-bottom: 1.5rem;"><i class="fa-solid fa-shield-halved text-success"></i> ทำเนียบผู้รอดชีวิตคนสุดท้าย (Final Girls)</h3>
                     <div class="characters-grid" id="finalgirls-grid">
                         <!-- Final Girls dynamically loaded here -->
+                    </div>
+                </div>
+
+                <!-- Midnight Cinema Tab Container -->
+                <div id="cinema-tab-container" style="display: none;">
+                    <div class="cinema-hero-wrapper" id="cinema-hero-wrapper">
+                        <!-- Dynamic Shudder-style billboard banner loaded here -->
+                    </div>
+                    <div class="cinema-list-section">
+                        <h3 class="slider-title" style="margin-bottom: 1.5rem;"><i class="fa-solid fa-clapperboard text-danger"></i> โรงภาพยนตร์คลาสสิกรัตติกาล (Classic Masterpieces)</h3>
+                        <div class="movie-grid" id="cinema-movie-grid">
+                            <!-- Classic movies dynamically loaded here -->
+                        </div>
                     </div>
                 </div>
 
@@ -561,7 +577,7 @@
 
         <!-- FOOTER -->
         <footer>
-            <p>จัดทำโดยคนรักหนังสยองขวัญ By LOUIS and LILY 🩸 | ดึงข้อมูลภาพยนตร์โดย <a href="https://www.themoviedb.org" target="_blank">The Movie Database (TMDB) API</a></p>
+            <p>จัดทำโดยคนรักหนังสยองขวัญและระทึกขวัญ By LOUIS and LILY 🩸 | ดึงข้อมูลภาพยนตร์โดย <a href="https://www.themoviedb.org" target="_blank">The Movie Database (TMDB) API</a></p>
         </footer>
 
     </div>
@@ -1293,6 +1309,33 @@
                             </button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CINEMATIC VIDEO PLAYER MODAL -->
+    <div class="modal-overlay" id="cinema-player-modal" style="z-index: 4000;">
+        <div class="modal-content" style="max-width: 900px; background: #000; border-color: rgba(229, 9, 20, 0.2); box-shadow: 0 0 50px rgba(229, 9, 20, 0.15); padding: 0; overflow: hidden; border-radius: 16px;">
+            <button class="modal-close-btn" id="cinema-player-close-btn" title="ปิดโรงภาพยนตร์" style="z-index: 10;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="cinema-player-body">
+                <!-- Video player iframe container (Responsive 16:9 ratio) -->
+                <div class="video-ratio-container" style="position: relative; width: 100%; padding-top: 56.25%; background: #000; border-bottom: 1px solid rgba(229, 9, 20, 0.1);">
+                    <iframe id="cinema-video-iframe" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                </div>
+                <div class="cinema-movie-info" style="padding: 1.5rem 2rem; background: #08080c; text-align: left;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h2 id="cinema-player-title" style="font-size: 1.6rem; color: #fff; font-family: 'Outfit', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 10px rgba(229, 9, 20, 0.4); margin-bottom: 0.35rem;">-</h2>
+                            <p id="cinema-player-meta" style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.5rem; display: flex; gap: 0.75rem; align-items: center;"></p>
+                        </div>
+                        <div id="subtitles-status-indicator" style="font-size: 0.75rem; background: rgba(229, 9, 20, 0.08); padding: 0.4rem 0.75rem; border-radius: 8px; border: 1px solid rgba(229, 9, 20, 0.25); display: flex; align-items: center; gap: 0.4rem; color: var(--text-primary);">
+                            <i class="fa-solid fa-closed-captioning" style="color: var(--primary);"></i> ซับไทย (เปิดใช้งานอัตโนมัติ 🩸)
+                        </div>
+                    </div>
+                    <p id="cinema-player-desc" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin-top: 0.5rem;"></p>
                 </div>
             </div>
         </div>

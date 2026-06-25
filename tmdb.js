@@ -8,7 +8,7 @@ const BASE_URL = 'https://api.themoviedb.org/3';
 const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p';
 
 window.HorrorTMDB = {
-    HORROR_GENRE_ID: 27,
+    HORROR_GENRE_ID: '27|53',
     
     // Mapping of sub-genres (TMDB genre IDs that commonly overlap with horror)
     SUB_GENRES: {
@@ -84,9 +84,9 @@ window.HorrorTMDB = {
             page: page
         });
 
-        // Filter results to only keep movies that belong to the Horror genre (ID: 27)
+        // Filter results to only keep movies that belong to the Horror (27) or Thriller (53) genre
         results.results = results.results.filter(movie => 
-            movie.genre_ids && movie.genre_ids.includes(this.HORROR_GENRE_ID)
+            movie.genre_ids && (movie.genre_ids.includes(27) || movie.genre_ids.includes(53))
         );
 
         return results;
