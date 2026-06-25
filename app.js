@@ -1203,7 +1203,7 @@ function setupEventListeners() {
             const category = viewAllBtn.dataset.category;
             discoverCategory = category;
             discoverPage = 1;
-            switchTab('discover');
+            switchTab('discover', true);
             
             // Scroll to results cleanly
             document.querySelector('main').scrollIntoView({ behavior: 'smooth' });
@@ -1257,8 +1257,14 @@ function setupEventListeners() {
 }
 
 // --- TAB NAVIGATION ---
-function switchTab(tabName) {
-    if (activeTab === tabName) return;
+function switchTab(tabName, preserveDiscoverCategory = false) {
+    if (activeTab === tabName) {
+        if (tabName === 'discover' && preserveDiscoverCategory) {
+            discoverPage = 1;
+            fetchAndRenderDiscover();
+        }
+        return;
+    }
     
     activeTab = tabName;
     
@@ -1279,7 +1285,10 @@ function switchTab(tabName) {
     yearFilter.value = '';
     countryFilter.value = '';
     if (watchStatusFilter) watchStatusFilter.value = '';
-    discoverCategory = null;
+    
+    if (!preserveDiscoverCategory) {
+        discoverCategory = null;
+    }
     
     // Adjust Sort Option for Collection vs Discover
     const sortOptLatest = document.getElementById('sort-opt-latest');
@@ -2550,7 +2559,7 @@ function openExportGuideModal() {
         const manualBox = document.getElementById('manual-copy-box');
         if (manualBox) manualBox.style.display = 'none';
         
-        modal.style.display = 'flex';
+        modal.classList.add('active');
         document.body.style.overflow = 'hidden';
     } else {
         console.error('export-guide-modal not found in DOM');
@@ -2560,7 +2569,7 @@ function openExportGuideModal() {
 function closeExportGuideModal() {
     const modal = document.getElementById('export-guide-modal');
     if (modal) {
-        modal.style.display = 'none';
+        modal.classList.remove('active');
         document.body.style.overflow = '';
     }
 }
