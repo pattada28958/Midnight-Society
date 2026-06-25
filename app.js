@@ -1367,6 +1367,7 @@ function switchTab(tabName, preserveDiscoverCategory = false) {
     // Adjust Sort Option for Collection vs Discover
     const sortOptLatest = document.getElementById('sort-opt-latest');
     const sortOptPersonal = document.getElementById('sort-opt-personal');
+    const sortOptPersonalAsc = document.getElementById('sort-opt-personal-asc');
     
     // Reset all layouts to hidden by default
     if (playlistsTabContainer) playlistsTabContainer.style.display = 'none';
@@ -1395,6 +1396,7 @@ function switchTab(tabName, preserveDiscoverCategory = false) {
             controlPanel.style.display = 'flex';
             if (sortOptLatest) sortOptLatest.style.display = 'block';
             if (sortOptPersonal) sortOptPersonal.style.display = 'block';
+            if (sortOptPersonalAsc) sortOptPersonalAsc.style.display = 'block';
         }
         sortFilter.value = 'latest_added';
         if (gridModeContainer) gridModeContainer.style.display = 'block';
@@ -1420,6 +1422,7 @@ function switchTab(tabName, preserveDiscoverCategory = false) {
             controlPanel.style.display = 'flex';
             if (sortOptLatest) sortOptLatest.style.display = 'none';
             if (sortOptPersonal) sortOptPersonal.style.display = 'none';
+            if (sortOptPersonalAsc) sortOptPersonalAsc.style.display = 'none';
         }
         sortFilter.value = 'tmdb_desc'; // Default TMDB sort
         if (gridModeContainer) gridModeContainer.style.display = 'block';
@@ -1558,11 +1561,19 @@ function sortMovies(movies, sortBy) {
             
             case 'title_asc':
                 return titleA.localeCompare(titleB, 'th');
+
+            case 'title_desc':
+                return titleB.localeCompare(titleA, 'th');
                 
             case 'personal_desc':
                 const ratingA = a.personalRating !== null ? a.personalRating : -1;
                 const ratingB = b.personalRating !== null ? b.personalRating : -1;
                 return ratingB - ratingA;
+
+            case 'personal_asc':
+                const rA = a.personalRating !== null ? a.personalRating : 99;
+                const rB = b.personalRating !== null ? b.personalRating : 99;
+                return rA - rB;
                 
             case 'tmdb_desc':
                 return (b.vote_average || 0) - (a.vote_average || 0);
@@ -1686,203 +1697,190 @@ function renderMyCollection() {
 async function fetchAndRenderDiscover() {
     const hasFilters = genreFilter.value || yearFilter.value || countryFilter.value;
     
-    // If a search query is active OR filters are active OR a category view-all is active, we display in Grid mode
-    if (currentSearchQuery || hasFilters || discoverCategory) {
-        slidersModeContainer.style.display = 'none';
-        gridModeContainer.style.display = 'block';
+    // Always display in Grid mode on Discover tab
+    slidersModeContainer.style.display = 'none';
+    gridModeContainer.style.display = 'block';
+    
+    movieGrid.innerHTML = '<div class="empty-state"><i class="fa-solid fa-circle-notch fa-spin"></i><h3>กำลังค้นหาขุมทรัพย์ความสยอง...</h3></div>';
+    
+    try {
+        let discoverMovies = [];
+        let totalPages = 1;
         
-        movieGrid.innerHTML = '<div class="empty-state"><i class="fa-solid fa-circle-notch fa-spin"></i><h3>กำลังค้นหาขุมทรัพย์ความสยอง...</h3></div>';
-        
-        try {
-            let discoverMovies = [];
-            let totalPages = 1;
+        // Scenario A: Search query is active (we use search API + client-side filters)
+        if (currentSearchQuery) {
+            const response = await TMDB.searchHorrorMovies(currentSearchQuery, discoverPage);
+            sectionTitle.innerHTML = `<i class="fa-solid fa-ghost"></i> ผลลัพธ์การค้นหาสำหรับ "${currentSearchQuery}"`;
             
-            // Scenario A: Search query is active (we use search API + client-side filters)
-            if (currentSearchQuery) {
-                const response = await TMDB.searchHorrorMovies(currentSearchQuery, discoverPage);
-                sectionTitle.innerHTML = `<i class="fa-solid fa-ghost"></i> ผลลัพธ์การค้นหาสำหรับ "${currentSearchQuery}"`;
-                
-                let results = response.results || [];
-                
-                // Apply sub-genre filter client-side
-                if (genreFilter.value) {
-                    const reqGenreId = parseInt(genreFilter.value, 10);
-                    results = results.filter(movie => 
-                        movie.genre_ids && movie.genre_ids.includes(reqGenreId)
-                    );
-                }
-                
-                // Apply year filter client-side
-                if (yearFilter.value) {
-                    results = results.filter(movie => 
-                        matchesYearFilter(movie.release_date, yearFilter.value)
-                    );
-                }
-                
-                // Apply country filter client-side
-                if (countryFilter.value) {
-                    results = results.filter(movie => {
-                        const langMap = { TH: 'th', US: 'en', JP: 'ja', KR: 'ko', GB: 'en', ES: 'es' };
-                        const reqLang = langMap[countryFilter.value];
-                        if (countryFilter.value === 'OTHER') {
-                            return !['th', 'en', 'ja', 'ko', 'es'].includes(movie.original_language);
-                        }
-                        return movie.original_language === reqLang;
-                    });
-                }
-                
-                discoverMovies = results;
-                totalPages = Math.min(response.total_pages || 1, 500);
-            } 
-            // Scenario B: No search query, but filters are active (we query discover API directly with filters)
-            else if (hasFilters) {
-                sectionTitle.innerHTML = `<i class="fa-solid fa-ghost"></i> ค้นพบภาพยนตร์ตามตัวเลือกของคุณ`;
-                
-                const discoverParams = {
-                    with_genres: TMDB.HORROR_GENRE_ID,
-                    page: discoverPage
-                };
-                
-                if (genreFilter.value) {
-                    discoverParams.with_genres = `${TMDB.HORROR_GENRE_ID},${genreFilter.value}`;
-                }
-                
-                if (yearFilter.value) {
-                    const yearVal = yearFilter.value;
-                    if (yearVal === '2020') {
-                        discoverParams['primary_release_date.gte'] = '2020-01-01';
-                    } else if (yearVal === '2010') {
-                        discoverParams['primary_release_date.gte'] = '2010-01-01';
-                        discoverParams['primary_release_date.lte'] = '2019-12-31';
-                    } else if (yearVal === '2000') {
-                        discoverParams['primary_release_date.gte'] = '2000-01-01';
-                        discoverParams['primary_release_date.lte'] = '2009-12-31';
-                    } else if (yearVal === '1990') {
-                        discoverParams['primary_release_date.gte'] = '1990-01-01';
-                        discoverParams['primary_release_date.lte'] = '1999-12-31';
-                    } else if (yearVal === '1980') {
-                        discoverParams['primary_release_date.gte'] = '1980-01-01';
-                        discoverParams['primary_release_date.lte'] = '1989-12-31';
-                    } else if (yearVal === '1970') {
-                        discoverParams['primary_release_date.gte'] = '1970-01-01';
-                        discoverParams['primary_release_date.lte'] = '1979-12-31';
-                    } else if (yearVal === '1960') {
-                        discoverParams['primary_release_date.lte'] = '1969-12-31';
-                    }
-                }
-                
-                if (countryFilter.value) {
-                    const countryVal = countryFilter.value;
-                    if (countryVal !== 'OTHER') {
-                        discoverParams.with_origin_country = countryVal;
-                    }
-                }
-                
-                if (sortFilter.value) {
-                    const sortVal = sortFilter.value;
-                    if (sortVal === 'tmdb_desc') {
-                        discoverParams.sort_by = 'popularity.desc';
-                    } else if (sortVal === 'year_desc') {
-                        discoverParams.sort_by = 'primary_release_date.desc';
-                    } else if (sortVal === 'year_asc') {
-                        discoverParams.sort_by = 'primary_release_date.asc';
-                    }
-                }
-                
-                const response = await TMDB.fetchFromTMDB('/discover/movie', discoverParams);
-                let results = response.results || [];
-                
-                // If country is OTHER, filter client-side
-                if (countryFilter.value === 'OTHER') {
-                    results = results.filter(movie => {
-                        const majorCountries = ['TH', 'US', 'JP', 'KR', 'GB', 'ES'];
-                        const originCountries = movie.origin_country || [];
-                        return !originCountries.some(c => majorCountries.includes(c.toUpperCase()));
-                    });
-                }
-                
-                discoverMovies = results;
-                totalPages = Math.min(response.total_pages || 1, 500);
-            }
-            // Scenario C: Category "View All" is active
-            else if (discoverCategory) {
-                const todayStr = new Date().toISOString().split('T')[0];
-                let params = {
-                    with_genres: TMDB.HORROR_GENRE_ID,
-                    page: discoverPage
-                };
-                
-                if (discoverCategory === 'trending') {
-                    params.sort_by = 'popularity.desc';
-                    sectionTitle.innerHTML = `<i class="fa-solid fa-fire-flame-curved text-danger"></i> ภาพยนตร์ มาแรงยามค่ำคืน (Trending Now) <button class="btn-primary" id="clear-discover-category-btn" style="padding: 0.3rem 0.60rem; font-size: 0.75rem; border-radius: 6px; margin-left: 0.75rem; box-shadow: none; width: fit-content; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-solid fa-arrow-left"></i> ย้อนกลับ</button>`;
-                } else if (discoverCategory === 'upcoming') {
-                    params['primary_release_date.gte'] = todayStr;
-                    params.sort_by = 'primary_release_date.asc';
-                    sectionTitle.innerHTML = `<i class="fa-solid fa-hourglass-half text-danger"></i> ภาพยนตร์ เร็ว ๆ นี้ยามค่ำคืน (Upcoming Horror) <button class="btn-primary" id="clear-discover-category-btn" style="padding: 0.3rem 0.60rem; font-size: 0.75rem; border-radius: 6px; margin-left: 0.75rem; box-shadow: none; width: fit-content; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-solid fa-arrow-left"></i> ย้อนกลับ</button>`;
-                } else if (discoverCategory === 'popular') {
-                    params['vote_count.gte'] = 100;
-                    params.sort_by = 'vote_average.desc';
-                    sectionTitle.innerHTML = `<i class="fa-solid fa-ghost text-danger"></i> ภาพยนตร์ หลอนฮิตแนะนำ (Popular Hits) <button class="btn-primary" id="clear-discover-category-btn" style="padding: 0.3rem 0.60rem; font-size: 0.75rem; border-radius: 6px; margin-left: 0.75rem; box-shadow: none; width: fit-content; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-solid fa-arrow-left"></i> ย้อนกลับ</button>`;
-                } else if (discoverCategory === 'all_horror') {
-                    params.sort_by = 'popularity.desc';
-                    sectionTitle.innerHTML = `<i class="fa-solid fa-skull-crossbones text-danger"></i> ภาพยนตร์ทั้งหมด (All Horror & Thriller) <button class="btn-primary" id="clear-discover-category-btn" style="padding: 0.3rem 0.60rem; font-size: 0.75rem; border-radius: 6px; margin-left: 0.75rem; box-shadow: none; width: fit-content; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-solid fa-arrow-left"></i> ย้อนกลับ</button>`;
-                }
-                
-                const response = await TMDB.fetchFromTMDB('/discover/movie', params);
-                discoverMovies = response.results || [];
-                totalPages = Math.min(response.total_pages || 1, 500);
+            let results = response.results || [];
+            
+            // Apply sub-genre filter client-side
+            if (genreFilter.value) {
+                const reqGenreId = parseInt(genreFilter.value, 10);
+                results = results.filter(movie => 
+                    movie.genre_ids && movie.genre_ids.includes(reqGenreId)
+                );
             }
             
-            movieGrid.innerHTML = '';
-            discoverMoviesList = discoverMovies;
-            discoverTotalPages = totalPages;
-            
-            if (discoverMovies.length === 0) {
-                renderEmptyState('ไม่พบผลลัพธ์จาก TMDB ลองค้นหาชื่ออื่นๆ หรือเปลี่ยนตัวกรอง');
-                paginationContainer.style.display = 'none';
-                return;
+            // Apply year filter client-side
+            if (yearFilter.value) {
+                results = results.filter(movie => 
+                    matchesYearFilter(movie.release_date, yearFilter.value)
+                );
             }
             
-            discoverMovies.forEach(movie => {
-                const savedRecord = Storage.getMovieFromCollection(movie.id);
-                const card = createMovieCard(savedRecord || movie, !!savedRecord);
-                movieGrid.appendChild(card);
-            });
-            
-            paginationContainer.style.display = 'flex';
-            pageNumberLabel.textContent = `หน้า ${discoverPage} / ${discoverTotalPages}`;
-            prevPageBtn.disabled = discoverPage <= 1;
-            nextPageBtn.disabled = discoverPage >= discoverTotalPages;
-            
-            // Bind back button
-            const clearBtn = document.getElementById('clear-discover-category-btn');
-            if (clearBtn) {
-                clearBtn.addEventListener('click', () => {
-                    discoverCategory = null;
-                    discoverPage = 1;
-                    fetchAndRenderDiscover();
+            // Apply country filter client-side
+            if (countryFilter.value) {
+                results = results.filter(movie => {
+                    const langMap = { TH: 'th', US: 'en', JP: 'ja', KR: 'ko', GB: 'en', ES: 'es' };
+                    const reqLang = langMap[countryFilter.value];
+                    if (countryFilter.value === 'OTHER') {
+                        return !['th', 'en', 'ja', 'ko', 'es'].includes(movie.original_language);
+                    }
+                    return movie.original_language === reqLang;
                 });
             }
-        } catch (e) {
-            console.error(e);
-            renderEmptyState('เกิดข้อผิดพลาดในการโหลดผลการค้นหา');
-            paginationContainer.style.display = 'none';
+            
+            discoverMovies = results;
+            totalPages = Math.min(response.total_pages || 1, 500);
+        } 
+        // Scenario B: Category "View All" is active
+        else if (discoverCategory) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            let params = {
+                with_genres: TMDB.HORROR_GENRE_ID,
+                page: discoverPage
+            };
+            
+            if (discoverCategory === 'trending') {
+                params.sort_by = 'popularity.desc';
+                sectionTitle.innerHTML = `<i class="fa-solid fa-fire-flame-curved text-danger"></i> ภาพยนตร์ มาแรงยามค่ำคืน (Trending Now) <button class="btn-primary" id="clear-discover-category-btn" style="padding: 0.3rem 0.60rem; font-size: 0.75rem; border-radius: 6px; margin-left: 0.75rem; box-shadow: none; width: fit-content; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-solid fa-arrow-left"></i> ย้อนกลับ</button>`;
+            } else if (discoverCategory === 'upcoming') {
+                params['primary_release_date.gte'] = todayStr;
+                params.sort_by = 'primary_release_date.asc';
+                sectionTitle.innerHTML = `<i class="fa-solid fa-hourglass-half text-danger"></i> ภาพยนตร์ เร็ว ๆ นี้ยามค่ำคืน (Upcoming Horror) <button class="btn-primary" id="clear-discover-category-btn" style="padding: 0.3rem 0.60rem; font-size: 0.75rem; border-radius: 6px; margin-left: 0.75rem; box-shadow: none; width: fit-content; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-solid fa-arrow-left"></i> ย้อนกลับ</button>`;
+            } else if (discoverCategory === 'popular') {
+                params['vote_count.gte'] = 100;
+                params.sort_by = 'vote_average.desc';
+                sectionTitle.innerHTML = `<i class="fa-solid fa-ghost text-danger"></i> ภาพยนตร์ หลอนฮิตแนะนำ (Popular Hits) <button class="btn-primary" id="clear-discover-category-btn" style="padding: 0.3rem 0.60rem; font-size: 0.75rem; border-radius: 6px; margin-left: 0.75rem; box-shadow: none; width: fit-content; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-solid fa-arrow-left"></i> ย้อนกลับ</button>`;
+            } else if (discoverCategory === 'all_horror') {
+                params.sort_by = 'popularity.desc';
+                sectionTitle.innerHTML = `<i class="fa-solid fa-skull-crossbones text-danger"></i> ภาพยนตร์ทั้งหมด (All Horror & Thriller) <button class="btn-primary" id="clear-discover-category-btn" style="padding: 0.3rem 0.60rem; font-size: 0.75rem; border-radius: 6px; margin-left: 0.75rem; box-shadow: none; width: fit-content; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-solid fa-arrow-left"></i> ย้อนกลับ</button>`;
+            }
+            
+            const response = await TMDB.fetchFromTMDB('/discover/movie', params);
+            discoverMovies = response.results || [];
+            totalPages = Math.min(response.total_pages || 1, 500);
         }
-    } 
-    // No search query and no filters active -> Show beautiful empty state search prompt
-    else {
-        gridModeContainer.style.display = 'block';
+        // Scenario C: No search query (either filters are active OR show default all movies)
+        else {
+            if (hasFilters) {
+                sectionTitle.innerHTML = `<i class="fa-solid fa-ghost"></i> ค้นพบภาพยนตร์ตามตัวเลือกของคุณ`;
+            } else {
+                sectionTitle.innerHTML = `<i class="fa-solid fa-skull-crossbones text-danger"></i> ภาพยนตร์แนะนำทั้งหมด`;
+            }
+            
+            const discoverParams = {
+                with_genres: TMDB.HORROR_GENRE_ID,
+                page: discoverPage
+            };
+            
+            if (genreFilter.value) {
+                discoverParams.with_genres = `${TMDB.HORROR_GENRE_ID},${genreFilter.value}`;
+            }
+            
+            if (yearFilter.value) {
+                const yearVal = yearFilter.value;
+                if (yearVal === '2020') {
+                    discoverParams['primary_release_date.gte'] = '2020-01-01';
+                } else if (yearVal === '2010') {
+                    discoverParams['primary_release_date.gte'] = '2010-01-01';
+                    discoverParams['primary_release_date.lte'] = '2019-12-31';
+                } else if (yearVal === '2000') {
+                    discoverParams['primary_release_date.gte'] = '2000-01-01';
+                    discoverParams['primary_release_date.lte'] = '2009-12-31';
+                } else if (yearVal === '1990') {
+                    discoverParams['primary_release_date.gte'] = '1990-01-01';
+                    discoverParams['primary_release_date.lte'] = '1999-12-31';
+                } else if (yearVal === '1980') {
+                    discoverParams['primary_release_date.gte'] = '1980-01-01';
+                    discoverParams['primary_release_date.lte'] = '1989-12-31';
+                } else if (yearVal === '1970') {
+                    discoverParams['primary_release_date.gte'] = '1970-01-01';
+                    discoverParams['primary_release_date.lte'] = '1979-12-31';
+                } else if (yearVal === '1960') {
+                    discoverParams['primary_release_date.lte'] = '1969-12-31';
+                }
+            }
+            
+            if (countryFilter.value) {
+                const countryVal = countryFilter.value;
+                if (countryVal !== 'OTHER') {
+                    discoverParams.with_origin_country = countryVal;
+                }
+            }
+            
+            if (sortFilter.value) {
+                const sortVal = sortFilter.value;
+                if (sortVal === 'tmdb_desc') {
+                    discoverParams.sort_by = 'popularity.desc';
+                } else if (sortVal === 'year_desc') {
+                    discoverParams.sort_by = 'primary_release_date.desc';
+                } else if (sortVal === 'year_asc') {
+                    discoverParams.sort_by = 'primary_release_date.asc';
+                }
+            }
+            
+            const response = await TMDB.fetchFromTMDB('/discover/movie', discoverParams);
+            let results = response.results || [];
+            
+            // If country is OTHER, filter client-side
+            if (countryFilter.value === 'OTHER') {
+                results = results.filter(movie => {
+                    const majorCountries = ['TH', 'US', 'JP', 'KR', 'GB', 'ES'];
+                    const originCountries = movie.origin_country || [];
+                    return !originCountries.some(c => majorCountries.includes(c.toUpperCase()));
+                });
+            }
+            
+            discoverMovies = results;
+            totalPages = Math.min(response.total_pages || 1, 500);
+        }
+        
+        movieGrid.innerHTML = '';
+        discoverMoviesList = discoverMovies;
+        discoverTotalPages = totalPages;
+        
+        if (discoverMovies.length === 0) {
+            renderEmptyState('ไม่พบผลลัพธ์จาก TMDB ลองค้นหาชื่ออื่นๆ หรือเปลี่ยนตัวกรอง');
+            paginationContainer.style.display = 'none';
+            return;
+        }
+        
+        discoverMovies.forEach(movie => {
+            const savedRecord = Storage.getMovieFromCollection(movie.id);
+            const card = createMovieCard(savedRecord || movie, !!savedRecord);
+            movieGrid.appendChild(card);
+        });
+        
+        paginationContainer.style.display = 'flex';
+        pageNumberLabel.textContent = `หน้า ${discoverPage} / ${discoverTotalPages}`;
+        prevPageBtn.disabled = discoverPage <= 1;
+        nextPageBtn.disabled = discoverPage >= discoverTotalPages;
+        
+        // Bind back button
+        const clearBtn = document.getElementById('clear-discover-category-btn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                discoverCategory = null;
+                discoverPage = 1;
+                fetchAndRenderDiscover();
+            });
+        }
+    } catch (e) {
+        console.error(e);
+        renderEmptyState('เกิดข้อผิดพลาดในการโหลดผลการค้นหา');
         paginationContainer.style.display = 'none';
-        sectionTitle.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> ค้นหาหนังสยองขวัญออนไลน์`;
-        movieGrid.innerHTML = `
-            <div class="empty-state" style="padding: 4rem 2rem; border: 1px dashed var(--glass-border); border-radius: 16px; width: 100%; grid-column: 1 / -1; margin-top: 1rem;">
-                <i class="fa-solid fa-magnifying-glass" style="font-size: 3rem; color: var(--text-dark); margin-bottom: 1rem; animation: pulse 2s infinite;"></i>
-                <h3 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.5rem;">ค้นหาหนังสยองขวัญแนะนำ</h3>
-                <p style="font-size: 0.85rem; color: var(--text-secondary); max-width: 320px; margin: 0 auto; line-height: 1.5;">
-                    พิมพ์ชื่อภาพยนตร์ที่กล่องด้านบน หรือเลือกตัวกรองตามหมวดหมู่ ยุคสมัย และประเทศ เพื่อค้นหาขุมทรัพย์ความหลอนจากทั่วโลก 🩸
-                </p>
-            </div>
-        `;
     }
 }
 
