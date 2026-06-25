@@ -1,0 +1,382 @@
+﻿{
+    "evil-dead":  {
+                      "backdrop":  "/7bWxAsNPv9CXHOhZbJVlj2KxgfP.jpg",
+                      "movies":  [
+                                     {
+                                         "idx":  0,
+                                         "id":  764,
+                                         "title":  "The Evil Dead"
+                                     },
+                                     {
+                                         "idx":  1,
+                                         "id":  765,
+                                         "title":  "Evil Dead II"
+                                     },
+                                     {
+                                         "idx":  2,
+                                         "id":  766,
+                                         "title":  "Army of Darkness"
+                                     },
+                                     {
+                                         "idx":  3,
+                                         "id":  109428,
+                                         "title":  "Evil Dead"
+                                     },
+                                     {
+                                         "idx":  4,
+                                         "id":  713704,
+                                         "title":  "Evil Dead Rise"
+                                     }
+                                 ]
+                  },
+    "jason":  {
+                  "backdrop":  "/nQvMQWJtd5cSRJelDTp5WfEqyx5.jpg",
+                  "movies":  [
+                                 {
+                                     "idx":  0,
+                                     "id":  4488,
+                                     "title":  "Friday the 13th"
+                                 },
+                                 {
+                                     "idx":  1,
+                                     "id":  9725,
+                                     "title":  "Friday the 13th Part 2"
+                                 },
+                                 {
+                                     "idx":  2,
+                                     "id":  9728,
+                                     "title":  "Friday the 13th Part III"
+                                 },
+                                 {
+                                     "idx":  3,
+                                     "id":  9730,
+                                     "title":  "Friday the 13th: The Final Chapter"
+                                 },
+                                 {
+                                     "idx":  4,
+                                     "id":  9731,
+                                     "title":  "Friday the 13th: A New Beginning"
+                                 },
+                                 {
+                                     "idx":  5,
+                                     "id":  10225,
+                                     "title":  "Friday the 13th Part VI: Jason Lives"
+                                 },
+                                 {
+                                     "idx":  6,
+                                     "id":  10281,
+                                     "title":  "Friday the 13th Part VII: The New Blood"
+                                 },
+                                 {
+                                     "idx":  7,
+                                     "id":  10283,
+                                     "title":  "Friday the 13th Part VIII: Jason Takes Manhattan"
+                                 },
+                                 {
+                                     "idx":  8,
+                                     "id":  10285,
+                                     "title":  "Jason Goes to Hell: The Final Friday"
+                                 },
+                                 {
+                                     "idx":  9,
+                                     "id":  11470,
+                                     "title":  "Jason X"
+                                 }
+                             ]
+              },
+    "halloween":  {
+                      "backdrop":  "/sHI9xlFRWCJ38AIIfOqnGjuEvXz.jpg",
+                      "movies":  [
+                                     {
+                                         "idx":  0,
+                                         "id":  948,
+                                         "title":  "Halloween"
+                                     },
+                                     {
+                                         "idx":  1,
+                                         "id":  424139,
+                                         "title":  "Halloween"
+                                     },
+                                     {
+                                         "idx":  2,
+                                         "id":  610253,
+                                         "title":  "Halloween Kills"
+                                     },
+                                     {
+                                         "idx":  3,
+                                         "id":  616820,
+                                         "title":  "Halloween Ends"
+                                     }
+                                 ]
+                  },
+    "saw":  {
+                "backdrop":  "/ok4ot3YbfDYZcINXf91JUfq3maB.jpg",
+                "movies":  [
+                               {
+                                   "idx":  0,
+                                   "id":  176,
+                                   "title":  "Saw"
+                               },
+                               {
+                                   "idx":  1,
+                                   "id":  215,
+                                   "title":  "Saw II"
+                               },
+                               {
+                                   "idx":  2,
+                                   "id":  214,
+                                   "title":  "Saw III"
+                               },
+                               {
+                                   "idx":  3,
+                                   "id":  663,
+                                   "title":  "Saw IV"
+                               },
+                               {
+                                   "idx":  4,
+                                   "id":  11917,
+                                   "title":  "Saw V"
+                               },
+                               {
+                                   "idx":  5,
+                                   "id":  22804,
+                                   "title":  "Saw VI"
+                               },
+                               {
+                                   "idx":  6,
+                                   "id":  41439,
+                                   "title":  "Saw 3D"
+                               },
+                               {
+                                   "idx":  7,
+                                   "id":  298250,
+                                   "title":  "Jigsaw"
+                               },
+                               {
+                                   "idx":  8,
+                                   "id":  602734,
+                                   "title":  "Spiral: From the Book of Saw"
+                               },
+                               {
+                                   "idx":  9,
+                                   "id":  951491,
+                                   "title":  "Saw X"
+                               }
+                           ]
+            },
+    "scream":  {
+                   "backdrop":  "/vh7np635kDIcfO6x2Y9ElgLJsuI.jpg",
+                   "movies":  [
+                                  {
+                                      "idx":  0,
+                                      "id":  4232,
+                                      "title":  "Scream"
+                                  },
+                                  {
+                                      "idx":  1,
+                                      "id":  4233,
+                                      "title":  "Scream 2"
+                                  },
+                                  {
+                                      "idx":  2,
+                                      "id":  4234,
+                                      "title":  "Scream 3"
+                                  },
+                                  {
+                                      "idx":  3,
+                                      "id":  41446,
+                                      "title":  "Scream 4"
+                                  },
+                                  {
+                                      "idx":  4,
+                                      "id":  646385,
+                                      "title":  "Scream"
+                                  },
+                                  {
+                                      "idx":  5,
+                                      "id":  934433,
+                                      "title":  "Scream VI"
+                                  }
+                              ]
+               },
+    "conjuring":  {
+                      "backdrop":  "",
+                      "movies":  [
+                                     {
+                                         "idx":  0,
+                                         "id":  138843,
+                                         "title":  "The Conjuring"
+                                     },
+                                     {
+                                         "idx":  1,
+                                         "id":  250546,
+                                         "title":  "Annabelle"
+                                     },
+                                     {
+                                         "idx":  2,
+                                         "id":  259693,
+                                         "title":  "The Conjuring 2"
+                                     },
+                                     {
+                                         "idx":  3,
+                                         "id":  396422,
+                                         "title":  "Annabelle: Creation"
+                                     },
+                                     {
+                                         "idx":  4,
+                                         "id":  439079,
+                                         "title":  "The Nun"
+                                     },
+                                     {
+                                         "idx":  5,
+                                         "id":  521029,
+                                         "title":  "Annabelle Comes Home"
+                                     },
+                                     {
+                                         "idx":  6,
+                                         "id":  423108,
+                                         "title":  "The Conjuring: The Devil Made Me Do It"
+                                     },
+                                     {
+                                         "idx":  7,
+                                         "id":  968051,
+                                         "title":  "The Nun II"
+                                     }
+                                 ]
+                  },
+    "paranormal":  {
+                       "backdrop":  "/wfCdJ0MD1hYJzlaHulolNw5pYtR.jpg",
+                       "movies":  [
+                                      {
+                                          "idx":  0,
+                                          "id":  23827,
+                                          "title":  "Paranormal Activity"
+                                      },
+                                      {
+                                          "idx":  1,
+                                          "id":  41436,
+                                          "title":  "Paranormal Activity 2"
+                                      },
+                                      {
+                                          "idx":  2,
+                                          "id":  72571,
+                                          "title":  "Paranormal Activity 3"
+                                      },
+                                      {
+                                          "idx":  3,
+                                          "id":  82990,
+                                          "title":  "Paranormal Activity 4"
+                                      },
+                                      {
+                                          "idx":  4,
+                                          "id":  227348,
+                                          "title":  "Paranormal Activity: The Marked Ones"
+                                      },
+                                      {
+                                          "idx":  5,
+                                          "id":  146301,
+                                          "title":  "Paranormal Activity: The Ghost Dimension"
+                                      },
+                                      {
+                                          "idx":  6,
+                                          "id":  609972,
+                                          "title":  "Paranormal Activity: Next of Kin"
+                                      }
+                                  ]
+                   },
+    "quiet-place":  {
+                        "backdrop":  "/nHRUtBwFNnNN70vcQ7lAsjc2T6S.jpg",
+                        "movies":  [
+                                       {
+                                           "idx":  0,
+                                           "id":  447332,
+                                           "title":  "A Quiet Place"
+                                       },
+                                       {
+                                           "idx":  1,
+                                           "id":  520763,
+                                           "title":  "A Quiet Place Part II"
+                                       },
+                                       {
+                                           "idx":  2,
+                                           "id":  762441,
+                                           "title":  "A Quiet Place: Day One"
+                                       }
+                                   ]
+                    },
+    "freddy":  {
+                   "backdrop":  "/nzSjTiecdosBfwMGAdpt9CxltCI.jpg",
+                   "movies":  [
+                                  {
+                                      "idx":  0,
+                                      "id":  377,
+                                      "title":  "A Nightmare on Elm Street"
+                                  },
+                                  {
+                                      "idx":  1,
+                                      "id":  10014,
+                                      "title":  "A Nightmare on Elm Street Part 2: Freddy\u0027s Revenge"
+                                  },
+                                  {
+                                      "idx":  2,
+                                      "id":  10072,
+                                      "title":  "A Nightmare on Elm Street 3: Dream Warriors"
+                                  },
+                                  {
+                                      "idx":  3,
+                                      "id":  10131,
+                                      "title":  "A Nightmare on Elm Street 4: The Dream Master"
+                                  },
+                                  {
+                                      "idx":  4,
+                                      "id":  10160,
+                                      "title":  "A Nightmare on Elm Street 5: The Dream Child"
+                                  },
+                                  {
+                                      "idx":  5,
+                                      "id":  11284,
+                                      "title":  "Freddy\u0027s Dead: The Final Nightmare"
+                                  },
+                                  {
+                                      "idx":  6,
+                                      "id":  11596,
+                                      "title":  "New Nightmare"
+                                  },
+                                  {
+                                      "idx":  7,
+                                      "id":  6466,
+                                      "title":  "Freddy vs. Jason"
+                                  }
+                              ]
+               },
+    "insidious":  {
+                      "backdrop":  "/8HbNKB2pMiD3mfLgbxe7DgAKjdS.jpg",
+                      "movies":  [
+                                     {
+                                         "idx":  0,
+                                         "id":  1173559,
+                                         "title":  "Insidious"
+                                     },
+                                     {
+                                         "idx":  1,
+                                         "id":  91586,
+                                         "title":  "Insidious: Chapter 2"
+                                     },
+                                     {
+                                         "idx":  2,
+                                         "id":  280092,
+                                         "title":  "Insidious: Chapter 3"
+                                     },
+                                     {
+                                         "idx":  3,
+                                         "id":  406563,
+                                         "title":  "Insidious: The Last Key"
+                                     },
+                                     {
+                                         "idx":  4,
+                                         "id":  614479,
+                                         "title":  "Insidious: The Red Door"
+                                     }
+                                 ]
+                  }
+}

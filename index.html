@@ -26,8 +26,14 @@
                 <button class="nav-tab active" id="tab-home" data-tab="home">
                     <i class="fa-solid fa-house"></i> หน้าหลัก
                 </button>
+                <button class="nav-tab" id="tab-discover" data-tab="discover">
+                    <i class="fa-solid fa-magnifying-glass"></i> ค้นหา
+                </button>
                 <button class="nav-tab" id="tab-collection" data-tab="collection">
                     <i class="fa-solid fa-film"></i> คอลเล็กชัน
+                </button>
+                <button class="nav-tab" id="tab-franchises" data-tab="franchises">
+                    <i class="fa-solid fa-clapperboard"></i> มหากาพย์หลอน
                 </button>
                 <button class="nav-tab" id="tab-playlists" data-tab="playlists">
                     <i class="fa-solid fa-skull"></i> เพลย์ลิสต์
@@ -37,9 +43,6 @@
                 </button>
                 <button class="nav-tab" id="tab-finalgirls" data-tab="finalgirls">
                     <i class="fa-solid fa-shield-halved"></i> Final Girls
-                </button>
-                <button class="nav-tab" id="tab-discover" data-tab="discover">
-                    <i class="fa-solid fa-magnifying-glass"></i> ค้นหา
                 </button>
             </nav>
             
@@ -160,6 +163,9 @@
                 </button>
                 <button class="discover-btn" id="open-trivia-btn" style="background: linear-gradient(135deg, var(--primary), #991b1b); font-size: 0.85rem; padding: 0.65rem 0.5rem; justify-content: center; height: 40px; font-weight: 700; border-radius: 10px;">
                     <i class="fa-solid fa-brain"></i> ทายหนังสยองขวัญ
+                </button>
+                <button class="discover-btn" id="open-mood-btn" style="background: linear-gradient(135deg, var(--primary), #475569); font-size: 0.85rem; padding: 0.65rem 0.5rem; justify-content: center; height: 40px; font-weight: 700; border-radius: 10px;">
+                    <i class="fa-solid fa-heart-crack"></i> อารมณ์ความหลอน
                 </button>
             </div>
 
@@ -334,6 +340,31 @@
                 </div>
 
                 <!-- Playlists Tab Container -->
+                <!-- Franchises Tab Container -->
+                <div id="franchises-tab-container" style="display: none;">
+                    <!-- 1. List View: Selection grid of landscape cards -->
+                    <div id="franchises-list-view">
+                        <h3 class="slider-title" style="margin-bottom: 1.5rem;"><i class="fa-solid fa-clapperboard text-danger"></i> มหากาพย์หนังสยองขวัญระดับตำนาน</h3>
+                        <div id="franchises-grid" style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
+                            <!-- Franchises dynamically loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- 2. Detail View: Detailed checklist for a selected franchise (hidden initially) -->
+                    <div id="franchise-detail-view" style="display: none;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">
+                            <button class="btn-nav" id="franchise-back-btn" style="padding: 0.5rem 1rem; font-size: 0.85rem; border-radius: 8px;">
+                                <i class="fa-solid fa-arrow-left"></i> ย้อนกลับไปมหากาพย์หลัก
+                            </button>
+                            <h3 class="slider-title" id="franchise-detail-title" style="margin: 0; border: none; padding: 0;">-</h3>
+                        </div>
+                        
+                        <div id="franchise-detail-content">
+                            <!-- Populated dynamically by JS -->
+                        </div>
+                    </div>
+                </div>
+
                 <div id="playlists-tab-container" style="display: none;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
                         <h3 class="slider-title" style="margin-bottom: 0;"><i class="fa-solid fa-skull-crossbones text-danger"></i> เพลย์ลิสต์วิ่งมาราธอนหนังสยองขวัญ</h3>
@@ -404,6 +435,8 @@
                                 <span id="modal-runtime"><i class="fa-regular fa-clock"></i> - นาที</span>
                                 <span id="modal-country"><i class="fa-solid fa-earth-americas"></i> -</span>
                                 <span id="modal-tmdb-rating" class="meta-rating"><i class="fa-solid fa-star"></i> TMDB -</span>
+                                <span id="modal-imdb-rating" class="meta-rating-imdb" style="display: none;"><i class="fa-brands fa-imdb"></i> IMDb -</span>
+                                <span id="modal-rt-rating" class="meta-rating-rt" style="display: none;"><i class="fa-solid fa-apple-whole"></i> RT -</span>
                             </div>
                             <div class="modal-hero-buttons" style="display: flex; gap: 0.75rem; margin-top: 0.75rem; flex-wrap: wrap;">
                                 <button class="btn-primary btn-trailer" id="modal-trailer-btn" style="display: none;">
@@ -1126,6 +1159,64 @@
                     <button class="btn-primary" id="trivia-retry-btn" style="flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text-primary); box-shadow: none;">
                         <i class="fa-solid fa-arrow-rotate-left"></i> เล่นอีกครั้ง
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HORROR MOOD MODAL -->
+    <div class="modal-overlay" id="mood-modal">
+        <div class="modal-content-container" style="max-width: 700px; padding: 2rem;">
+            <button class="modal-close-btn" id="mood-close-btn" title="ปิดหน้าต่าง">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="modal-section-title" style="border-left-color: var(--primary); margin-bottom: 1.5rem;">
+                <i class="fa-solid fa-heart-crack" style="color: var(--primary);"></i> เลือกอารมณ์ความหลอน (Choose Your Poison)
+            </h3>
+            
+            <!-- Mood Selection Step -->
+            <div id="mood-select-step" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <!-- Mood Cards -->
+                <div class="trivia-choice-btn mood-card-btn" data-mood="jumpscare" style="flex-direction: column; align-items: center; text-align: center; padding: 1.25rem; gap: 0.5rem; height: auto; cursor: pointer;">
+                    <i class="fa-solid fa-ghost" style="font-size: 2rem; color: var(--primary);"></i>
+                    <strong style="color: #fff; font-size: 0.95rem;">สะดุ้งตุ้งแช่ (Jumpscare Fest)</strong>
+                    <span style="font-size: 0.72rem; color: var(--text-secondary);">เน้นตื่นเต้น ตกใจกลัวจนสะดุ้งตัวโยน</span>
+                </div>
+                <div class="trivia-choice-btn mood-card-btn" data-mood="slasher" style="flex-direction: column; align-items: center; text-align: center; padding: 1.25rem; gap: 0.5rem; height: auto; cursor: pointer;">
+                    <i class="fa-solid fa-skull" style="font-size: 2rem; color: var(--primary);"></i>
+                    <strong style="color: #fff; font-size: 0.95rem;">เชือดโหดเลือดสาด (Slasher & Gore)</strong>
+                    <span style="font-size: 0.72rem; color: var(--text-secondary);">ฆาตกรไล่เชือด หนีเอาตาย เลือดสาดสะใจ</span>
+                </div>
+                <div class="trivia-choice-btn mood-card-btn" data-mood="psychological" style="flex-direction: column; align-items: center; text-align: center; padding: 1.25rem; gap: 0.5rem; height: auto; cursor: pointer;">
+                    <i class="fa-solid fa-brain" style="font-size: 2rem; color: var(--primary);"></i>
+                    <strong style="color: #fff; font-size: 0.95rem;">หลอนจิตวิทยา (Psychological)</strong>
+                    <span style="font-size: 0.72rem; color: var(--text-secondary);">บรรยากาศกดดัน ปั่นประสาท หักมุมชวนคิด</span>
+                </div>
+                <div class="trivia-choice-btn mood-card-btn" data-mood="monster" style="flex-direction: column; align-items: center; text-align: center; padding: 1.25rem; gap: 0.5rem; height: auto; cursor: pointer;">
+                    <i class="fa-solid fa-spider" style="font-size: 2rem; color: var(--primary);"></i>
+                    <strong style="color: #fff; font-size: 0.95rem;">อสุรกายคลั่ง (Monster & Sci-Fi)</strong>
+                    <span style="font-size: 0.72rem; color: var(--text-secondary);">สัตว์ประหลาด เอเลี่ยน ไล่ล่าเอาชีวิตรอด</span>
+                </div>
+                <div class="trivia-choice-btn mood-card-btn" data-mood="supernatural" style="flex-direction: column; align-items: center; text-align: center; padding: 1.25rem; gap: 0.5rem; height: auto; cursor: pointer;">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="font-size: 2rem; color: var(--primary);"></i>
+                    <strong style="color: #fff; font-size: 0.95rem;">วิญญาณต้องสาป (Supernatural)</strong>
+                    <span style="font-size: 0.72rem; color: var(--text-secondary);">บ้านผีสิง พิธีกรรมลึกลับ ไสยศาสตร์ความเชื่อ</span>
+                </div>
+                <div class="trivia-choice-btn mood-card-btn" data-mood="zombie" style="flex-direction: column; align-items: center; text-align: center; padding: 1.25rem; gap: 0.5rem; height: auto; cursor: pointer;">
+                    <i class="fa-solid fa-virus" style="font-size: 2rem; color: var(--primary);"></i>
+                    <strong style="color: #fff; font-size: 0.95rem;">ซอมบี้แวมไพร์ (Undead)</strong>
+                    <span style="font-size: 0.72rem; color: var(--text-secondary);">ฝูงศพเดินได้ ซอมบี้คลั่ง แวมไพร์กระหายเลือด</span>
+                </div>
+            </div>
+            
+            <!-- Mood Recommendations Step -->
+            <div id="mood-results-step" style="display: none; flex-direction: column; gap: 1.25rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h4 id="mood-results-title" style="font-size: 1.1rem; font-weight: 700; color: #fff; margin: 0;"></h4>
+                    <button class="btn-nav" id="mood-back-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 6px;"><i class="fa-solid fa-arrow-left"></i> เลือกอารมณ์ใหม่</button>
+                </div>
+                <div class="movie-grid" id="mood-movie-grid" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 1rem; margin-bottom: 0;">
+                    <!-- Movies will be rendered here dynamically -->
                 </div>
             </div>
         </div>

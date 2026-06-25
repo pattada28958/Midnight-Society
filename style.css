@@ -2950,6 +2950,221 @@ body.lunar-ambient-indigo {
     line-height: 1.6;
 }
 
+/* --- HORROR MOOD SELECTION CARDS --- */
+.mood-card-btn {
+    border: 1px solid var(--glass-border) !important;
+    background: rgba(255, 255, 255, 0.01) !important;
+    border-radius: 14px !important;
+    box-shadow: var(--glass-shadow) !important;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    cursor: pointer !important;
+}
+
+.mood-card-btn:hover {
+    background: rgba(255, 0, 60, 0.04) !important;
+    border-color: rgba(255, 0, 60, 0.3) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 0 15px rgba(255, 0, 60, 0.15) !important;
+    transform: translateY(-4px) scale(1.02) !important;
+}
+
+.mood-card-btn i {
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), filter 0.3s ease;
+}
+
+.mood-card-btn:hover i {
+    transform: scale(1.2) rotate(3deg);
+    filter: drop-shadow(0 0 8px var(--primary-glow));
+}
+
+/* --- HORROR FRANCHISES CHECKLIST TRACKER STYLES --- */
+.franchise-banner-card {
+    position: relative;
+    background-size: cover;
+    background-position: center 25%;
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    overflow: hidden;
+    height: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2.5rem;
+    cursor: pointer;
+    z-index: 1;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.franchise-banner-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(8, 8, 12, 0.55);
+    z-index: 1;
+    transition: background 0.3s ease;
+}
+.franchise-banner-card:hover {
+    transform: translateY(-5px) scale(1.01);
+    border-color: var(--primary);
+    box-shadow: 0 12px 32px rgba(255, 0, 60, 0.3);
+}
+.franchise-banner-card:hover::before {
+    background: rgba(255, 0, 60, 0.2);
+}
+.franchise-title-large {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #ffffff;
+    z-index: 2;
+    text-shadow: 0 0 10px rgba(255, 0, 60, 0.9), 0 2px 8px #000;
+    transition: text-shadow 0.3s ease, transform 0.3s ease;
+    margin: 0;
+    text-align: center;
+}
+.franchise-banner-card:hover .franchise-title-large {
+    text-shadow: 0 0 20px #ff003c, 0 0 35px #ff003c, 0 2px 8px #000;
+    transform: scale(1.03);
+}
+.franchise-detail-header-card {
+    position: relative;
+    background-size: cover;
+    background-position: center 20%;
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    overflow: hidden;
+    padding: 1.75rem 2rem;
+    z-index: 1;
+    margin-bottom: 1.5rem;
+}
+.franchise-detail-header-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, rgba(8, 8, 12, 0.98) 30%, rgba(8, 8, 12, 0.88) 70%, rgba(8, 8, 12, 0.4) 100%);
+    z-index: -1;
+}
+.franchise-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 2;
+}
+.franchise-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+.franchise-description {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+.franchise-progress-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-top: 0.25rem;
+    z-index: 2;
+}
+.franchise-progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+.franchise-progress-bar-bg {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+.franchise-progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary) 0%, #ff4d6d 100%);
+    box-shadow: 0 0 8px var(--primary-glow);
+    border-radius: 4px;
+    transition: width 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.franchise-movie-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    z-index: 2;
+}
+.mini-movie-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.mini-movie-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 0, 60, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 0, 60, 0.08);
+}
+.mini-movie-poster {
+    width: 42px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+.mini-movie-info {
+    flex: 1;
+    min-width: 0;
+}
+.mini-movie-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.mini-movie-meta {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    margin-top: 0.15rem;
+}
+.mini-movie-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    margin-top: 0.25rem;
+    text-transform: uppercase;
+}
+.mini-movie-badge.watched {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    color: #10b981;
+}
+.mini-movie-badge.watchlist {
+    background: rgba(234, 179, 8, 0.1);
+    border: 1px solid rgba(234, 179, 8, 0.25);
+    color: #eab308;
+}
+.mini-movie-badge.unsaved {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-dark);
+}
+
 /* --- RESPONSIVE ADJUSTMENTS FOR IPAD / TABLETS (<= 1024px) --- */
 @media (max-width: 1024px) {
     /* Scale down main container padding slightly on tablets */
@@ -3003,29 +3218,8 @@ body.lunar-ambient-indigo {
         padding: 2px 6px !important;
     }
 
-    /* Prevent badges from overlapping by stacking them vertically */
-    .card-bottom-info {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 0.35rem !important;
-        padding: 0.4rem 0.5rem !important;
-    }
-    
     .genre-text {
-        max-width: 100% !important;
-    }
-    
-    .rating-badge.genre-badge {
-        display: flex !important;
-        justify-content: center !important;
-        width: 100% !important;
-    }
-    
-    .status-badge {
-        display: block !important;
-        text-align: center !important;
-        width: 100% !important;
-        margin: 0 !important;
+        max-width: 75px !important;
     }
 
     .add-collection-hover-btn {
@@ -3256,5 +3450,37 @@ body.lunar-ambient-indigo {
         font-size: 1rem !important;
         top: 1rem !important;
         right: 1rem !important;
+    }
+
+    /* Scale down Mood Recommender modal grid for tablets */
+    #mood-select-step {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
+        gap: 0.75rem !important;
+    }
+    
+    .mood-card-btn {
+        padding: 1rem !important;
+        border-radius: 10px !important;
+    }
+    
+    .mood-card-btn i {
+        font-size: 1.6rem !important;
+    }
+    
+    .mood-card-btn strong {
+        font-size: 0.85rem !important;
+    }
+    
+    .mood-card-btn span {
+        font-size: 0.68rem !important;
+    }
+
+    /* Scale down franchises checklist tracker for tablets */
+    .franchise-banner-card {
+        height: 200px !important;
+        padding: 1.5rem !important;
+    }
+    .franchise-title-large {
+        font-size: 1.45rem !important;
     }
 }

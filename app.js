@@ -92,6 +92,155 @@ const FALLBACK_POPULAR_MOVIES = [
     }
 ];
 
+const HORROR_FRANCHISES = [
+    {
+        id: "conjuring",
+        name: "จักรวาลคนเรียกผี (The Conjuring Universe)",
+        backdrop: "/ecKQlAEG95k62SMGhvX83oEqANK.jpg",
+        description: "มหากาพย์จักรวาลปราบผีสุดโด่งดังของคู่สามีภรรยา เอ็ด และ ลอเรน วอร์เรน ซึ่งรวบรวมเรื่องราวของตุ๊กตาแอนนาเบลล์ และตำนานปีศาจแม่ชีวาลัค",
+        movies: [
+            { id: 138843, title: "เดอะ คอนเจอริ่ง คนเรียกผี (The Conjuring)", year: 2013 },
+            { id: 250546, title: "แอนนาเบลล์ ตุ๊กตาผี (Annabelle)", year: 2014 },
+            { id: 259693, title: "เดอะ คอนเจอริ่ง คนเรียกผี 2 (The Conjuring 2)", year: 2016 },
+            { id: 396422, title: "แอนนาเบลล์ กำเนิดตุ๊กตาผี (Annabelle: Creation)", year: 2017 },
+            { id: 439079, title: "เดอะ นัน (The Nun)", year: 2018 },
+            { id: 521029, title: "Annabelle Comes Home (แอนนาเบลล์ ตุ๊กตาผีกลับบ้าน)", year: 2019 },
+            { id: 423108, title: "เดอะ คอนเจอริ่ง คนเรียกผี 3 มหาเวทลวงศิษย์ (The Conjuring 3)", year: 2021 },
+            { id: 968051, title: "เดอะ นัน II (The Nun II)", year: 2023 }
+        ]
+    },
+    {
+        id: "saw",
+        name: "เกมต่อตัดตาย (Saw Saga)",
+        backdrop: "/ok4ot3YbfDYZcINXf91JUfq3maB.jpg",
+        description: "เกมทดสอบจิตวิญญาณและความเจ็บปวดอันโหดเหี้ยมโดย ฆาตกรจิ๊กซอว์ (Jigsaw) ที่จะให้เหยื่อเลือกระหว่างการยอมสละชิ้นส่วนร่างกายหรือความตาย",
+        movies: [
+            { id: 176, title: "ซอว์ เกมต่อตัดตาย (Saw)", year: 2004 },
+            { id: 215, title: "ซอว์ เกมต่อตัดตาย 2 (Saw II)", year: 2005 },
+            { id: 214, title: "ซอว์ เกมต่อตัดตาย 3 (Saw III)", year: 2006 },
+            { id: 663, title: "ซอว์ เกมต่อตัดตาย 4 (Saw IV)", year: 2007 },
+            { id: 11917, title: "ซอว์ เกมต่อตัดตาย 5 (Saw V)", year: 2008 },
+            { id: 22804, title: "ซอว์ เกมต่อตัดตาย 6 (Saw VI)", year: 2009 },
+            { id: 41439, title: "ซอว์ เกมต่อตัดตาย 7 (Saw 3D)", year: 2010 },
+            { id: 298250, title: "จิ๊กซอว์ เกมต่อตัดตาย (Jigsaw)", year: 2017 },
+            { id: 602734, title: "Spiral: From the Book of Saw (เกมลอกฆาตกร)", year: 2021 },
+            { id: 951491, title: "ซอว์ X (Saw X)", year: 2023 }
+        ]
+    },
+    {
+        id: "insidious",
+        name: "วิญญาณตามติด (Insidious)",
+        backdrop: "/8HbNKB2pMiD3mfLgbxe7DgAKjdS.jpg",
+        description: "เรื่องราวของครอบครัวที่เผชิญหน้ากับมิติมืด 'The Further' ที่คอยดูดกลืนวิญญาณของเด็กๆ และตามหลอกหลอนพวกเขาไปทุกหนทุกแห่ง",
+        movies: [
+            { id: 49018, title: "อินซิเดียส วิญญาณตามติด (Insidious)", year: 2010 },
+            { id: 91586, title: "อินซิเดียส วิญญาณตามติด 2 (Insidious: Chapter 2)", year: 2013 },
+            { id: 280092, title: "อินซิเดียส วิญญาณตามติด 3 (Insidious: Chapter 3)", year: 2015 },
+            { id: 406563, title: "อินซิเดียส วิญญาณตามติด 4 กุญแจไขผี (Insidious: The Last Key)", year: 2018 },
+            { id: 614479, title: "อินซิเดียส วิญญาณตามติด 5 ประตูสีแดง (Insidious: The Red Door)", year: 2023 }
+        ]
+    },
+    {
+        id: "paranormal",
+        name: "เรียลลิตี้ขนหัวลุก (Paranormal Activity)",
+        backdrop: "/wfCdJ0MD1hYJzlaHulolNw5pYtR.jpg",
+        description: "ภาพยนตร์แนว Found Footage สารคดีสมจริงที่บันทึกเหตุการณ์ประหลาดเหนือธรรมชาติผ่านกล้องวงจรปิดภายในบ้านพักอาศัย",
+        movies: [
+            { id: 23827, title: "เรียลลิตี้ขนหัวลุก (Paranormal Activity)", year: 2007 },
+            { id: 41436, title: "เรียลลิตี้ขนหัวลุก 2 (Paranormal Activity 2)", year: 2010 },
+            { id: 72571, title: "เรียลลิตี้ขนหัวลุก 3 (Paranormal Activity 3)", year: 2011 },
+            { id: 82990, title: "เรียลลิตี้ขนหัวลุก 4 (Paranormal Activity 4)", year: 2012 },
+            { id: 227348, title: "Paranormal Activity: The Marked Ones", year: 2014 },
+            { id: 146301, title: "Paranormal Activity: The Ghost Dimension", year: 2015 },
+            { id: 609972, title: "Paranormal Activity: Next of Kin", year: 2021 }
+        ]
+    },
+    {
+        id: "scream",
+        name: "หวีดสุดขีด (Scream Saga)",
+        backdrop: "/vh7np635kDIcfO6x2Y9ElgLJsuI.jpg",
+        description: "ภาพยนตร์แนวไล่เชือด (Slasher) สุดแหวกแนวที่มีจุดเด่นในเรื่องความตลกร้าย เสียดสีล้อเลียนกฎเกณฑ์ของหนังสยองขวัญ และหน้ากากฆาตกรโกสต์เฟส (Ghostface)",
+        movies: [
+            { id: 4232, title: "หวีดสุดขีด (Scream)", year: 1996 },
+            { id: 4233, title: "หวีดสุดขีด 2 (Scream 2)", year: 1997 },
+            { id: 4234, title: "หวีดสุดขีด 3 (Scream 3)", year: 2000 },
+            { id: 41446, title: "หวีดสุดขีด 4 (Scream 4)", year: 2011 },
+            { id: 646385, title: "หวีดสุดขีด 5 (Scream)", year: 2022 },
+            { id: 934433, title: "หวีดสุดขีด 6 (Scream VI)", year: 2023 }
+        ]
+    },
+    {
+        id: "evil-dead",
+        name: "ผีอมรณะ (Evil Dead)",
+        backdrop: "/7bWxAsNPv9CXHOhZbJVlj2KxgfP.jpg",
+        description: "คัมภีร์มนตราแห่งความตาย (Necronomicon) ที่เปิดประตูปลดปล่อยปิศาจโบราณร้ายกาจมาสิงสู่ร่างของมนุษย์จนเกิดเป็นความสยองขวัญปนตลกร้ายสะใจคอหนังโหด",
+        movies: [
+            { id: 764, title: "เดอะ อีวิล เดด ผีอมรณะ (The Evil Dead)", year: 1981 },
+            { id: 765, title: "ผีอมรณะ 2 (Evil Dead II)", year: 1987 },
+            { id: 766, title: "อภินิหารกองทัพซี่โครงแก้ว (Army of Darkness)", year: 1992 },
+            { id: 109428, title: "ผีอมรณะ (Evil Dead)", year: 2013 },
+            { id: 713704, title: "ผีอมรณะผงาด (Evil Dead Rise)", year: 2023 }
+        ]
+    },
+    {
+        id: "halloween",
+        name: "คืนฆาตกรรมโหด (Halloween Saga)",
+        backdrop: "/sHI9xlFRWCJ38AIIfOqnGjuEvXz.jpg",
+        description: "มหากาพย์การตามล่าของ ฆาตกรหน้ากากขาว ไมเคิล ไมเยอร์ส (Michael Myers) ผู้เปรียบเสมือนความชั่วร้ายบริสุทธิ์ที่ไม่มีวันตาย และการต่อสู้ปกป้องชีวิตของ ลอรี่ สโตรด",
+        movies: [
+            { id: 948, title: "ฮาโลวีน คืนฆาตกรรมโหด (Halloween)", year: 1978 },
+            { id: 424139, title: "ฮาโลวีน คืนฆาตกรรมโหด 2018 (Halloween)", year: 2018 },
+            { id: 610253, title: "ฮาโลวีน คิลส์ (Halloween Kills)", year: 2021 },
+            { id: 616820, title: "ฮาโลวีน เอนด์ส (Halloween Ends)", year: 2022 }
+        ]
+    },
+    {
+        id: "freddy",
+        name: "นิ้วเขมือบ (A Nightmare on Elm Street)",
+        backdrop: "/nzSjTiecdosBfwMGAdpt9CxltCI.jpg",
+        description: "เมื่อฝันร้ายกลายเป็นความจริงผ่านฆาตกรหน้าเละ เฟรดดี้ ครูเกอร์ (Freddy Krueger) ที่สามารถเข้าไปทรมานและฆ่าเหยื่อได้จากในความฝันของพวกเขาเอง",
+        movies: [
+            { id: 377, title: "นิ้วเขมือบ (A Nightmare on Elm Street)", year: 1984 },
+            { id: 10014, title: "นิ้วเขมือบ 2: ความแค้นของเฟรดดี้", year: 1985 },
+            { id: 10072, title: "นิ้วเขมือบ 3: นักรบแห่งความฝัน", year: 1987 },
+            { id: 10131, title: "นิ้วเขมือบ 4: จ้าวแห่งฝันร้าย", year: 1988 },
+            { id: 10160, title: "นิ้วเขมือบ 5: เด็กปีศาจ", year: 1989 },
+            { id: 11284, title: "ฝันร้ายสุดท้าย: ความตายของเฟรดดี้", year: 1991 },
+            { id: 11596, title: "ฝันร้ายใหม่ของเวส คราเวน", year: 1994 },
+            { id: 6466, title: "ศึกผีฟัดผี: เฟรดดี้ ปะทะ เจสัน", year: 2003 }
+        ]
+    },
+    {
+        id: "jason",
+        name: "ศุกร์ 13 ฝันหวาน (Friday the 13th)",
+        backdrop: "/nQvMQWJtd5cSRJelDTp5WfEqyx5.jpg",
+        description: "ตำนานความสยองขวัญริมทะเลสาบคริสตัลเลคของ เจสัน วอร์ฮีส์ (Jason Voorhees) ฆาตกรหน้ากากฮอกกี้ผู้เป็นอมตะและไม่มีวันหยุดล่า",
+        movies: [
+            { id: 4488, title: "ศุกร์ 13 ฝันหวาน (Friday the 13th)", year: 1980 },
+            { id: 9725, title: "ศุกร์ 13 ฝันหวาน ภาค 2 (Friday the 13th Part II)", year: 1981 },
+            { id: 9728, title: "ศุกร์ 13 ฝันหวาน ภาค 3 (Friday the 13th Part III)", year: 1982 },
+            { id: 9730, title: "ศุกร์ 13 ฝันหวาน ภาค 4 (Friday the 13th: The Final Chapter)", year: 1984 },
+            { id: 9731, title: "ศุกร์ 13 ฝันหวาน ภาค 5 (Friday the 13th: A New Beginning)", year: 1985 },
+            { id: 10225, title: "ศุกร์ 13 ฝันหวาน ภาค 6 (Friday the 13th Part VI: Jason Lives)", year: 1986 },
+            { id: 10281, title: "ศุกร์ 13 ฝันหวาน ภาค 7 (Friday the 13th Part VII: The New Blood)", year: 1988 },
+            { id: 10283, title: "ศุกร์ 13 ฝันหวาน ภาค 8 (Friday the 13th Part VIII: Jason Takes Manhattan)", year: 1989 },
+            { id: 10285, title: "เจสันลุยขุมนรก: ศุกร์ 13 ฝันหวาน ภาค 9", year: 1993 },
+            { id: 11470, title: "เจสัน เอ็กซ์ (Jason X)", year: 2001 }
+        ]
+    },
+    {
+        id: "quiet-place",
+        name: "ดินแดนไร้เสียง (A Quiet Place Trilogy)",
+        backdrop: "/nHRUtBwFNnNN70vcQ7lAsjc2T6S.jpg",
+        description: "โลกที่ล่มสลายจากสิ่งมีชีวิตต่างดาวตาบอดที่มีประสาทการได้ยินเสียงเป็นเลิศ มนุษยชาติที่เหลือรอดจำใจต้องดำรงชีวิตในความเงียบสงัดไร้สำเนียงเด็ดขาด",
+        movies: [
+            { id: 447332, title: "ดินแดนไร้เสียง (A Quiet Place)", year: 2018 },
+            { id: 520763, title: "ดินแดนไร้เสียง ภาค 2 (A Quiet Place Part II)", year: 2020 },
+            { id: 762441, title: "ดินแดนไร้เสียง: วันที่หนึ่ง (A Quiet Place: Day One)", year: 2024 }
+        ]
+    }
+];
+
 // --- STATE MANAGEMENT ---
 let activeTab = ''; // 'home', 'collection', 'playlists', 'characters', 'finalgirls', 'discover'
 let currentSearchQuery = '';
@@ -138,6 +287,16 @@ const importFileInput = document.getElementById('import-file-input');
 const statsPanel = document.getElementById('stats-panel');
 const horrorActionsRow = document.getElementById('horror-activities-row');
 const analyticsSectionWrapper = document.getElementById('analytics-section-wrapper');
+
+// Mood Recommender elements
+const openMoodBtn = document.getElementById('open-mood-btn');
+const moodModal = document.getElementById('mood-modal');
+const moodCloseBtn = document.getElementById('mood-close-btn');
+const moodSelectStep = document.getElementById('mood-select-step');
+const moodResultsStep = document.getElementById('mood-results-step');
+const moodResultsTitle = document.getElementById('mood-results-title');
+const moodBackBtn = document.getElementById('mood-back-btn');
+const moodMovieGrid = document.getElementById('mood-movie-grid');
 
 // Settings elements
 const settingsBtn = document.getElementById('settings-btn');
@@ -201,6 +360,8 @@ const modalYear = document.getElementById('modal-year');
 const modalRuntime = document.getElementById('modal-runtime');
 const modalCountry = document.getElementById('modal-country');
 const modalTmdbRating = document.getElementById('modal-tmdb-rating');
+const modalImdbRating = document.getElementById('modal-imdb-rating');
+const modalRtRating = document.getElementById('modal-rt-rating');
 const modalOverview = document.getElementById('modal-overview');
 const modalCastContainer = document.getElementById('modal-cast-container');
 const modalTrailerBtn = document.getElementById('modal-trailer-btn');
@@ -279,6 +440,15 @@ const lightboxCloseBtn = document.getElementById('lightbox-close-btn');
 const lightboxImg = document.getElementById('lightbox-img');
 
 // New Tab and Playlist Elements
+const tabFranchises = document.getElementById('tab-franchises');
+const franchisesTabContainer = document.getElementById('franchises-tab-container');
+const franchisesGrid = document.getElementById('franchises-grid');
+const franchisesListView = document.getElementById('franchises-list-view');
+const franchiseDetailView = document.getElementById('franchise-detail-view');
+const franchiseDetailTitle = document.getElementById('franchise-detail-title');
+const franchiseDetailContent = document.getElementById('franchise-detail-content');
+const franchiseBackBtn = document.getElementById('franchise-back-btn');
+let activeFranchiseId = null;
 const tabPlaylists = document.getElementById('tab-playlists');
 const playlistsTabContainer = document.getElementById('playlists-tab-container');
 const playlistsGrid = document.getElementById('playlists-grid');
@@ -650,6 +820,7 @@ function setupEventListeners() {
     // Tab switching
     if (tabHome) tabHome.addEventListener('click', () => switchTab('home'));
     tabCollection.addEventListener('click', () => switchTab('collection'));
+    if (tabFranchises) tabFranchises.addEventListener('click', () => switchTab('franchises'));
     if (tabPlaylists) tabPlaylists.addEventListener('click', () => switchTab('playlists'));
     if (tabCharacters) tabCharacters.addEventListener('click', () => switchTab('characters'));
     if (tabFinalGirls) tabFinalGirls.addEventListener('click', () => switchTab('finalgirls'));
@@ -1038,6 +1209,51 @@ function setupEventListeners() {
             document.querySelector('main').scrollIntoView({ behavior: 'smooth' });
         }
     });
+
+    // Horror Mood modal triggers
+    if (openMoodBtn && moodModal) {
+        openMoodBtn.addEventListener('click', () => {
+            SoundscapeEngine.playModalOpenSFX();
+            openMoodModal();
+        });
+    }
+    if (moodCloseBtn && moodModal) {
+        moodCloseBtn.addEventListener('click', () => {
+            closeMoodModal();
+        });
+    }
+    if (moodModal) {
+        moodModal.addEventListener('click', (e) => {
+            if (e.target === moodModal) {
+                closeMoodModal();
+            }
+        });
+    }
+    if (moodBackBtn) {
+        moodBackBtn.addEventListener('click', () => {
+            SoundscapeEngine.playClickSFX();
+            showMoodSelectStep();
+        });
+    }
+    
+    // Bind click for each mood selection card
+    const moodCardBtns = document.querySelectorAll('.mood-card-btn');
+    moodCardBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            SoundscapeEngine.playClickSFX();
+            const mood = btn.dataset.mood;
+            const moodTitleText = btn.querySelector('strong').innerText;
+            fetchAndRenderMood(mood, moodTitleText);
+        });
+    });
+
+    // Franchise Back Button
+    if (franchiseBackBtn) {
+        franchiseBackBtn.addEventListener('click', () => {
+            SoundscapeEngine.playClickSFX();
+            showFranchisesListView();
+        });
+    }
 }
 
 // --- TAB NAVIGATION ---
@@ -1049,6 +1265,7 @@ function switchTab(tabName) {
     // Update active UI classes on tabs
     if (tabHome) tabHome.classList.toggle('active', activeTab === 'home');
     tabCollection.classList.toggle('active', activeTab === 'collection');
+    if (tabFranchises) tabFranchises.classList.toggle('active', activeTab === 'franchises');
     if (tabPlaylists) tabPlaylists.classList.toggle('active', activeTab === 'playlists');
     if (tabCharacters) tabCharacters.classList.toggle('active', activeTab === 'characters');
     if (tabFinalGirls) tabFinalGirls.classList.toggle('active', activeTab === 'finalgirls');
@@ -1070,6 +1287,7 @@ function switchTab(tabName) {
     
     // Reset all layouts to hidden by default
     if (playlistsTabContainer) playlistsTabContainer.style.display = 'none';
+    if (franchisesTabContainer) franchisesTabContainer.style.display = 'none';
     if (charactersTabContainer) charactersTabContainer.style.display = 'none';
     if (finalgirlsTabContainer) finalgirlsTabContainer.style.display = 'none';
     if (heroBanner) heroBanner.style.display = 'none';
@@ -1101,6 +1319,9 @@ function switchTab(tabName) {
     } else if (activeTab === 'playlists') {
         if (playlistsTabContainer) playlistsTabContainer.style.display = 'block';
         renderPlaylists();
+    } else if (activeTab === 'franchises') {
+        if (franchisesTabContainer) franchisesTabContainer.style.display = 'block';
+        showFranchisesListView();
     } else if (activeTab === 'characters') {
         if (charactersTabContainer) charactersTabContainer.style.display = 'block';
         renderCharacters();
@@ -1725,6 +1946,7 @@ function createMovieCard(movie, isSaved) {
     card.innerHTML = `
         <div class="card-badges">
             <span class="rating-badge"><i class="fa-solid fa-star"></i> TMDB ${voteAverage}</span>
+            ${isSaved ? badgeHTML : ''}
         </div>
         <div class="poster-wrapper">
             <img src="${posterUrl}" class="movie-poster" alt="${titleText}" loading="lazy">
@@ -1738,7 +1960,6 @@ function createMovieCard(movie, isSaved) {
         </div>
         <div class="card-bottom-info">
             ${genreBadgesHTML}
-            ${isSaved ? badgeHTML : ''}
         </div>
         ${!isSaved ? badgeHTML : ''}
     `;
@@ -1809,6 +2030,8 @@ async function openMovieModal(movieId) {
     modalRuntime.innerHTML = '<i class="fa-regular fa-clock"></i> Loading...';
     modalCountry.innerHTML = '<i class="fa-solid fa-earth-americas"></i> Loading...';
     modalTmdbRating.innerHTML = '<i class="fa-solid fa-star"></i> TMDB -';
+    if (modalImdbRating) modalImdbRating.style.display = 'none';
+    if (modalRtRating) modalRtRating.style.display = 'none';
     modalOverview.textContent = 'กรุณารอสักครู่...';
     modalPoster.src = 'https://images.unsplash.com/photo-1509248961158-e54f6934749c?q=80&w=500&auto=format&fit=crop';
     modalBackdrop.style.backgroundImage = 'none';
@@ -1854,7 +2077,10 @@ async function openMovieModal(movieId) {
             
         // Try fetching OMDB ratings automatically if key is set and imdb_id exists
         let omdbData = null;
-        const omdbKey = localStorage.getItem('omdb_api_key') || '3415cfd0';
+        let omdbKey = localStorage.getItem('omdb_api_key');
+        if (!omdbKey || omdbKey === '3415cfd0') {
+            omdbKey = 'trilogy';
+        }
         if (omdbKey && details.imdb_id) {
             try {
                 const omdbResp = await fetch(`https://www.omdbapi.com/?i=${details.imdb_id}&apikey=${omdbKey}`);
@@ -1867,6 +2093,34 @@ async function openMovieModal(movieId) {
             } catch (omdbErr) {
                 console.warn("Failed to fetch automatically from OMDb:", omdbErr);
             }
+        }
+
+        // Cache OMDb rating values in active movie details if retrieved
+        if (omdbData) {
+            details.imdbRating = (omdbData.imdbRating && omdbData.imdbRating !== "N/A") ? omdbData.imdbRating : null;
+            const rtRating = (omdbData.Ratings && Array.isArray(omdbData.Ratings))
+                ? omdbData.Ratings.find(r => r.Source === "Rotten Tomatoes")
+                : null;
+            details.rtRating = (rtRating && rtRating.Value && rtRating.Value !== "N/A") ? rtRating.Value : null;
+        }
+
+        // Render OMDb ratings if available (fresh fetch or cached from collection)
+        const imdbScore = (omdbData && omdbData.imdbRating && omdbData.imdbRating !== "N/A")
+            ? omdbData.imdbRating
+            : (details.imdbRating && details.imdbRating !== "N/A" ? details.imdbRating : null);
+
+        const rtScore = (omdbData && omdbData.Ratings && Array.isArray(omdbData.Ratings))
+            ? (omdbData.Ratings.find(r => r.Source === "Rotten Tomatoes")?.Value)
+            : (details.rtRating && details.rtRating !== "N/A" ? details.rtRating : null);
+
+        if (imdbScore && modalImdbRating) {
+            modalImdbRating.innerHTML = `<i class="fa-brands fa-imdb"></i> IMDb ${imdbScore}/10`;
+            modalImdbRating.style.display = 'inline-block';
+        }
+        
+        if (rtScore && rtScore !== "N/A" && modalRtRating) {
+            modalRtRating.innerHTML = `<i class="fa-solid fa-apple-whole"></i> RT ${rtScore}`;
+            modalRtRating.style.display = 'inline-block';
         }
 
         // Fill in basic TMDB info
@@ -2168,7 +2422,10 @@ function saveActiveMovie() {
         personalRating: activeMovieRating > 0 ? activeMovieRating : null,
         review: modalReviewText.value.trim(),
         survivalStatus: statusSelect ? statusSelect.value : 'none',
-        survivalNote: noteText ? noteText.value.trim() : ''
+        survivalNote: noteText ? noteText.value.trim() : '',
+        imdbRating: selectedMovieData.imdbRating || null,
+        rtRating: selectedMovieData.rtRating || null,
+        imdb_id: selectedMovieData.imdb_id || null
     };
 
     Storage.saveMovie(dataToSave);
@@ -2176,6 +2433,12 @@ function saveActiveMovie() {
     updateStatsDashboard();
     if (activeTab === 'collection') {
         renderMyCollection();
+    } else if (activeTab === 'franchises') {
+        if (activeFranchiseId) {
+            openFranchiseDetail(activeFranchiseId);
+        } else {
+            renderFranchises();
+        }
     } else {
         updateMovieCardsInDOM(selectedMovieData.id);
     }
@@ -2194,6 +2457,12 @@ function deleteActiveMovie() {
         updateStatsDashboard();
         if (activeTab === 'collection') {
             renderMyCollection();
+        } else if (activeTab === 'franchises') {
+            if (activeFranchiseId) {
+                openFranchiseDetail(activeFranchiseId);
+            } else {
+                renderFranchises();
+            }
         } else {
             updateMovieCardsInDOM(selectedMovieData.id);
         }
@@ -2395,7 +2664,11 @@ function handleImport(e) {
 
 // --- SETTINGS MODAL ACTIONS ---
 function openSettingsModal() {
-    settingsOmdbKey.value = localStorage.getItem('omdb_api_key') || '3415cfd0';
+    let storedOmdbKey = localStorage.getItem('omdb_api_key');
+    if (!storedOmdbKey || storedOmdbKey === '3415cfd0') {
+        storedOmdbKey = 'trilogy';
+    }
+    settingsOmdbKey.value = storedOmdbKey;
     if (settingsJumpscareToggle) {
         settingsJumpscareToggle.checked = localStorage.getItem('jumpscare_enabled') !== 'false';
     }
@@ -4757,6 +5030,183 @@ async function loadFinalGirlCardImage(char) {
     }
 }
 
+// --- RENDER HORROR FRANCHISES CHECKLIST TRACKER ---
+function showFranchisesListView() {
+    activeFranchiseId = null;
+    if (franchisesListView) franchisesListView.style.display = 'block';
+    if (franchiseDetailView) franchiseDetailView.style.display = 'none';
+    renderFranchises();
+}
+
+function renderFranchises() {
+    if (!franchisesGrid) return;
+    franchisesGrid.innerHTML = '';
+
+    const collection = Storage.getCollection();
+
+    HORROR_FRANCHISES.forEach(franchise => {
+        const totalMovies = franchise.movies.length;
+        let watchedCount = 0;
+
+        franchise.movies.forEach(movie => {
+            const saved = collection.find(m => m.id === movie.id);
+            if (saved && saved.watchStatus === 'watched') {
+                watchedCount++;
+            }
+        });
+
+        const percent = totalMovies > 0 ? Math.round((watchedCount / totalMovies) * 100) : 0;
+
+        const card = document.createElement('div');
+        card.className = 'franchise-banner-card';
+        if (franchise.backdrop) {
+            // Using w1280 since these cards are now full-width like the hero banner
+            card.style.backgroundImage = `url('${TMDB.getImageUrl(franchise.backdrop, 'w1280')}')`;
+        }
+
+        // Clean layout: Only giant title centered. Small subtle indicators placed absolutely in corners
+        card.innerHTML = `
+            <div class="franchise-progress-badge" style="position: absolute; top: 1.25rem; right: 1.25rem; z-index: 2; background: rgba(0,0,0,0.75); padding: 0.3rem 0.65rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); font-size: 0.75rem; font-weight: 700; color: var(--primary); text-shadow: none;">
+                สำเร็จ ${watchedCount}/${totalMovies} ภาค (${percent}%)
+            </div>
+            <h4 class="franchise-title-large">${franchise.name}</h4>
+            <div class="franchise-progress-bar-bg" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 6px; background: rgba(0,0,0,0.6); z-index: 3; border-radius: 0; margin: 0; border: none;">
+                <div class="franchise-progress-bar-fill" style="width: ${percent}%; height: 100%; border-radius: 0;"></div>
+            </div>
+        `;
+
+        card.addEventListener('click', () => {
+            SoundscapeEngine.playClickSFX();
+            openFranchiseDetail(franchise.id);
+        });
+
+        franchisesGrid.appendChild(card);
+    });
+}
+
+function openFranchiseDetail(franchiseId) {
+    const franchise = HORROR_FRANCHISES.find(f => f.id === franchiseId);
+    if (!franchise) return;
+
+    activeFranchiseId = franchiseId;
+
+    if (franchisesListView) franchisesListView.style.display = 'none';
+    if (franchiseDetailView) franchiseDetailView.style.display = 'block';
+
+    if (franchiseDetailTitle) {
+        franchiseDetailTitle.innerText = franchise.name;
+    }
+
+    if (!franchiseDetailContent) return;
+    franchiseDetailContent.innerHTML = '';
+
+    const collection = Storage.getCollection();
+    const totalMovies = franchise.movies.length;
+    let watchedCount = 0;
+
+    franchise.movies.forEach(movie => {
+        const saved = collection.find(m => m.id === movie.id);
+        if (saved && saved.watchStatus === 'watched') {
+            watchedCount++;
+        }
+    });
+
+    const percent = totalMovies > 0 ? Math.round((watchedCount / totalMovies) * 100) : 0;
+
+    const backdropUrl = franchise.backdrop ? TMDB.getImageUrl(franchise.backdrop, 'original') : '';
+    
+    // Create detailed header card
+    const headerCard = document.createElement('div');
+    headerCard.className = 'franchise-detail-header-card';
+    if (backdropUrl) {
+        headerCard.style.backgroundImage = `url('${backdropUrl}')`;
+    }
+    headerCard.innerHTML = `
+        <div class="franchise-header">
+            <h4 class="franchise-title" style="font-size: 1.6rem; text-shadow: 0 0 10px rgba(255, 0, 60, 0.85);">${franchise.name}</h4>
+            <p class="franchise-description" style="max-width: 800px; margin-top: 0.5rem;">${franchise.description}</p>
+        </div>
+        <div class="franchise-progress-container" style="margin-top: 1.5rem; max-width: 600px;">
+            <div class="franchise-progress-label">
+                <span><i class="fa-solid fa-droplet animate-pulse"></i> ความสำเร็จ: ${watchedCount} / ${totalMovies} ภาค</span>
+                <span>${percent}%</span>
+            </div>
+            <div class="franchise-progress-bar-bg">
+                <div class="franchise-progress-bar-fill" style="width: ${percent}%;"></div>
+            </div>
+        </div>
+    `;
+    franchiseDetailContent.appendChild(headerCard);
+
+    // Grid container for movie cards - using the standard "movie-grid" class so it's normal-sized!
+    const gridContainer = document.createElement('div');
+    gridContainer.className = 'movie-grid';
+    franchiseDetailContent.appendChild(gridContainer);
+
+    franchise.movies.forEach(movie => {
+        const saved = collection.find(m => m.id === movie.id);
+        
+        let card;
+        if (saved) {
+            // Render normal movie card
+            card = createMovieCard(saved, true);
+        } else {
+            // Unsaved temporary movie data
+            const tempMovie = {
+                id: movie.id,
+                title: movie.title,
+                release_date: `${movie.year}-01-01`,
+                vote_average: null,
+                poster_path: null
+            };
+            card = createMovieCard(tempMovie, false);
+            // Grayscale desaturated style for locked/unsaved movie cards
+            card.style.filter = 'grayscale(80%) opacity(0.5)';
+        }
+        
+        // Ensure smooth transitions for filter and transform
+        card.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.3s ease, box-shadow 0.3s ease, filter 0.5s ease, opacity 0.5s ease';
+        
+        gridContainer.appendChild(card);
+    });
+
+    // Lazy load actual high-quality posters and metadata from TMDB
+    lazyLoadFranchisePosters(franchise);
+}
+
+async function lazyLoadFranchisePosters(franchise) {
+    const collection = Storage.getCollection();
+    for (const movie of franchise.movies) {
+        // Find existing movie-card in our grid container
+        const oldCard = franchiseDetailContent.querySelector(`.movie-card[data-id="${movie.id}"]`);
+        if (!oldCard) continue;
+
+        // Only fetch if poster path is missing or default unsplash is displayed
+        const imgEl = oldCard.querySelector('.movie-poster');
+        if (imgEl && imgEl.src.includes('unsplash.com')) {
+            try {
+                const details = await TMDB.getMovieDetails(movie.id);
+                if (details) {
+                    const saved = collection.find(m => m.id === movie.id);
+                    const isSaved = !!saved;
+                    
+                    // Create updated movie card using TMDB full details
+                    const newCard = createMovieCard(details, isSaved);
+                    if (!isSaved) {
+                        newCard.style.filter = 'grayscale(80%) opacity(0.5)';
+                    }
+                    newCard.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.3s ease, box-shadow 0.3s ease, filter 0.5s ease, opacity 0.5s ease';
+                    
+                    // Replace in-place
+                    oldCard.parentNode.replaceChild(newCard, oldCard);
+                }
+            } catch (err) {
+                console.warn(`Failed to lazy load poster for movie ID ${movie.id}`, err);
+            }
+        }
+    }
+}
+
 // --- RENDER HORROR CHARACTERS GRID ---
 function renderCharacters() {
     if (!charactersGrid) return;
@@ -6628,5 +7078,91 @@ function endTriviaGame(isVictory) {
         }
         
         SoundscapeEngine.playLowDroneSFX();
+    }
+}
+
+// --- HORROR MOOD RECOMMENDER SYSTEM ---
+function openMoodModal() {
+    if (moodModal) {
+        moodModal.classList.add('active');
+        showMoodSelectStep();
+    }
+}
+
+function closeMoodModal() {
+    if (moodModal) {
+        moodModal.classList.remove('active');
+    }
+}
+
+function showMoodSelectStep() {
+    if (moodSelectStep) moodSelectStep.style.display = 'grid';
+    if (moodResultsStep) moodResultsStep.style.display = 'none';
+}
+
+async function fetchAndRenderMood(mood, moodTitleText) {
+    if (!moodResultsStep || !moodSelectStep || !moodMovieGrid || !moodResultsTitle) return;
+    
+    // Switch view to results with loading state
+    moodSelectStep.style.display = 'none';
+    moodResultsStep.style.display = 'flex';
+    moodResultsTitle.textContent = `${moodTitleText} 🩸`;
+    moodMovieGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังอัญเชิญหนังสยองขวัญแนะนำตามอารมณ์ของคุณ...</div>';
+    
+    try {
+        let params = {
+            with_genres: TMDB.HORROR_GENRE_ID,
+            page: 1,
+            sort_by: 'popularity.desc'
+        };
+        
+        // Custom criteria for each mood
+        switch (mood) {
+            case 'jumpscare':
+                // Horror + Thriller
+                params.with_genres = `${TMDB.HORROR_GENRE_ID},53`;
+                break;
+            case 'slasher':
+                // Horror with keywords: slasher (12336) or gore (9748)
+                params.with_keywords = '12336|9748';
+                break;
+            case 'psychological':
+                // Horror + Mystery
+                params.with_genres = `${TMDB.HORROR_GENRE_ID},9648`;
+                break;
+            case 'monster':
+                // Horror + Sci-Fi
+                params.with_genres = `${TMDB.HORROR_GENRE_ID},878`;
+                break;
+            case 'supernatural':
+                // Horror + Fantasy
+                params.with_genres = `${TMDB.HORROR_GENRE_ID},14`;
+                break;
+            case 'zombie':
+                // Horror with keywords: zombie (12377) or vampire (3141)
+                params.with_keywords = '12377|3141';
+                break;
+        }
+        
+        const response = await TMDB.fetchFromTMDB('/discover/movie', params);
+        
+        moodMovieGrid.innerHTML = '';
+        
+        if (!response.results || response.results.length === 0) {
+            moodMovieGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-dark);">ไม่พบหนังสยองขวัญที่เหมาะสมกับอารมณ์นี้ชั่วคราว</div>';
+            return;
+        }
+        
+        // Take top 8 matching movies to display in a clean grid
+        const moviesToRender = response.results.slice(0, 8);
+        moviesToRender.forEach(movie => {
+            const savedRecord = Storage.getMovieFromCollection(movie.id);
+            const card = createMovieCard(savedRecord || movie, !!savedRecord);
+            moodMovieGrid.appendChild(card);
+        });
+        
+    } catch (err) {
+        console.error("Failed to fetch horror movies for mood:", mood, err);
+        moodMovieGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-secondary);"><i class="fa-solid fa-wifi-slash"></i> ไม่สามารถดึงข้อมูลภาพยนตร์ออนไลน์ได้ชั่วคราว ลองใหม่อีกครั้งภายหลังครับ 🩸</div>';
     }
 }
