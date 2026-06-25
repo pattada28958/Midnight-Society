@@ -702,9 +702,17 @@ function setupEventListeners() {
     shareBtn.addEventListener('click', handleShareLinkGeneration);
 
     // Backup & Restore
-    exportBtn.addEventListener('click', handleExport);
+    exportBtn.addEventListener('click', openExportGuideModal);
     importBtnTrigger.addEventListener('click', () => importFileInput.click());
     importFileInput.addEventListener('change', handleImport);
+
+    // Export Guide Modal
+    const exportGuideModal = document.getElementById('export-guide-modal');
+    const exportGuideCloseBtn = document.getElementById('export-guide-close-btn');
+    const exportGuideDownloadBtn = document.getElementById('export-guide-download-btn');
+    if (exportGuideCloseBtn) exportGuideCloseBtn.addEventListener('click', closeExportGuideModal);
+    if (exportGuideDownloadBtn) exportGuideDownloadBtn.addEventListener('click', () => { handleExport(); closeExportGuideModal(); });
+    if (exportGuideModal) exportGuideModal.addEventListener('click', (e) => { if (e.target === exportGuideModal) closeExportGuideModal(); });
 
     // Exit Shared view button
     exitSharedBtn.addEventListener('click', () => {
@@ -2209,6 +2217,30 @@ function decodeCollectionData(base64Str) {
         production_countries: [] 
     }));
 }
+
+// --- EXPORT GUIDE MODAL CONTROLS ---
+function openExportGuideModal() {
+    const modal = document.getElementById('export-guide-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    } else {
+        console.error('export-guide-modal not found in DOM');
+    }
+}
+
+function closeExportGuideModal() {
+    const modal = document.getElementById('export-guide-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+// Expose to global scope so inline onclick works
+window.openExportGuideModal = openExportGuideModal;
+window.closeExportGuideModal = closeExportGuideModal;
+window.handleExport = handleExport;
 
 function handleExport() {
     const collectionData = Storage.exportCollection();

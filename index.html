@@ -50,13 +50,13 @@
                 <button class="btn-icon" id="share-btn" title="คัดลอกลิงก์แชร์คอลเล็กชัน">
                     <i class="fa-solid fa-share-nodes"></i>
                 </button>
-                <button class="btn-icon" id="export-btn" title="ส่งออกข้อมูลคอลเล็กชัน (Backup JSON)">
-                    <i class="fa-solid fa-download"></i>
+                <button class="btn-icon" id="export-btn" title="ส่งคอลเล็กชันไป iPad / อุปกรณ์อื่น" onclick="openExportGuideModal()">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
                 </button>
-                <button class="btn-icon" id="import-btn-trigger" title="นำเข้าข้อมูลคอลเล็กชัน (Restore JSON)">
+                <button class="btn-icon" id="import-btn-trigger" title="นำเข้าคอลเล็กชันจากไฟล์">
                     <i class="fa-solid fa-upload"></i>
                 </button>
-                <input type="file" id="import-file-input" style="display: none;" accept=".json">
+                <input type="file" id="import-file-input" style="display: none;" accept=".json,application/json">
             </div>
         </header>
 
@@ -66,9 +66,14 @@
             <div id="shared-banner" class="shared-profile-banner" style="display: none;">
                 <div class="shared-banner-content">
                     <span><i class="fa-solid fa-eye animate-pulse"></i> คุณกำลังดูคอลเล็กชันสะสมของเพื่อน 🩸</span>
-                    <button class="exit-shared-btn" id="exit-shared-btn">
-                        <i class="fa-solid fa-arrow-left-long"></i> กลับไปยังคอลเล็กชันของฉัน
-                    </button>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button class="import-shared-btn" id="import-shared-btn">
+                            <i class="fa-solid fa-download"></i> บันทึกเข้าเครื่องของฉัน
+                        </button>
+                        <button class="exit-shared-btn" id="exit-shared-btn">
+                            <i class="fa-solid fa-arrow-left-long"></i> กลับไปยังคอลเล็กชันของฉัน
+                        </button>
+                    </div>
                 </div>
             </div>
             <!-- HERO BANNER -->
@@ -1120,9 +1125,51 @@
         </div>
     </div>
 
+    <!-- EXPORT GUIDE MODAL -->
+    <div id="export-guide-modal" class="modal-overlay" style="display: none; z-index: 3000;" onclick="if(event.target===this)closeExportGuideModal()">
+        <div class="modal-content" style="max-width: 480px;">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fa-solid fa-mobile-screen-button" style="color: var(--primary);"></i> ส่งคอลเล็กชันไป iPad</h2>
+                <button class="modal-close-btn" id="export-guide-close-btn" onclick="closeExportGuideModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="export-guide-steps">
+                    <div class="export-step">
+                        <div class="export-step-num">1</div>
+                        <div class="export-step-content">
+                            <strong>บันทึกไฟล์จากคอมพิวเตอร์</strong>
+                            <p>กดปุ่มด้านล่างเพื่อดาวน์โหลดไฟล์คอลเล็กชัน <code>.json</code> มาที่เครื่องของคุณ</p>
+                        </div>
+                    </div>
+                    <div class="export-step">
+                        <div class="export-step-num">2</div>
+                        <div class="export-step-content">
+                            <strong>ส่งไฟล์ไป iPad</strong>
+                            <p>ใช้ <strong>AirDrop</strong>, <strong>iCloud Drive</strong>, หรือส่งผ่าน <strong>Line / Email</strong> ก็ได้ ขอให้ได้ไฟล์ .json อยู่บน iPad</p>
+                        </div>
+                    </div>
+                    <div class="export-step">
+                        <div class="export-step-num">3</div>
+                        <div class="export-step-content">
+                            <strong>เปิดเว็บบน iPad แล้ว Import</strong>
+                            <p>กดปุ่ม <i class="fa-solid fa-upload" style="color:var(--primary)"></i> <strong>นำเข้าคอลเล็กชัน</strong> เลือกไฟล์ที่ได้รับ แล้วคอลเล็กชันของคุณจะปรากฏครบถ้วน 🩸</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="export-guide-note">
+                    <i class="fa-solid fa-circle-info" style="color: var(--primary); margin-right: 6px;"></i>
+                    คอลเล็กชันถูกเก็บในเครื่องเท่านั้น ระบบ Share Link อาจไม่ทำงานหากมีหนังเยอะ เพราะ Safari/Line บน iPad จะตัด URL ที่ยาวเกินไป วิธีไฟล์นี้ปลอดภัย 100%
+                </div>
+                <button class="btn-primary" id="export-guide-download-btn" onclick="handleExport(); closeExportGuideModal();" style="width: 100%; margin-top: 1.25rem; padding: 0.9rem; font-size: 0.95rem;">
+                    <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์คอลเล็กชัน (.json)
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Controller Scripts -->
-    <script src="storage.js"></script>
-    <script src="tmdb.js"></script>
-    <script src="app.js"></script>
+    <script src="storage.js?v=20250625"></script>
+    <script src="tmdb.js?v=20250625"></script>
+    <script src="app.js?v=20250625"></script>
 </body>
 </html>
