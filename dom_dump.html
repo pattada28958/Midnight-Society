@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="th"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Midnight Society - คอลเล็กชันหนังสยองขวัญส่วนตัว</title>
+    
+    <!-- FontAwesome for spooky and clean icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+    <script>
+        window.errorsLog = [];
+        window.onerror = function(msg, url, line, col, error) {
+            var err = msg + " at " + url + ":" + line + ":" + col;
+            window.errorsLog.push(err);
+            var div = document.getElementById('debug-errors');
+            if (div) {
+                div.innerHTML += '<p>ERROR: ' + err + '</p>';
+            }
+        };
+    </script>
+</head>
+<body>
+    <div id="debug-errors" style="background: black; color: red; font-family: monospace; font-size: 14px; padding: 10px; z-index: 99999; position: fixed; top: 0; left: 0; right: 0; max-height: 200px; overflow-y: auto; display: block; border-bottom: 2px solid red;"></div>
+
+
+    <div class="app-container">
+        
+        <!-- HEADER -->
+        <header>
+            <div class="logo">
+                <i class="fa-solid fa-skull-crossbones logo-icon"></i>
+                <span class="logo-text">MIDNIGHT SOCIETY</span>
+            </div>
+            
+            <nav>
+                <button class="nav-tab active" id="tab-collection" data-tab="collection">
+                    <i class="fa-solid fa-film"></i> คอลเล็กชันของฉัน
+                </button>
+                <button class="nav-tab" id="tab-playlists" data-tab="playlists">
+                    <i class="fa-solid fa-skull"></i> เพลย์ลิสต์มาราธอน
+                </button>
+                <button class="nav-tab" id="tab-characters" data-tab="characters">
+                    <i class="fa-solid fa-mask"></i> ทำเนียบฆาตกร
+                </button>
+                <button class="nav-tab" id="tab-finalgirls" data-tab="finalgirls">
+                    <i class="fa-solid fa-shield-halved"></i> ไฟนอลเกิร์ล (Final Girls)
+                </button>
+                <button class="nav-tab" id="tab-discover" data-tab="discover">
+                    <i class="fa-solid fa-magnifying-glass"></i> ค้นหาหนังใหม่
+                </button>
+            </nav>
+            
+            <div class="backup-actions">
+                <button class="btn-icon" id="soundscape-btn" title="เสียงประกอบบรรยากาศ (เปิด/ปิด)">
+                    <i class="fa-solid fa-volume-xmark"></i>
+                </button>
+                <button class="btn-icon" id="settings-btn" title="ตั้งค่าระบบ (ดึงคะแนนอัตโนมัติ)">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+                <button class="btn-icon" id="share-btn" title="คัดลอกลิงก์แชร์คอลเล็กชัน">
+                    <i class="fa-solid fa-share-nodes"></i>
+                </button>
+                <button class="btn-icon" id="export-btn" title="ส่งคอลเล็กชันไป iPad / อุปกรณ์อื่น" onclick="openExportGuideModal()">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                </button>
+                <button class="btn-icon" id="import-btn-trigger" title="นำเข้าคอลเล็กชันจากไฟล์">
+                    <i class="fa-solid fa-upload"></i>
+                </button>
+                <input type="file" id="import-file-input" style="display: none;" accept=".json,application/json">
+            </div>
+        </header>
+
+        <!-- MAIN WINDOW -->
+        <main>
+            <!-- SHARED PROFILE VIEW BANNER -->
+            <div id="shared-banner" class="shared-profile-banner" style="display: none;">
+                <div class="shared-banner-content">
+                    <span><i class="fa-solid fa-eye animate-pulse"></i> คุณกำลังดูคอลเล็กชันสะสมของเพื่อน 🩸</span>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button class="import-shared-btn" id="import-shared-btn">
+                            <i class="fa-solid fa-download"></i> บันทึกเข้าเครื่องของฉัน
+                        </button>
+                        <button class="exit-shared-btn" id="exit-shared-btn">
+                            <i class="fa-solid fa-arrow-left-long"></i> กลับไปยังคอลเล็กชันของฉัน
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- HERO BANNER -->
+            <div id="hero-banner" class="hero-banner" style="display: flex;">
+                <canvas id="hero-fog-canvas" width="714" height="378"></canvas>
+                
+                <!-- Hero Navigation Arrows -->
+                <button class="hero-nav-btn prev" id="hero-prev-btn" title="เรื่องก่อนหน้า"><i class="fa-solid fa-chevron-left"></i></button>
+                <button class="hero-nav-btn next" id="hero-next-btn" title="เรื่องถัดไป"><i class="fa-solid fa-chevron-right"></i></button>
+                
+                <div class="hero-poster-wrapper" id="hero-poster-wrapper">
+                    <img id="hero-poster" src="https://image.tmdb.org/t/p/w342/w19R39d892pA77N44bE28QcK1S.jpg" alt="Movie Poster">
+                </div>
+                <div class="hero-banner-content" id="hero-banner-content">
+                    <div class="hero-tagline"><i class="fa-solid fa-fire text-danger animate-pulse"></i> หนังสยองขวัญแนะนำคืนนี้</div>
+                    <h1 class="hero-title" id="hero-title">เดอะ คอนเจอริ่ง คนเรียกผี (The Conjuring)</h1>
+                    <div class="hero-meta" id="hero-meta">
+                        <span id="hero-year"><i class="fa-regular fa-calendar"></i> 2013</span>
+                        <span id="hero-runtime"><i class="fa-regular fa-clock"></i> 112 นาที</span>
+                        <span class="meta-rating" id="hero-rating"><i class="fa-solid fa-star"></i> TMDB 7.5</span>
+                    </div>
+                    <p class="hero-description" id="hero-description">เรื่องราวของคู่สามีภรรยานักปราบผี เอ็ด และ ลอเรน วอร์เรน ที่ถูกเชิญไปช่วยครอบครัวหนึ่งที่เพิ่งย้ายเข้าไปอยู่ในบ้านหลังใหม่ในรัฐโรดไอส์แลนด์ และพบกับปรากฏการณ์เหนือธรรมชาติที่น่าสะพรึงกลัวที่สุดในชีวิตของพวกเขา</p>
+                    <div class="hero-buttons">
+                        <button class="btn-primary" id="hero-details-btn"><i class="fa-solid fa-circle-info"></i> ดูรายละเอียด</button>
+                        <button class="btn-primary btn-trailer" id="hero-trailer-btn" style="display: block;" data-video-key="k10ETZ74FM4"><i class="fa-solid fa-play"></i> ชมตัวอย่าง</button>
+                    </div>
+                </div>
+                
+                <!-- Hero Indicators (Dots) -->
+                <div class="hero-indicators" id="hero-indicators"><div class="hero-dot active"></div><div class="hero-dot "></div></div>
+            </div>
+
+            <!-- DASHBOARD / COLLECTION STATS -->
+            <section class="dashboard-stats" id="stats-panel">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-clapperboard"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">หนังทั้งหมด</span>
+                        <span class="stat-value" id="stat-total">0</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">ดูแล้ว</span>
+                        <span class="stat-value" id="stat-watched">0</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">อยากดู / กำลังดู</span>
+                        <span class="stat-value" id="stat-watchlist">0</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-star"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">คะแนนเฉลี่ยส่วนตัว</span>
+                        <span class="stat-value" id="stat-avg">0.0</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- HORROR SPECIAL ACTIVITIES PANEL -->
+            <div class="horror-actions-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem;">
+                <button class="discover-btn" id="open-roulette-btn" style="background: linear-gradient(135deg, var(--primary), #991b1b); font-size: 0.85rem; padding: 0.65rem 0.5rem; justify-content: center; height: 40px; font-weight: 700; border-radius: 10px;">
+                    <i class="fa-solid fa-circle-notch"></i> วงล้อเสี่ยงตาย
+                </button>
+                <button class="discover-btn" id="open-tarot-btn" style="background: linear-gradient(135deg, var(--primary), #581c87); font-size: 0.85rem; padding: 0.65rem 0.5rem; justify-content: center; height: 40px; font-weight: 700; border-radius: 10px;">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> ไพ่ยิปซีทำนายดวงหลอน
+                </button>
+                <button class="discover-btn" id="open-bingo-btn" style="background: linear-gradient(135deg, var(--primary), #065f46); font-size: 0.85rem; padding: 0.65rem 0.5rem; justify-content: center; height: 40px; font-weight: 700; border-radius: 10px;">
+                    <i class="fa-solid fa-table-cells"></i> บิงโกภารกิจ
+                </button>
+                <button class="discover-btn" id="open-soundboard-btn" style="background: linear-gradient(135deg, var(--primary), #075985); font-size: 0.85rem; padding: 0.65rem 0.5rem; justify-content: center; height: 40px; font-weight: 700; border-radius: 10px;">
+                    <i class="fa-solid fa-music"></i> ซาวด์บอร์ดหลอน
+                </button>
+                <button class="discover-btn" id="open-quiz-btn" style="background: linear-gradient(135deg, var(--primary), #854d0e); font-size: 0.85rem; padding: 0.65rem 0.5rem; justify-content: center; height: 40px; font-weight: 700; border-radius: 10px;">
+                    <i class="fa-solid fa-clipboard-question"></i> ทดสอบจิตวิทยา
+                </button>
+                <button class="discover-btn" id="open-trivia-btn" style="background: linear-gradient(135deg, var(--primary), #991b1b); font-size: 0.85rem; padding: 0.65rem 0.5rem; justify-content: center; height: 40px; font-weight: 700; border-radius: 10px;">
+                    <i class="fa-solid fa-brain"></i> ทายหนังสยองขวัญ
+                </button>
+            </div>
+
+            <!-- ANALYTICS PANEL & TOGGLE -->
+            <div style="margin-bottom: 2rem;">
+                <button id="analytics-toggle-btn" class="discover-btn" style="width: 100%; border-radius: 12px; height: 44px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: var(--transition-smooth);">
+                    <i class="fa-solid fa-chart-pie"></i> เจาะลึกวิเคราะห์ความหลอน (Horror Analytics)
+                </button>
+                <div id="analytics-panel" class="analytics-panel" style="display: none; margin-top: 1.25rem;">
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <h4><i class="fa-solid fa-skull"></i> ฉายาความสะพรึงของคุณ</h4>
+                            <div class="user-badge-container">
+                                <span class="user-horror-badge" id="user-horror-badge">เหยื่อฝึกหัด</span>
+                            </div>
+                            <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.50rem; text-align: center; line-height: 1.4;" id="user-horror-badge-desc">คุณเพิ่งเริ่มต้นสะสมขุมทรัพย์ความหลอน...</p>
+                        </div>
+                        <div class="analytics-card">
+                            <h4><i class="fa-solid fa-chart-bar"></i> หมวดหมู่ย่อยยอดนิยม (Subgenres)</h4>
+                            <div id="genre-analytics-bars" class="analytics-bars-list">
+                                <!-- Dynamic progress bars -->
+                            </div>
+                        </div>
+                        <div class="analytics-card">
+                            <h4><i class="fa-solid fa-clock"></i> ยุคสมัยของหนังสยองขวัญ</h4>
+                            <div id="era-analytics-bars" class="analytics-bars-list">
+                                <!-- Era progress bars -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Achievements Room -->
+                    <div class="achievements-section" style="margin-top: 2rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+                        <h4 style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem; text-transform: uppercase;">
+                            <i class="fa-solid fa-trophy" style="color: var(--rating-star);"></i> ห้องเกียรติยศคนกล้า (Trophy Room)
+                        </h4>
+                        <div id="achievements-grid" class="achievements-grid">
+                            <!-- Achievements dynamically loaded by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTROLS PANEL (FILTER / SEARCH) -->
+            <section class="control-panel">
+                <!-- Search Row -->
+                <div class="search-row">
+                    <div class="search-wrapper">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="search-input" class="search-input" placeholder="ค้นหาตามชื่อหนังภาษาไทย หรือภาษาอังกฤษ...">
+                        <div id="search-suggestions" class="search-suggestions-dropdown" style="display: none;"></div>
+                    </div>
+                    <button class="discover-btn" id="search-btn">
+                        <i class="fa-solid fa-ghost"></i> ค้นหา
+                    </button>
+                </div>
+                
+                <!-- Filters Row -->
+                <div class="filters-row">
+                    <!-- Genre Filter -->
+                    <div class="filter-group">
+                        <label for="genre-filter">หมวดหมู่ย่อย</label>
+                        <select id="genre-filter" class="filter-select">
+                            <option value="">ทั้งหมด</option>
+                            <!-- Will be populated dynamically or static options -->
+                            <option value="27">Horror (สยองขวัญทั่วไป)</option>
+                            <option value="35">Comedy Horror (สยองปนตลก)</option>
+                            <option value="53">Thriller (ระทึกขวัญสั่นประสาท)</option>
+                            <option value="9648">Mystery (ลึกลับสืบสวน)</option>
+                            <option value="878">Sci-Fi Horror (สยองวิทยาศาสตร์)</option>
+                            <option value="28">Action Horror (สยองขวัญแอคชัน)</option>
+                            <option value="14">Fantasy Horror (แฟนตาซีเหนือธรรมชาติ)</option>
+                        </select>
+                    </div>
+
+                    <!-- Year Range Filter -->
+                    <div class="filter-group">
+                        <label for="year-filter">ปีที่ฉาย</label>
+                        <select id="year-filter" class="filter-select">
+                            <option value="">ทั้งหมด</option>
+                            <option value="2020">ปี 2020 - ปัจจุบัน</option>
+                            <option value="2010">ปี 2010 - 2019</option>
+                            <option value="2000">ปี 2000 - 2009</option>
+                            <option value="1990">ยุค 90s (1990 - 1999)</option>
+                            <option value="1980">ยุค 80s (1980 - 1989)</option>
+                            <option value="1970">ยุค 70s (1970 - 1979)</option>
+                            <option value="1960">คลาสสิก (ก่อนปี 1970)</option>
+                        </select>
+                    </div>
+
+                    <!-- Country Filter -->
+                    <div class="filter-group">
+                        <label for="country-filter">ประเทศผู้สร้าง</label>
+                        <select id="country-filter" class="filter-select">
+                            <option value="">ทั้งหมด</option>
+                            <option value="TH">ประเทศไทย (Thailand)</option>
+                            <option value="US">สหรัฐอเมริกา (USA)</option>
+                            <option value="JP">ประเทศญี่ปุ่น (Japan)</option>
+                            <option value="KR">ประเทศเกาหลีใต้ (South Korea)</option>
+                            <option value="GB">สหราชอาณาจักร (UK)</option>
+                            <option value="ES">ประเทศสเปน (Spain)</option>
+                            <option value="OTHER">ประเทศอื่นๆ</option>
+                        </select>
+                    </div>
+
+                    <!-- Watch Status Filter -->
+                    <div class="filter-group">
+                        <label for="watch-status-filter">สถานะการรับชม</label>
+                        <select id="watch-status-filter" class="filter-select">
+                            <option value="">ทั้งหมด</option>
+                            <option value="watchlist">อยากดู (Watchlist)</option>
+                            <option value="watching">กำลังดู (Watching)</option>
+                            <option value="watched">ดูแล้ว (Watched)</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort Filter -->
+                    <div class="filter-group">
+                        <label for="sort-filter">จัดเรียงตาม</label>
+                        <select id="sort-filter" class="filter-select">
+                            <!-- Collection Mode options -->
+                            <option value="latest_added" id="sort-opt-latest">บันทึกล่าสุด</option>
+                            <option value="title_asc">ชื่อหนัง (ก-ฮ, A-Z)</option>
+                            <option value="personal_desc" id="sort-opt-personal">คะแนนส่วนตัว (สูง-ต่ำ)</option>
+                            <option value="tmdb_desc">คะแนน TMDB (สูง-ต่ำ)</option>
+                            <option value="year_desc">ปีหนังฉาย (ใหม่-เก่า)</option>
+                            <option value="year_asc">ปีหนังฉาย (เก่า-ใหม่)</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MOVIES LIST GRID SECTION -->
+            <section>
+                <h2 class="movies-section-title" id="section-title"><i class="fa-solid fa-skull"></i> คอลเล็กชันของฉัน (0 เรื่อง)</h2>
+                
+                <!-- Sliders Mode (Netflix-style horizontal rows) -->
+                <div id="sliders-mode-container" style="display: none;">
+                    <div class="slider-section">
+                        <div class="slider-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <h3 class="slider-title" style="margin-bottom: 0;"><i class="fa-solid fa-fire-flame-curved text-danger"></i> มาแรงยามค่ำคืน (Trending Now)</h3>
+                            <button class="view-all-link-btn" data-category="trending"><i class="fa-solid fa-eye"></i> ดูทั้งหมด <i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                        <div class="slider-container" id="slider-trending"></div>
+                    </div>
+                    <div class="slider-section">
+                        <div class="slider-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <h3 class="slider-title" style="margin-bottom: 0;"><i class="fa-solid fa-hourglass-half text-danger"></i> เร็ว ๆ นี้ยามค่ำคืน (Upcoming Horror)</h3>
+                            <button class="view-all-link-btn" data-category="upcoming"><i class="fa-solid fa-eye"></i> ดูทั้งหมด <i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                        <div class="slider-container" id="slider-upcoming"></div>
+                    </div>
+                    <div class="slider-section">
+                        <div class="slider-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <h3 class="slider-title" style="margin-bottom: 0;"><i class="fa-solid fa-ghost text-danger"></i> หลอนฮิตแนะนำ (Popular Hits)</h3>
+                            <button class="view-all-link-btn" data-category="popular"><i class="fa-solid fa-eye"></i> ดูทั้งหมด <i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                        <div class="slider-container" id="slider-popular-discover"></div>
+                    </div>
+                    <div class="slider-section">
+                        <div class="slider-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <h3 class="slider-title" style="margin-bottom: 0;"><i class="fa-solid fa-skull-crossbones text-danger"></i> หนังสยองขวัญทั้งหมด (All Horror)</h3>
+                            <button class="view-all-link-btn" data-category="all_horror"><i class="fa-solid fa-eye"></i> ดูทั้งหมด <i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                        <div class="slider-container" id="slider-all-horror"></div>
+                    </div>
+                </div>
+
+                <!-- Playlists Tab Container -->
+                <div id="playlists-tab-container" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                        <h3 class="slider-title" style="margin-bottom: 0;"><i class="fa-solid fa-skull-crossbones text-danger"></i> เพลย์ลิสต์วิ่งมาราธอนหนังสยองขวัญ</h3>
+                        <button class="discover-btn" id="create-playlist-btn">
+                            <i class="fa-solid fa-plus"></i> สร้างเพลย์ลิสต์ใหม่
+                        </button>
+                    </div>
+                    <div class="playlists-grid" id="playlists-grid">
+                        <!-- Playlists dynamically loaded here -->
+                    </div>
+                </div>
+
+                <!-- Characters Tab Container -->
+                <div id="characters-tab-container" style="display: none;">
+                    <h3 class="slider-title" style="margin-bottom: 1.5rem;"><i class="fa-solid fa-mask text-danger"></i> ทำเนียบฆาตกรและตัวละครสยองขวัญระดับตำนาน</h3>
+                    <div class="characters-grid" id="characters-grid">
+                        <!-- Characters dynamically loaded here -->
+                    </div>
+                </div>
+
+                <!-- Final Girls Tab Container -->
+                <div id="finalgirls-tab-container" style="display: none;">
+                    <h3 class="slider-title" style="margin-bottom: 1.5rem;"><i class="fa-solid fa-shield-halved text-success"></i> ทำเนียบผู้รอดชีวิตคนสุดท้าย (Final Girls)</h3>
+                    <div class="characters-grid" id="finalgirls-grid">
+                        <!-- Final Girls dynamically loaded here -->
+                    </div>
+                </div>
+
+                <!-- Grid Mode -->
+                <div id="grid-mode-container">
+                    <div class="movie-grid" id="movie-grid">
+        <div class="empty-state">
+            <i class="fa-solid fa-ghost"></i>
+            <h3>ไม่พบข้อมูล</h3>
+            <p>ไม่พบภาพยนตร์ในคอลเล็กชันของคุณ ลองปรับปรุงตัวกรอง หรือเปลี่ยนไปแท็บ "ค้นหาหนังใหม่"</p>
+        </div>
+    </div>
+
+                    <!-- Pagination (primarily for Grid Search Results in Discover Tab) -->
+                    <div class="pagination" id="pagination-container" style="display: none;">
+                        <button class="btn-nav" id="prev-page-btn" disabled="">
+                            <i class="fa-solid fa-arrow-left"></i> หน้าก่อนหน้า
+                        </button>
+                        <span id="page-number">หน้า 1 / 1</span>
+                        <button class="btn-nav" id="next-page-btn">
+                            หน้าถัดไป <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+            
+        </main>
+
+        <!-- DETAILED CINEMATIC MODAL -->
+        <div class="modal-overlay" id="movie-detail-modal">
+            <div class="modal-content-container">
+                <button class="modal-close-btn" id="modal-close-btn" title="ปิดหน้าต่าง">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                
+                <!-- Hero Image & Basic Details -->
+                <div class="modal-backdrop-hero" id="modal-backdrop">
+                    <div class="modal-hero-content">
+                        <div class="modal-poster-wrapper">
+                            <img src="" id="modal-poster" alt="Movie Poster">
+                        </div>
+                        <div class="modal-header-info">
+                            <div class="modal-tagline" id="modal-tagline"></div>
+                            <h1 class="modal-title" id="modal-title"></h1>
+                            <div class="modal-meta">
+                                <span id="modal-year"><i class="fa-regular fa-calendar"></i> -</span>
+                                <span id="modal-runtime"><i class="fa-regular fa-clock"></i> - นาที</span>
+                                <span id="modal-country"><i class="fa-solid fa-earth-americas"></i> -</span>
+                                <span id="modal-tmdb-rating" class="meta-rating"><i class="fa-solid fa-star"></i> TMDB -</span>
+                            </div>
+                            <div class="modal-hero-buttons" style="display: flex; gap: 0.75rem; margin-top: 0.75rem; flex-wrap: wrap;">
+                                <button class="btn-primary btn-trailer" id="modal-trailer-btn" style="display: none;">
+                                    <i class="fa-solid fa-play"></i> ชมตัวอย่างภาพยนตร์
+                                </button>
+                                <button class="btn-primary" id="modal-ticket-btn" style="background: linear-gradient(135deg, #f59e0b, var(--primary)); border: none; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2); display: none;">
+                                    <i class="fa-solid fa-ticket-simple"></i> ออกตั๋วหนังคืนหลอน
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Modal Details Body -->
+                <div class="modal-body">
+                    <!-- Left Side: Synopsis & Cast -->
+                    <div class="modal-main-column">
+                        <div>
+                            <h3 class="modal-section-title">เรื่องย่อ (Synopsis)</h3>
+                            <p class="overview-text" id="modal-overview"></p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="modal-section-title">นักแสดงหลัก (Cast &amp; Crew)</h3>
+                            <div class="cast-container" id="modal-cast-container">
+                                <!-- Cast members will be dynamically loaded -->
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="modal-section-title">แกลเลอรีภาพ (Gallery)</h3>
+                            <div class="gallery-container" id="modal-gallery-container">
+                                <!-- Gallery photos will be dynamically loaded -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Side: Personal Review & Watch Status -->
+                    <div class="modal-sidebar-column">
+                        <div class="interaction-box">
+                            <h3 class="modal-section-title" style="border-left-color: var(--primary);">บันทึกส่วนตัว</h3>
+                            
+                            <!-- Watch Status -->
+                            <div class="filter-group" style="margin-bottom: 0.75rem;">
+                                <label style="font-size: 0.75rem;">สถานะการรับชม</label>
+                            </div>
+                            <div class="watch-status-selector">
+                                <button class="status-btn" data-status="watchlist" id="status-btn-watchlist">
+                                    <i class="fa-solid fa-clock"></i> อยากดู
+                                </button>
+                                <button class="status-btn" data-status="watching" id="status-btn-watching">
+                                    <i class="fa-solid fa-play"></i> กำลังดู
+                                </button>
+                                <button class="status-btn" data-status="watched" id="status-btn-watched">
+                                    <i class="fa-solid fa-check"></i> ดูแล้ว
+                                </button>
+                            </div>
+                            
+                            <!-- Personal Rating -->
+                            <div class="personal-rating-picker">
+                                <div class="rating-header">
+                                    <label class="stat-label" style="text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">คะแนนของฉัน</label>
+                                    <div><span class="current-rating-num" id="current-rating-val">0</span><span style="color: var(--text-secondary); font-size: 0.8rem;">/10</span></div>
+                                </div>
+                                <div class="stars-container" id="modal-stars-container"><i class="fa-regular fa-star star-input" data-value="1"></i><i class="fa-regular fa-star star-input" data-value="2"></i><i class="fa-regular fa-star star-input" data-value="3"></i><i class="fa-regular fa-star star-input" data-value="4"></i><i class="fa-regular fa-star star-input" data-value="5"></i><i class="fa-regular fa-star star-input" data-value="6"></i><i class="fa-regular fa-star star-input" data-value="7"></i><i class="fa-regular fa-star star-input" data-value="8"></i><i class="fa-regular fa-star star-input" data-value="9"></i><i class="fa-regular fa-star star-input" data-value="10"></i></div>
+                            </div>
+                            
+                            <!-- Genres Container -->
+                            <div class="genre-info-box" style="margin-top: 1.25rem; margin-bottom: 0.75rem;">
+                                <label class="stat-label" style="font-size: 0.75rem; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 0.5rem;"><i class="fa-solid fa-tags"></i> ประเภทและหมวดหมู่ย่อย</label>
+                                <div id="modal-genres-container" style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                                    <!-- Genre badges populated by JS -->
+                                </div>
+                            </div>
+                            
+                            <!-- Review Text -->
+                            <div class="review-textarea-wrapper">
+                                <label class="stat-label" style="text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 0.5rem; display: block;">เขียนรีวิวสั้น ๆ</label>
+                                <textarea class="review-textarea" id="modal-review-text" placeholder="เขียนความเห็นของคุณเกี่ยวกับหนังสยองขวัญเรื่องนี้ตรงนี้..."></textarea>
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="modal-actions">
+                                <button class="btn-primary" id="modal-save-btn">
+                                    <i class="fa-solid fa-floppy-disk"></i> บันทึกลงคอลเล็กชัน
+                                </button>
+                                <button class="btn-danger" id="modal-delete-btn" style="display: none;">
+                                    <i class="fa-solid fa-trash"></i> ลบจากคอลเล็กชัน
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Survival Log Box -->
+                        <div class="interaction-box" style="margin-top: 1rem; border-color: rgba(255, 0, 60, 0.2);">
+                            <h3 class="modal-section-title" style="border-left-color: var(--primary); margin-bottom: 0.75rem;"><i class="fa-solid fa-skull"></i> ทำเนียบเหยื่อสยอง (Survival Log)</h3>
+                            
+                            <div class="filter-group" style="margin-bottom: 0.75rem;">
+                                <label style="font-size: 0.75rem; text-transform: none; letter-spacing: 0px; font-weight: 500;">หากคุณหลุดเข้าไปในเรื่องนี้?</label>
+                                <select id="survival-status-select" class="filter-select" style="padding: 0.5rem; font-size: 0.85rem; height: 36px;">
+                                    <option value="none">-- เลือกชะตากรรมของคุณ --</option>
+                                    <option value="survived">🟢 รอดชีวิตหวุดหวิด (Survived)</option>
+                                    <option value="dead">🔴 ตายอนาถแน่นอน (Deceased)</option>
+                                    <option value="possess">💀 กลายเป็นปีศาจ/ตัวร้าย (Possessed)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="review-textarea-wrapper" style="margin-bottom: 0.75rem;">
+                                <label style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 0.35rem;">คุณจะเสียชีวิตหรือรอดชีวิตอย่างไร?</label>
+                                <textarea class="review-textarea" id="survival-note-text" placeholder="อธิบายชะตากรรมเสี่ยงตายของคุณ..." style="height: 60px; font-size: 0.8rem;"></textarea>
+                            </div>
+                            
+                            <button class="btn-primary" id="survival-save-btn" style="width: 100%; padding: 0.5rem; font-size: 0.85rem; background: rgba(255,0,60,0.12); border: 1px solid rgba(255,0,60,0.25); box-shadow: none; height: 36px; border-radius: 6px;">
+                                <i class="fa-solid fa-pen-nib"></i> บันทึกชะตากรรมเหยื่อ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer>
+            <p>จัดทำโดยคนรักหนังสยองขวัญ By LOUIS and LILY 🩸 | ดึงข้อมูลภาพยนตร์โดย <a href="https://www.themoviedb.org" target="_blank">The Movie Database (TMDB) API</a></p>
+        </footer>
+
+    </div>
+
+    <!-- DETAILED TRAILER MODAL -->
+    <div class="modal-overlay" id="trailer-modal">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 1.25rem; width: 90%; max-width: 960px;">
+            <div class="trailer-content-wrapper" style="width: 100%; margin: 0;">
+                <button class="modal-close-btn" id="trailer-close-btn" title="ปิดตัวอย่าง">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="iframe-container">
+                    <iframe id="trailer-video" src="" frameborder="0" allow="autoplay; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen=""></iframe>
+                </div>
+            </div>
+            <a id="trailer-external-btn" href="" target="_blank" class="btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; justify-content: center; text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 8px; width: fit-content; font-weight: 600; box-shadow: 0 4px 15px rgba(255, 0, 60, 0.3);">
+                <i class="fa-brands fa-youtube"></i> เปิดเล่นบนเว็บไซต์ YouTube โดยตรง (แก้ปัญหาจอดำ / Error 153)
+            </a>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX MODAL -->
+    <div class="modal-overlay" id="lightbox-modal">
+        <div class="lightbox-content-wrapper">
+            <button class="modal-close-btn" id="lightbox-close-btn" title="ปิดกล่องภาพ">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="lightbox-image-container">
+                <img id="lightbox-img" src="" alt="Gallery Image Fullscreen">
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal-content-container" style="max-width: 450px; padding: 2rem;">
+            <button class="modal-close-btn" id="settings-close-btn" title="ปิดหน้าต่าง">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="modal-section-title" style="border-left-color: var(--primary); margin-bottom: 1.5rem;">ตั้งค่าระบบ</h3>
+            
+            <div class="filter-group" style="margin-bottom: 1.5rem;">
+                <label style="font-size: 0.8rem; margin-bottom: 0.5rem; display: block; color: var(--text-primary);">OMDb API Key (ดึงคะแนนอัตโนมัติ)</label>
+                <input type="text" id="settings-omdb-key" class="search-input" placeholder="เช่น a1b2c3d4" style="padding-left: 1rem;">
+                <small style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 0.5rem; display: block; line-height: 1.4;">
+                    * ขอรับ API Key ดึงคะแนนอัตโนมัติได้ฟรีที่: <a href="http://www.omdbapi.com/apikey.aspx" target="_blank" style="color: var(--primary); text-decoration: underline;">omdbapi.com/apikey.aspx</a> (กรอกข้อมูล เลือก FREE แล้วยืนยันในอีเมลเพื่อคัดลอกคีย์มาใส่ในช่องนี้ครับ)
+                </small>
+            </div>
+            
+            <div class="filter-group" style="margin-bottom: 1.5rem;">
+                <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; color: var(--text-primary); font-size: 0.85rem; user-select: none;">
+                    <input type="checkbox" id="settings-jumpscare-toggle" checked="" style="width: auto; height: auto; margin-right: 0.25rem;">
+                    <span>เปิดโหมด Jump Scare คืนความว่างงาน 🩸</span>
+                </label>
+                <small style="color: var(--text-secondary); font-size: 0.72rem; display: block; margin-top: 0.25rem; line-height: 1.4;">
+                    * หากเปิดทิ้งหน้าจอว่างไว้เกิน 60 วินาที จะมีเอฟเฟกต์สะดุ้งหลอนสั่นหน้าจอกลัวผีขึ้นมา
+                </small>
+            </div>
+            
+            <div class="filter-group" style="margin-bottom: 1.5rem;">
+                <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; color: var(--text-primary); font-size: 0.85rem; user-select: none;">
+                    <input type="checkbox" id="settings-soundscape-toggle" style="width: auto; height: auto; margin-right: 0.25rem;">
+                    <span>เปิดเสียงบรรยากาศ Midnight Soundscapes 🦇</span>
+                </label>
+                <small style="color: var(--text-secondary); font-size: 0.72rem; display: block; margin-top: 0.25rem; line-height: 1.4;">
+                    * สังเคราะห์เสียงลมพัดและซาวด์เอฟเฟกต์หลอน ๆ แบบเรียลไทม์ผ่านบราวเซอร์ของคุณ
+                </small>
+            </div>
+            
+            <button class="btn-primary" id="settings-save-btn" style="width: 100%;">
+                <i class="fa-solid fa-floppy-disk"></i> บันทึกการตั้งค่า
+            </button>
+        </div>
+    </div>
+
+    <!-- TICKET GENERATOR MODAL -->
+    <div class="modal-overlay" id="ticket-modal">
+        <div class="modal-content-container" style="max-width: 650px; padding: 2rem;">
+            <button class="modal-close-btn" id="ticket-close-btn" title="ปิดหน้าต่าง">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="modal-section-title" style="border-left-color: var(--primary); margin-bottom: 1.5rem;">ตั๋วภาพยนตร์คืนหลอนส่วนตัว</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="filter-group">
+                        <label style="font-size: 0.8rem; margin-bottom: 0.35rem; display: block; color: var(--text-primary);">ชื่อผู้ซื้อตั๋ว (Owner Name)</label>
+                        <input type="text" id="ticket-owner-name" class="search-input" placeholder="กรอกชื่อของคุณ..." style="padding-left: 1rem;" value="LOUIS">
+                    </div>
+                    
+                    <div style="display: flex; gap: 0.5rem;">
+                        <div class="filter-group" style="flex: 1;">
+                            <label style="font-size: 0.8rem; margin-bottom: 0.35rem; display: block; color: var(--text-primary);">เลขที่นั่ง (Seat No.)</label>
+                            <input type="text" id="ticket-seat-no" class="search-input" style="padding-left: 1rem; text-align: center; font-weight: 700; color: var(--primary);" readonly="" value="B-13">
+                        </div>
+                        <button class="btn-primary" id="ticket-random-seat-btn" style="align-self: flex-end; height: 44px; padding: 0 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); color: var(--text-primary); font-size: 0.85rem; font-weight: 600; box-shadow: none;">
+                            <i class="fa-solid fa-dice"></i> สุ่มที่นั่ง
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="display: flex; justify-content: center; background: rgba(0, 0, 0, 0.4); padding: 1rem; border-radius: 12px; border: 1px solid var(--glass-border); overflow-x: auto;">
+                    <canvas id="ticket-canvas" width="600" height="250" style="max-width: 100%; height: auto; display: block; border-radius: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);"></canvas>
+                </div>
+            </div>
+            
+            <button class="btn-primary" id="ticket-download-btn" style="width: 100%; background: linear-gradient(135deg, var(--primary), var(--accent-orange)); border: none; font-size: 1rem; font-weight: 700; box-shadow: 0 4px 20px rgba(255, 0, 60, 0.3);">
+                <i class="fa-solid fa-download"></i> ดาวน์โหลดตั๋วหนัง (.PNG)
+            </button>
+        </div>
+    </div>
+
+    <!-- ACTOR MOVIES MODAL -->
+    <div class="modal-overlay" id="actor-movies-modal">
+        <div class="modal-content-container" style="max-width: 600px; padding: 2rem;">
+            <button class="modal-close-btn" id="actor-movies-close-btn" title="ปิดหน้าต่าง">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div style="display: flex; align-items: center; gap: 1.25rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">
+                <div id="actor-profile-img-wrapper" style="width: 60px; height: 60px; border-radius: 50%; overflow: hidden; border: 2px solid var(--primary);">
+                    <img id="actor-profile-img" src="" alt="Actor Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div>
+                    <h3 id="actor-movies-title" style="margin: 0; color: var(--text-primary);">ผลงานของนักแสดง</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;"><i class="fa-solid fa-skull"></i> ผลงานในหนังสยองขวัญเรื่องอื่นๆ</p>
+                </div>
+            </div>
+            <div id="actor-movies-list" style="display: flex; flex-direction: column; gap: 1rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;">
+                <!-- Movie list items will be inserted dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- CHARACTER DETAIL MODAL -->
+    <div class="modal-overlay" id="character-detail-modal">
+        <div class="modal-content-container" style="max-width: 900px;">
+            <button class="modal-close-btn" id="character-detail-close-btn" title="ปิดหน้าต่าง">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <!-- Character Hero Backdrop -->
+            <div class="modal-backdrop-hero" id="character-backdrop" style="height: 250px;">
+                <div class="modal-hero-content">
+                    <div class="modal-poster-wrapper" style="width: 130px; display: block;">
+                        <img src="" id="character-poster" alt="Character Poster">
+                    </div>
+                    <div class="modal-header-info">
+                        <div class="modal-tagline"><i class="fa-solid fa-skull animate-pulse"></i> ทำเนียบฆาตกรระดับตำนาน</div>
+                        <h1 class="modal-title" id="character-name">-</h1>
+                        <div class="modal-meta" style="margin-top: 0.5rem;">
+                            <span id="character-english"><i class="fa-regular fa-user"></i> -</span>
+                            <span id="character-weapon"><i class="fa-solid fa-gavel"></i> อาวุธ: -</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Character Modal Body -->
+            <div class="modal-body">
+                <!-- Left Column: Biography & Movies -->
+                <div class="modal-main-column">
+                    <div>
+                        <h3 class="modal-section-title">ประวัติและความเป็นมา (Biography)</h3>
+                        <p class="overview-text" id="character-bio" style="max-height: none; font-size: 0.9rem; line-height: 1.6;"></p>
+                    </div>
+                    
+                    <div style="margin-top: 1.5rem;">
+                        <h3 class="modal-section-title">ภาพยนตร์แนะนำ (Featured Film)</h3>
+                        <div id="character-featured-movie-link" class="actor-movie-item" style="cursor: pointer;">
+                            <!-- Will be linked to TMDB detail modal -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column: Stats & Survival Simulator -->
+                <div class="modal-sidebar-column">
+                    <div class="interaction-box">
+                        <h3 class="modal-section-title" style="border-left-color: var(--primary);">ค่าสถานะความสยองขวัญ (Horror Stats)</h3>
+                        
+                        <div class="analytics-bars-list" style="margin-bottom: 1.5rem;">
+                            <div class="analytics-bar-item">
+                                <div class="analytics-bar-label">
+                                    <span>ระดับความโหด (Brutality)</span>
+                                    <span id="stat-val-brutality">- / 10</span>
+                                </div>
+                                <div class="analytics-bar-bg">
+                                    <div class="analytics-bar-fill" id="stat-bar-brutality" style="width: 0%;"></div>
+                                </div>
+                            </div>
+                            <div class="analytics-bar-item">
+                                <div class="analytics-bar-label">
+                                    <span>การซุ่มโจมตี (Stealth)</span>
+                                    <span id="stat-val-stealth">- / 10</span>
+                                </div>
+                                <div class="analytics-bar-bg">
+                                    <div class="analytics-bar-fill" id="stat-bar-stealth" style="width: 0%;"></div>
+                                </div>
+                            </div>
+                            <div class="analytics-bar-item">
+                                <div class="analytics-bar-label">
+                                    <span>ความว่องไว (Speed)</span>
+                                    <span id="stat-val-speed">- / 10</span>
+                                </div>
+                                <div class="analytics-bar-bg">
+                                    <div class="analytics-bar-fill" id="stat-bar-speed" style="width: 0%;"></div>
+                                </div>
+                            </div>
+                            <div class="analytics-bar-item">
+                                <div class="analytics-bar-label">
+                                    <span>พลังเหนือธรรมชาติ (Supernatural)</span>
+                                    <span id="stat-val-supernatural">- / 10</span>
+                                </div>
+                                <div class="analytics-bar-bg">
+                                    <div class="analytics-bar-fill" id="stat-bar-supernatural" style="width: 0%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Survival Simulator -->
+                    <div class="interaction-box" style="margin-top: 1rem; border-color: rgba(255, 0, 60, 0.25);">
+                        <h3 class="modal-section-title" style="border-left-color: var(--primary);"><i class="fa-solid fa-gamepad"></i> จำลองการเผชิญหน้า (Survival Simulator)</h3>
+                        <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
+                            หากคุณพบฆาตกรคนนี้ในคืนหลอน คุณจะเลือกทำอย่างไร? ระบบจะคำนวณโอกาสรอดชีวิตของคุณพร้อมแสดงผลลัพธ์
+                        </p>
+                        
+                        <div class="watch-status-selector" style="grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
+                            <button class="status-btn" data-choice="run" id="sim-btn-run"><i class="fa-solid fa-person-running"></i> วิ่งหนีสุดชีวิต</button>
+                            <button class="status-btn" data-choice="hide" id="sim-btn-hide"><i class="fa-solid fa-eye-slash"></i> หาที่ซ่อนแอบ</button>
+                            <button class="status-btn" data-choice="fight" id="sim-btn-fight"><i class="fa-solid fa-hand-fist"></i> สู้กลับขาดใจ</button>
+                            <button class="status-btn" data-choice="trick" id="sim-btn-trick"><i class="fa-solid fa-brain"></i> ใช้ไหวพริบเจรจา</button>
+                        </div>
+                        
+                        <!-- Simulation result area -->
+                        <div id="sim-result-box" style="display: none; padding: 0.85rem; background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px dashed var(--glass-border); animation: fadeIn 0.4s ease;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary);">ผลลัพธ์จำลอง:</span>
+                                <span id="sim-survival-rate" style="font-size: 0.85rem; font-weight: 800; color: var(--primary);">โอกาสรอด 0%</span>
+                            </div>
+                            <p id="sim-outcome-text" style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4; margin: 0;"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JUMPSCARE EASTER EGG OVERLAY -->
+    <div class="modal-overlay jumpscare-overlay" id="jumpscare-overlay">
+        <div class="jumpscare-content">
+            <i class="fa-solid fa-ghost jumpscare-icon animate-pulse"></i>
+            <h2 class="jumpscare-title">แฮ่! 🩸</h2>
+            <p class="jumpscare-text">ขยับเมาส์หรือกดปุ่มใด ๆ เพื่อกลับหน้าหลัก</p>
+        </div>
+    </div>
+
+    <!-- PLAYLIST CREATE/EDIT MODAL -->
+    <div class="modal-overlay" id="playlist-modal">
+        <div class="modal-content-container" style="max-width: 550px; padding: 2rem;">
+            <button class="modal-close-btn" id="playlist-close-btn" title="ปิดหน้าต่าง">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="modal-section-title" style="border-left-color: var(--primary); margin-bottom: 1.5rem;" id="playlist-modal-title">สร้างเพลย์ลิสต์วิ่งมาราธอน</h3>
+            
+            <input type="hidden" id="playlist-edit-id">
+            
+            <div class="filter-group" style="margin-bottom: 1rem;">
+                <label style="font-size: 0.8rem; margin-bottom: 0.35rem; display: block;">ชื่อเพลย์ลิสต์</label>
+                <input type="text" id="playlist-name" class="search-input" placeholder="เช่น คืนเชือดสยองหักมุมสุดโหด" style="padding-left: 1rem;">
+            </div>
+            
+            <div class="filter-group" style="margin-bottom: 1rem;">
+                <label style="font-size: 0.8rem; margin-bottom: 0.35rem; display: block;">คำอธิบายมาราธอน</label>
+                <textarea id="playlist-desc" class="review-textarea" placeholder="บอกเล่าคอนเซ็ปต์ของค่ำคืนนี้ หรือแนะนำลำดับการดู..." style="height: 80px;"></textarea>
+            </div>
+            
+            <div class="filter-group" style="margin-bottom: 1.5rem;">
+                <label style="font-size: 0.8rem; margin-bottom: 0.5rem; display: block;"><i class="fa-solid fa-film"></i> เลือกหนังที่จะวิ่งมาราธอน (จากคอลเล็กชันของคุณ)</label>
+                <div id="playlist-movie-selection" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 200px; overflow-y: auto; padding: 0.5rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--glass-border);">
+                    <!-- Dynamic movie checkboxes -->
+                </div>
+            </div>
+            
+            <button class="btn-primary" id="playlist-save-btn" style="width: 100%;">
+                <i class="fa-solid fa-floppy-disk"></i> บันทึกเพลย์ลิสต์มาราธอน
+            </button>
+        </div>
+    </div>
+
+    <!-- HORROR ROULETTE MODAL -->
+    <div class="modal-overlay" id="roulette-modal">
+        <div class="modal-content-container" style="max-width: 500px; padding: 2rem; text-align: center;">
+            <button class="modal-close-btn" id="roulette-close-btn" title="ปิดหน้าต่าง">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="modal-section-title" style="border-left-color: var(--primary); margin-bottom: 1.5rem; text-align: left;"><i class="fa-solid fa-circle-notch"></i> วงล้อสุ่มชะตากรรมคืนหลอน</h3>
+            <div class="filter-group" style="margin-bottom: 1.5rem; text-align: left;">
+                <label style="font-size: 0.8rem; margin-bottom: 0.35rem; display: block; color: var(--text-primary);"><i class="fa-solid fa-filter"></i> เลือกกลุ่มภาพยนตร์เสี่ยงดวง</label>
+                <select id="roulette-filter-select" class="filter-select" style="padding: 0.5rem; font-size: 0.85rem; height: 36px;">
+                    <option value="all">📁 สุ่มทั้งหมดจากคลังของคุณ (Local Collection)</option>
+                    <option value="online">🌐 สุ่มหนังสยองขวัญแนะนำทั้งหมด (Discover All Horror)</option>
+                    <option value="watched">🟢 สุ่มเฉพาะหนังที่ดูแล้ว (Watched Only)</option>
+                    <option value="watchlist">🔴 สุ่มเฉพาะหนังที่อยากดู / กำลังดู (Watchlist Only)</option>
+                </select>
+            </div>
+            
+            <div class="roulette-wheel-container" style="position: relative; width: 200px; height: 200px; margin: 0 auto 2rem auto; border-radius: 50%; border: 4px solid var(--primary); box-shadow: 0 0 20px var(--primary-glow); overflow: hidden; background: radial-gradient(circle, #200609 0%, #08080c 100%); display: flex; align-items: center; justify-content: center;">
+                <div class="roulette-pointer" style="position: absolute; top: 0px; left: 50%; transform: translateX(-50%); z-index: 10; font-size: 1.8rem; color: var(--primary); filter: drop-shadow(0 0 5px var(--primary-glow)); height: 30px;">
+                    <i class="fa-solid fa-caret-down"></i>
+                </div>
+                <div class="roulette-wheel" id="roulette-wheel-disc" style="width: 100%; height: 100%; transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1); display: flex; align-items: center; justify-content: center; position: relative;">
+                    <div style="font-size: 3rem; color: rgba(255, 0, 60, 0.15);"><i class="fa-solid fa-skull-crossbones"></i></div>
+                </div>
+                <div class="wheel-center-skull" style="position: absolute; width: 44px; height: 44px; background: #08080c; border: 2px solid var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: var(--primary); z-index: 5; box-shadow: 0 0 10px var(--primary-glow);"><i class="fa-solid fa-skull"></i></div>
+            </div>
+            
+            <div id="roulette-result-box" style="display: none; margin-bottom: 1.5rem; padding: 1rem; background: rgba(255, 0, 60, 0.05); border: 1px dashed var(--primary); border-radius: 12px; animation: fadeIn 0.4s ease;">
+                <span style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.35rem; text-align: left;">ชะตากรรมลิขิตให้คุณพบกับ...</span>
+                <h4 id="roulette-result-title" style="font-size: 1.15rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem; text-align: left;">-</h4>
+                <div style="display: flex; gap: 1rem; text-align: left; align-items: center; margin-top: 0.75rem;">
+                    <img id="roulette-result-poster" src="" style="width: 55px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;">
+                    <p id="roulette-result-desc" style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4; margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"></p>
+                </div>
+                <button class="btn-primary" id="roulette-go-to-movie" style="margin-top: 1rem; width: 100%; padding: 0.5rem; font-size: 0.85rem; height: 36px; border-radius: 6px;">
+                    <i class="fa-solid fa-film"></i> เปิดดูรายละเอียดภาพยนตร์
+                </button>
+            </div>
+            
+            <button class="btn-primary" id="roulette-spin-btn" style="width: 100%; background: linear-gradient(135deg, var(--primary), #991b1b);">
+                <i class="fa-solid fa-skull-crossbones"></i> เริ่มหมุนรูเล็ตชะตากรรม
+            </button>
+        </div>
+    </div>
+
+    <!-- SPOOKY TAROT MODAL -->
+    <div class="modal-overlay" id="tarot-modal">
+        <div class="modal-content-container" style="max-width: 700px; padding: 2rem;">
+            <button class="modal-close-btn" id="tarot-close-btn" title="ปิดหน้าต่าง">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="modal-section-title" style="border-left-color: #581c87; margin-bottom: 1rem;"><i class="fa-solid fa-wand-magic-sparkles"></i> ไพ่ยิปซีทำนายดวงหลอน (Tarot of Terror)</h3>
+            
+            <!-- Lunar Energy Indicator for Tarot -->
+            <div id="tarot-lunar-indicator" style="font-size: 0.8rem; background: rgba(88, 28, 135, 0.15); border: 1px dashed rgba(139, 92, 246, 0.35); padding: 0.65rem 1rem; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; animation: fadeIn 0.4s ease;">
+                <span><i class="fa-solid fa-moon animate-pulse" style="color: #a78bfa;"></i> พลังดวงจันทร์คืนนี้: <strong id="tarot-lunar-phase-name" style="color: #f8fafc;">-</strong></span>
+                <span>ดัชนีความสะพรึง: <strong id="tarot-lunar-spooky-val" style="color: var(--primary); font-weight: 800;">-</strong></span>
+            </div>
+            
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                เลือกสุ่มไพ่ทาโรต์สยองขวัญ 3 ใบ เพื่อทำนายชะตาและดึงหนังที่เหมาะกับจิตวิญญาณของคุณคืนนี้...
+            </p>
+            
+            <div class="tarot-cards-container" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+                <!-- Card 0 -->
+                <div class="tarot-card-wrapper" data-card-index="0" style="perspective: 1000px; aspect-ratio: 2/3.2; cursor: pointer;">
+                    <div class="tarot-card-inner" id="tarot-card-0" style="position: relative; width: 100%; height: 100%; transition: transform 0.8s; transform-style: preserve-3d; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div class="tarot-card-front" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #180825 0%, #0d0413 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px;">
+                            <div style="font-size: 2.2rem; filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4));">🔮</div>
+                            <span style="font-size: 0.75rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px;">ธีมความรู้สึก</span>
+                        </div>
+                        <div class="tarot-card-back" id="tarot-back-0" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #311042 0%, #12021c 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px; transform: rotateY(180deg); border: 1px solid #8b5cf6;">
+                            <div class="tarot-card-name" id="tarot-name-0" style="font-size: 0.9rem; font-weight: 800; color: #f5f3ff;">-</div>
+                            <div class="tarot-card-icon" id="tarot-icon-0" style="font-size: 2rem;">💀</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 1 -->
+                <div class="tarot-card-wrapper" data-card-index="1" style="perspective: 1000px; aspect-ratio: 2/3.2; cursor: pointer;">
+                    <div class="tarot-card-inner" id="tarot-card-1" style="position: relative; width: 100%; height: 100%; transition: transform 0.8s; transform-style: preserve-3d; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div class="tarot-card-front" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #180825 0%, #0d0413 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px;">
+                            <div style="font-size: 2.2rem; filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4));">⏳</div>
+                            <span style="font-size: 0.75rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px;">มิติเวลา</span>
+                        </div>
+                        <div class="tarot-card-back" id="tarot-back-1" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #311042 0%, #12021c 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px; transform: rotateY(180deg); border: 1px solid #8b5cf6;">
+                            <div class="tarot-card-name" id="tarot-name-1" style="font-size: 0.9rem; font-weight: 800; color: #f5f3ff;">-</div>
+                            <div class="tarot-card-icon" id="tarot-icon-1" style="font-size: 2rem;">💀</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="tarot-card-wrapper" data-card-index="2" style="perspective: 1000px; aspect-ratio: 2/3.2; cursor: pointer;">
+                    <div class="tarot-card-inner" id="tarot-card-2" style="position: relative; width: 100%; height: 100%; transition: transform 0.8s; transform-style: preserve-3d; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div class="tarot-card-front" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #180825 0%, #0d0413 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px;">
+                            <div style="font-size: 2.2rem; filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4));">🩸</div>
+                            <span style="font-size: 0.75rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px;">ชะตากรรม</span>
+                        </div>
+                        <div class="tarot-card-back" id="tarot-back-2" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #311042 0%, #12021c 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px; transform: rotateY(180deg); border: 1px solid #8b5cf6;">
+                            <div class="tarot-card-name" id="tarot-name-2" style="font-size: 0.9rem; font-weight: 800; color: #f5f3ff;">-</div>
+                            <div class="tarot-card-icon" id="tarot-icon-2" style="font-size: 2rem;">💀</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="tarot-result-box" style="display: none; margin-top: 1.5rem; padding: 1.25rem; background: rgba(88, 28, 135, 0.1); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 12px; animation: fadeIn 0.5s ease;">
+                <h4 style="font-size: 1rem; color: #c084fc; margin-bottom: 0.5rem; font-weight: 700;"><i class="fa-solid fa-wand-magic-sparkles"></i> คำทำนายประจำค่ำคืนนี้</h4>
+                <p id="tarot-prediction-text" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 1.25rem 0;"></p>
+                
+                <h5 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.75rem; letter-spacing: 0.5px; font-weight: 700;"><i class="fa-solid fa-ghost"></i> ภาพยนตร์ที่ถูกเลือกโดยคำทำนาย:</h5>
+                <div id="tarot-movies-suggestions" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                    <!-- Suggested movies inserted dynamically -->
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn-primary" id="tarot-reset-btn" style="flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text-primary); box-shadow: none;">
+                    <i class="fa-solid fa-rotate-left"></i> ล้างไพ่ทั้งหมด
+                </button>
+                <button class="btn-primary" id="tarot-reveal-btn" style="flex: 2; background: linear-gradient(135deg, #581c87, #701a75);" disabled="">
+                    <i class="fa-solid fa-book-skull"></i> อ่านชะตากรรมความหลอน
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HORROR BINGO MODAL -->
+    <div class="modal-overlay" id="bingo-modal">
+        <div class="modal-content-container" style="max-width: 500px; padding: 2rem;">
+            <button class="modal-close-btn" id="bingo-close-btn" title="ปิดหน้าต่าง">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="modal-section-title" style="border-left-color: #065f46; margin-bottom: 1rem;"><i class="fa-solid fa-table-cells"></i> กระดานบิงโกภารกิจท้าคนจิตแข็ง</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                สำเร็จภารกิจหนังสยองขวัญเพื่อบิงโกเชื่อมต่อเส้น (แนวตั้ง แนวนอน หรือแนวทแยง) และปลดล็อกตราเกียรติยศสูงสุด!
+            </p>
+            
+            <div class="bingo-grid-container" id="bingo-grid-wrapper" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.5rem;">
+                <!-- 9 grid items generated by JS -->
+            </div>
+            
+            <div id="bingo-completed-banner" style="display: none; margin-top: 1rem; padding: 0.75rem; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; text-align: center;">
+                <span style="font-size: 0.82rem; font-weight: 700; color: #10b981;"><i class="fa-solid fa-award"></i> ยินดีด้วย! คุณบิงโกภารกิจสำเร็จ ปลดล็อกตราเกียรติยศพิเศษ "Spooky Overlord"!</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SPOOKY SOUNDBOARD MODAL -->
+    <div class="modal-overlay" id="soundboard-modal">
+        <div class="modal-content-container" style="max-width: 440px; padding: 2rem; text-align: center;">
+            <button class="modal-close-btn" id="soundboard-close-btn" title="ปิดหน้าต่าง">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="modal-section-title" style="border-left-color: #0284c7; margin-bottom: 1.5rem; text-align: left;"><i class="fa-solid fa-music"></i> ซาวด์บอร์ดหลอนสะกดวิญญาณ</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                กดคลิกที่ปุ่มเพื่อสังเคราะห์เสียงเอฟเฟกต์หลอน ๆ แบบสดเรียลไทม์ผ่านบราวเซอร์ของคุณ
+            </p>
+            
+            <div class="soundboard-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                <button class="soundboard-btn status-btn" data-sound="laugh" style="height: 65px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.5rem; border-color: rgba(2, 132, 199, 0.25);">
+                    <i class="fa-solid fa-ghost" style="color: #38bdf8; font-size: 1.15rem;"></i>
+                    <span style="font-size: 0.78rem;">หัวเราะปีศาจ</span>
+                </button>
+                <button class="soundboard-btn status-btn" data-sound="slash" style="height: 65px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.5rem; border-color: rgba(2, 132, 199, 0.25);">
+                    <i class="fa-solid fa-gavel" style="color: #38bdf8; font-size: 1.15rem;"></i>
+                    <span style="font-size: 0.78rem;">ฟันมีดสปาต้า</span>
+                </button>
+                <button class="soundboard-btn status-btn" data-sound="step" style="height: 65px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.5rem; border-color: rgba(2, 132, 199, 0.25);">
+                    <i class="fa-solid fa-shoe-prints" style="color: #38bdf8; font-size: 1.15rem;"></i>
+                    <span style="font-size: 0.78rem;">ฝีเท้าสยอง</span>
+                </button>
+                <button class="soundboard-btn status-btn" data-sound="screech" style="height: 65px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.5rem; border-color: rgba(2, 132, 199, 0.25);">
+                    <i class="fa-solid fa-triangle-exclamation" style="color: #38bdf8; font-size: 1.15rem;"></i>
+                    <span style="font-size: 0.78rem;">กรีดร้องแหลม</span>
+                </button>
+                <button class="soundboard-btn status-btn" data-sound="drone" style="height: 65px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.5rem; border-color: rgba(2, 132, 199, 0.25);">
+                    <i class="fa-solid fa-wind" style="color: #38bdf8; font-size: 1.15rem;"></i>
+                    <span style="font-size: 0.78rem;">คลื่นความถี่ต่ำ</span>
+                </button>
+                <button class="soundboard-btn status-btn" data-sound="heartbeat" style="height: 65px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.5rem; border-color: rgba(2, 132, 199, 0.25);">
+                    <i class="fa-solid fa-heart" style="color: #38bdf8; font-size: 1.15rem;"></i>
+                    <span style="font-size: 0.78rem;">เสียงใจเต้น</span>
+                </button>
+            </div>
+        </div>
+    </div>
+            
+    <!-- HORROR QUIZ MODAL -->
+    <div class="modal-overlay" id="quiz-modal">
+        <div class="modal-content-container" style="max-width: 550px; padding: 2rem;">
+            <button class="modal-close-btn" id="quiz-close-btn" title="ปิดหน้าต่าง">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="modal-section-title" style="border-left-color: #854d0e; margin-bottom: 1rem;">
+                <i class="fa-solid fa-clipboard-question"></i> แบบทดสอบวิญญาณสยอง
+            </h3>
+            
+            <!-- Quiz Start State -->
+            <div id="quiz-start-state" style="text-align: center; padding: 1.5rem 0;">
+                <div style="font-size: 3.5rem; margin-bottom: 1.25rem; animation: pulse 2s infinite;">🩸</div>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 2rem;">
+                    คุณจะรอดชีวิตเป็นผู้ชนะ หรือจะตกเป็นเหยื่อรายแรกของคืนวิปลาสนี้? ร่วมทำแบบทดสอบจิตวิทยาเพื่อค้นหาบทบาทที่แท้จริงของคุณในหนังสยองขวัญ!
+                </p>
+                <button class="btn-primary" id="quiz-start-btn" style="background: linear-gradient(135deg, #854d0e, #a16207); width: 100%;">
+                    <i class="fa-solid fa-play"></i> เริ่มทำแบบทดสอบ
+                </button>
+            </div>
+
+            <!-- Quiz Questions State -->
+            <div id="quiz-questions-state" style="display: none; padding: 0.5rem 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">
+                    <span id="quiz-progress-text" style="font-size: 0.78rem; font-weight: 700; color: #a16207;">คำถามที่ 1/5</span>
+                    <div style="width: 80px; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                        <div id="quiz-progress-bar" style="width: 20%; height: 100%; background: #a16207; transition: width 0.3s ease;"></div>
+                    </div>
+                </div>
+                <h4 id="quiz-question-text" style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.5rem; line-height: 1.5; text-align: left;">-</h4>
+                <div class="quiz-options-list" id="quiz-options-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;">
+                    <!-- Question options populated by JS -->
+                </div>
+            </div>
+
+            <!-- Quiz Result State -->
+            <div id="quiz-result-state" style="display: none; text-align: center;">
+                <h4 style="font-size: 1rem; color: #a16207; margin-bottom: 0.5rem; font-weight: 700;">บทบาทที่แท้จริงของคุณคือ...</h4>
+                <h2 id="quiz-result-archetype" style="font-size: 1.6rem; font-weight: 800; color: #ffffff; margin-bottom: 1.25rem; text-shadow: 0 0 10px rgba(161, 98, 7, 0.4);">ผู้รอดชีวิตคนสุดท้าย (The Final Girl)</h2>
+                
+                <!-- Canvas card viewer -->
+                <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 12px; margin-bottom: 1.5rem; display: flex; justify-content: center;">
+                    <canvas id="quiz-card-canvas" width="500" height="300" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--glass-border); background: #000; box-shadow: 0 4px 15px rgba(0,0,0,0.5);"></canvas>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn-primary" id="quiz-retry-btn" style="flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text-primary); box-shadow: none;">
+                        <i class="fa-solid fa-arrow-rotate-left"></i> ทำใหม่
+                    </button>
+                    <button class="btn-primary" id="quiz-download-btn" style="flex: 2; background: linear-gradient(135deg, #854d0e, #a16207);">
+                        <i class="fa-solid fa-download"></i> ดาวน์โหลดการ์ดโปรไฟล์ (.PNG)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- MIDNIGHT TRIVIA MODAL -->
+    <div class="modal-overlay" id="trivia-modal">
+        <div class="modal-content-container" style="max-width: 520px; padding: 2rem;">
+            <button class="modal-close-btn" id="trivia-close-btn" title="ปิดหน้าต่าง">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="modal-section-title" style="border-left-color: var(--primary); margin-bottom: 1rem;">
+                <i class="fa-solid fa-brain"></i> เกมทายหนังคืนหลอน (Midnight Trivia)
+            </h3>
+
+            <!-- Trivia Start State -->
+            <div id="trivia-start-state" style="text-align: center; padding: 1.5rem 0;">
+                <div style="font-size: 3.5rem; margin-bottom: 1.25rem; animation: pulse 2s infinite;">🎬</div>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 2rem;">
+                    ยินดีต้อนรับสู่แดนชำระบาปของคนรักหนังโหด! กติกาคือคุณต้องตอบคำถาม 5 ข้อจากเบาะแสอีโมจิและปริศนาของหนังสยองขวัญระดับตำนาน โดยมี 3 พลังชีวิต (🩸 🩸 🩸) และจำกัดเวลาข้อละ 15 วินาที ตอบถูกหมดรับเกียรติยศสูงสุด!
+                </p>
+                <button class="btn-primary" id="trivia-start-btn" style="background: linear-gradient(135deg, var(--primary), #991b1b); width: 100%;">
+                    <i class="fa-solid fa-play"></i> เริ่มดวลคำถาม
+                </button>
+            </div>
+
+            <!-- Trivia Gameplay State -->
+            <div id="trivia-gameplay-state" style="display: none; padding: 0.5rem 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">
+                    <span id="trivia-progress-text" style="font-size: 0.78rem; font-weight: 700; color: var(--primary);">คำถามที่ 1/5</span>
+                    
+                    <!-- Hearts lives display -->
+                    <div id="trivia-lives-container" class="trivia-lives" style="display: flex; gap: 0.25rem; font-size: 1.1rem; color: var(--primary);">
+                        <i class="fa-solid fa-droplet animate-pulse"></i>
+                        <i class="fa-solid fa-droplet animate-pulse"></i>
+                        <i class="fa-solid fa-droplet animate-pulse"></i>
+                    </div>
+                </div>
+
+                <!-- Timer countdown bar -->
+                <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin-bottom: 1.5rem;">
+                    <div id="trivia-timer-bar" style="width: 100%; height: 100%; background: linear-gradient(90deg, #ff003c, #991b1b); transition: width 0.1s linear;"></div>
+                </div>
+
+                <!-- Riddle Display Box -->
+                <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: 12px; margin-bottom: 1.5rem; text-align: center;">
+                    <div id="trivia-emoji-clue" style="font-size: 2.5rem; margin-bottom: 0.75rem; filter: drop-shadow(0 0 10px rgba(255,0,60,0.3));">🪓 🚪 ❄️</div>
+                    <p id="trivia-riddle-text" style="font-size: 0.88rem; color: var(--text-primary); line-height: 1.5; margin: 0 0 0.5rem 0; font-weight: 500;"></p>
+                    <span id="trivia-year-hint" style="font-size: 0.75rem; color: var(--text-dark); font-weight: 700; text-transform: uppercase;">ปีที่ฉาย: 1980</span>
+                </div>
+
+                <!-- 4 Choice buttons -->
+                <div class="trivia-options-list" id="trivia-options-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Trivia Result State -->
+            <div id="trivia-result-state" style="display: none; text-align: center; padding: 1rem 0;">
+                <div id="trivia-result-icon" style="font-size: 4rem; margin-bottom: 1rem;">🏆</div>
+                <h2 id="trivia-result-title" style="font-size: 1.6rem; font-weight: 800; color: #ffffff; margin-bottom: 0.5rem;">ผู้รอบรู้คู่วิปลาส!</h2>
+                <p id="trivia-result-desc" style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 2rem; padding: 0 1rem;"></p>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn-primary" id="trivia-retry-btn" style="flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text-primary); box-shadow: none;">
+                        <i class="fa-solid fa-arrow-rotate-left"></i> เล่นอีกครั้ง
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXPORT GUIDE MODAL -->
+    <div id="export-guide-modal" class="modal-overlay" style="display: none; z-index: 3000;" onclick="if(event.target===this)closeExportGuideModal()">
+        <div class="modal-content" style="max-width: 480px;">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fa-solid fa-mobile-screen-button" style="color: var(--primary);"></i> ส่งคอลเล็กชันไป iPad</h2>
+                <button class="modal-close-btn" id="export-guide-close-btn" onclick="closeExportGuideModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="export-guide-steps">
+                    <div class="export-step">
+                        <div class="export-step-num">1</div>
+                        <div class="export-step-content">
+                            <strong>บันทึกไฟล์จากคอมพิวเตอร์</strong>
+                            <p>กดปุ่มด้านล่างเพื่อดาวน์โหลดไฟล์คอลเล็กชัน <code>.json</code> มาที่เครื่องของคุณ</p>
+                        </div>
+                    </div>
+                    <div class="export-step">
+                        <div class="export-step-num">2</div>
+                        <div class="export-step-content">
+                            <strong>ส่งไฟล์ไป iPad</strong>
+                            <p>ใช้ <strong>AirDrop</strong>, <strong>iCloud Drive</strong>, หรือส่งผ่าน <strong>Line / Email</strong> ก็ได้ ขอให้ได้ไฟล์ .json อยู่บน iPad</p>
+                        </div>
+                    </div>
+                    <div class="export-step">
+                        <div class="export-step-num">3</div>
+                        <div class="export-step-content">
+                            <strong>เปิดเว็บบน iPad แล้ว Import</strong>
+                            <p>กดปุ่ม <i class="fa-solid fa-upload" style="color:var(--primary)"></i> <strong>นำเข้าคอลเล็กชัน</strong> เลือกไฟล์ที่ได้รับ แล้วคอลเล็กชันของคุณจะปรากฏครบถ้วน 🩸</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="export-guide-note">
+                    <i class="fa-solid fa-circle-info" style="color: var(--primary); margin-right: 6px;"></i>
+                    คอลเล็กชันถูกเก็บในเครื่องเท่านั้น ระบบ Share Link อาจไม่ทำงานหากมีหนังเยอะ เพราะ Safari/Line บน iPad จะตัด URL ที่ยาวเกินไป วิธีไฟล์นี้ปลอดภัย 100%
+                </div>
+                <button class="btn-primary" id="export-guide-download-btn" onclick="handleExport(); closeExportGuideModal();" style="width: 100%; margin-top: 1.25rem; padding: 0.9rem; font-size: 0.95rem;">
+                    <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์คอลเล็กชัน (.json)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Controller Scripts -->
+    <script src="storage.js?v=20250625"></script>
+    <script src="tmdb.js?v=20250625"></script>
+    <script src="app.js?v=20250625"></script>
+
+
+</body></html>

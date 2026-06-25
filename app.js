@@ -93,7 +93,7 @@ const FALLBACK_POPULAR_MOVIES = [
 ];
 
 // --- STATE MANAGEMENT ---
-let activeTab = 'collection'; // 'collection', 'playlists' or 'discover'
+let activeTab = ''; // 'home', 'collection', 'playlists', 'characters', 'finalgirls', 'discover'
 let currentSearchQuery = '';
 let discoverPage = 1;
 let discoverTotalPages = 1;
@@ -126,12 +126,18 @@ let triviaTimerInterval = null;
 let triviaIsProcessingAnswer = false;
 
 // --- DOM ELEMENTS ---
+const tabHome = document.getElementById('tab-home');
 const tabCollection = document.getElementById('tab-collection');
 const tabDiscover = document.getElementById('tab-discover');
 const shareBtn = document.getElementById('share-btn');
 const exportBtn = document.getElementById('export-btn');
 const importBtnTrigger = document.getElementById('import-btn-trigger');
 const importFileInput = document.getElementById('import-file-input');
+
+// Structural layout panels
+const statsPanel = document.getElementById('stats-panel');
+const horrorActionsRow = document.getElementById('horror-activities-row');
+const analyticsSectionWrapper = document.getElementById('analytics-section-wrapper');
 
 // Settings elements
 const settingsBtn = document.getElementById('settings-btn');
@@ -334,9 +340,7 @@ function initApp() {
     // Check for shared playlist link
     checkSharedPlaylistLink();
     
-    if (activeTab === 'collection') {
-        renderMyCollection();
-    }
+    switchTab('home');
     
     // Initialize fog loop
     initFogEffect();
@@ -487,8 +491,12 @@ function renderHeroBannerData(details) {
         heroTrailerBtn.style.display = 'none';
     }
     
-    // Make the banner visible
-    heroBanner.style.display = 'flex';
+    // Make the banner visible only if we are currently on the home tab
+    if (activeTab === 'home') {
+        heroBanner.style.display = 'flex';
+    } else {
+        heroBanner.style.display = 'none';
+    }
 }
 
 async function loadHeroBanner() {
@@ -640,6 +648,7 @@ function setupEventListeners() {
     }
 
     // Tab switching
+    if (tabHome) tabHome.addEventListener('click', () => switchTab('home'));
     tabCollection.addEventListener('click', () => switchTab('collection'));
     if (tabPlaylists) tabPlaylists.addEventListener('click', () => switchTab('playlists'));
     if (tabCharacters) tabCharacters.addEventListener('click', () => switchTab('characters'));
@@ -648,6 +657,13 @@ function setupEventListeners() {
 
     // Search trigger
     searchBtn.addEventListener('click', handleSearch);
+    const resetFiltersBtn = document.getElementById('reset-filters-btn');
+    if (resetFiltersBtn) {
+        resetFiltersBtn.addEventListener('click', () => {
+            SoundscapeEngine.playClickSFX();
+            resetAllFilters();
+        });
+    }
     searchInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleSearch();
     });
@@ -698,11 +714,9 @@ function setupEventListeners() {
     prevPageBtn.addEventListener('click', () => changeDiscoverPage(-1));
     nextPageBtn.addEventListener('click', () => changeDiscoverPage(1));
 
-    // Share link button click
-    shareBtn.addEventListener('click', handleShareLinkGeneration);
-
-    // Backup & Restore
-    exportBtn.addEventListener('click', openExportGuideModal);
+    // Share link and export button both open the export/share modal guide
+    if (shareBtn) shareBtn.addEventListener('click', openExportGuideModal);
+    if (exportBtn) exportBtn.addEventListener('click', openExportGuideModal);
     importBtnTrigger.addEventListener('click', () => importFileInput.click());
     importFileInput.addEventListener('change', handleImport);
 
@@ -1018,7 +1032,7 @@ function setupEventListeners() {
             const category = viewAllBtn.dataset.category;
             discoverCategory = category;
             discoverPage = 1;
-            fetchAndRenderDiscover();
+            switchTab('discover');
             
             // Scroll to results cleanly
             document.querySelector('main').scrollIntoView({ behavior: 'smooth' });
@@ -1033,6 +1047,7 @@ function switchTab(tabName) {
     activeTab = tabName;
     
     // Update active UI classes on tabs
+    if (tabHome) tabHome.classList.toggle('active', activeTab === 'home');
     tabCollection.classList.toggle('active', activeTab === 'collection');
     if (tabPlaylists) tabPlaylists.classList.toggle('active', activeTab === 'playlists');
     if (tabCharacters) tabCharacters.classList.toggle('active', activeTab === 'characters');
@@ -1053,60 +1068,53 @@ function switchTab(tabName) {
     const sortOptLatest = document.getElementById('sort-opt-latest');
     const sortOptPersonal = document.getElementById('sort-opt-personal');
     
-    // Hide controls and playlists by default
+    // Reset all layouts to hidden by default
     if (playlistsTabContainer) playlistsTabContainer.style.display = 'none';
     if (charactersTabContainer) charactersTabContainer.style.display = 'none';
     if (finalgirlsTabContainer) finalgirlsTabContainer.style.display = 'none';
-    if (controlPanel) controlPanel.style.display = 'flex';
+    if (heroBanner) heroBanner.style.display = 'none';
+    if (statsPanel) statsPanel.style.display = 'none';
+    if (horrorActionsRow) horrorActionsRow.style.display = 'none';
+    if (analyticsSectionWrapper) analyticsSectionWrapper.style.display = 'none';
+    if (controlPanel) controlPanel.style.display = 'none';
+    if (slidersModeContainer) slidersModeContainer.style.display = 'none';
+    if (gridModeContainer) gridModeContainer.style.display = 'none';
+    if (paginationContainer) paginationContainer.style.display = 'none';
     
-    if (activeTab === 'collection') {
+    if (activeTab === 'home') {
         if (heroBanner) heroBanner.style.display = 'flex';
+        if (slidersModeContainer) slidersModeContainer.style.display = 'block';
+        fetchAndRenderHome();
+    } else if (activeTab === 'collection') {
+        if (statsPanel) statsPanel.style.display = 'grid';
+        if (horrorActionsRow) horrorActionsRow.style.display = 'grid';
+        if (analyticsSectionWrapper) analyticsSectionWrapper.style.display = 'block';
+        if (controlPanel) {
+            controlPanel.style.display = 'flex';
+            if (sortOptLatest) sortOptLatest.style.display = 'block';
+            if (sortOptPersonal) sortOptPersonal.style.display = 'block';
+        }
         sortFilter.value = 'latest_added';
-        if (sortOptLatest) sortOptLatest.style.display = 'block';
-        if (sortOptPersonal) sortOptPersonal.style.display = 'block';
-        
-        // Hide sliders & pagination
-        slidersModeContainer.style.display = 'none';
-        gridModeContainer.style.display = 'block';
-        paginationContainer.style.display = 'none';
+        if (gridModeContainer) gridModeContainer.style.display = 'block';
         
         renderMyCollection();
     } else if (activeTab === 'playlists') {
-        if (heroBanner) heroBanner.style.display = 'none';
-        if (controlPanel) controlPanel.style.display = 'none';
-        slidersModeContainer.style.display = 'none';
-        gridModeContainer.style.display = 'none';
-        paginationContainer.style.display = 'none';
-        
         if (playlistsTabContainer) playlistsTabContainer.style.display = 'block';
         renderPlaylists();
     } else if (activeTab === 'characters') {
-        if (heroBanner) heroBanner.style.display = 'none';
-        if (controlPanel) controlPanel.style.display = 'none';
-        slidersModeContainer.style.display = 'none';
-        gridModeContainer.style.display = 'none';
-        paginationContainer.style.display = 'none';
-        
         if (charactersTabContainer) charactersTabContainer.style.display = 'block';
         renderCharacters();
     } else if (activeTab === 'finalgirls') {
-        if (heroBanner) heroBanner.style.display = 'none';
-        if (controlPanel) controlPanel.style.display = 'none';
-        slidersModeContainer.style.display = 'none';
-        gridModeContainer.style.display = 'none';
-        paginationContainer.style.display = 'none';
-        
         if (finalgirlsTabContainer) finalgirlsTabContainer.style.display = 'block';
         renderFinalGirls();
-    } else {
-        if (heroBanner) heroBanner.style.display = 'flex';
+    } else if (activeTab === 'discover') {
+        if (controlPanel) {
+            controlPanel.style.display = 'flex';
+            if (sortOptLatest) sortOptLatest.style.display = 'none';
+            if (sortOptPersonal) sortOptPersonal.style.display = 'none';
+        }
         sortFilter.value = 'tmdb_desc'; // Default TMDB sort
-        if (sortOptLatest) sortOptLatest.style.display = 'none';
-        if (sortOptPersonal) sortOptPersonal.style.display = 'none';
-        
-        slidersModeContainer.style.display = 'block';
-        gridModeContainer.style.display = 'none';
-        paginationContainer.style.display = 'none';
+        if (gridModeContainer) gridModeContainer.style.display = 'block';
         
         discoverPage = 1;
         fetchAndRenderDiscover();
@@ -1148,9 +1156,9 @@ function updateStatsDashboard() {
 function handleSearch() {
     currentSearchQuery = searchInput.value.trim();
     
-    // Hide Hero Banner when searching to make room for results
+    // Hide Hero Banner when searching to make room for results (Only applicable on home tab)
     if (heroBanner) {
-        heroBanner.style.display = currentSearchQuery ? 'none' : 'flex';
+        heroBanner.style.display = (currentSearchQuery || activeTab !== 'home') ? 'none' : 'flex';
     }
 
     if (activeTab === 'collection') {
@@ -1171,6 +1179,29 @@ function handleFilterChange() {
         fetchAndRenderDiscover();
     }
 }
+
+function resetAllFilters() {
+    searchInput.value = '';
+    currentSearchQuery = '';
+    genreFilter.value = '';
+    yearFilter.value = '';
+    countryFilter.value = '';
+    if (watchStatusFilter) watchStatusFilter.value = '';
+    
+    if (activeTab === 'collection') {
+        sortFilter.value = 'latest_added';
+        renderMyCollection();
+    } else {
+        sortFilter.value = 'tmdb_desc';
+        discoverCategory = null;
+        discoverPage = 1;
+        fetchAndRenderDiscover();
+    }
+    
+    hideSuggestions();
+}
+
+window.resetAllFilters = resetAllFilters;
 
 // --- DECADE / YEAR HELPER ---
 function matchesYearFilter(releaseDate, filterValue) {
@@ -1247,8 +1278,6 @@ function sortMovies(movies, sortBy) {
 // --- RENDER COLLECTION VIEW ---
 function renderMyCollection() {
     try {
-        movieGrid.innerHTML = '';
-        
         // Choose source data (LocalStorage vs URL Shared Data)
         let collection = isSharedProfileMode ? sharedCollectionData : Storage.getCollection();
         
@@ -1323,14 +1352,16 @@ function renderMyCollection() {
         }
 
         // Render Cards with card-specific error catcher
+        const newCards = [];
         sortedList.forEach(movie => {
             try {
                 const card = createMovieCard(movie, true);
-                movieGrid.appendChild(card);
+                newCards.push(card);
             } catch (cardErr) {
                 console.error("Failed to render individual movie card:", movie, cardErr);
             }
         });
+        movieGrid.replaceChildren(...newCards);
     } catch (err) {
         console.error("Error rendering collection:", err);
         movieGrid.innerHTML = `
@@ -1530,59 +1561,67 @@ async function fetchAndRenderDiscover() {
             paginationContainer.style.display = 'none';
         }
     } 
-    // No search query and no filters active -> Netflix-style sliders
+    // No search query and no filters active -> Show beautiful empty state search prompt
     else {
-        gridModeContainer.style.display = 'none';
+        gridModeContainer.style.display = 'block';
         paginationContainer.style.display = 'none';
-        slidersModeContainer.style.display = 'block';
-        sectionTitle.innerHTML = `<i class="fa-solid fa-ghost"></i> แนะนำภาพยนตร์สำหรับค่ำคืนนี้`;
+        sectionTitle.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> ค้นหาหนังสยองขวัญออนไลน์`;
+        movieGrid.innerHTML = `
+            <div class="empty-state" style="padding: 4rem 2rem; border: 1px dashed var(--glass-border); border-radius: 16px; width: 100%; grid-column: 1 / -1; margin-top: 1rem;">
+                <i class="fa-solid fa-magnifying-glass" style="font-size: 3rem; color: var(--text-dark); margin-bottom: 1rem; animation: pulse 2s infinite;"></i>
+                <h3 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.5rem;">ค้นหาหนังสยองขวัญแนะนำ</h3>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); max-width: 320px; margin: 0 auto; line-height: 1.5;">
+                    พิมพ์ชื่อภาพยนตร์ที่กล่องด้านบน หรือเลือกตัวกรองตามหมวดหมู่ ยุคสมัย และประเทศ เพื่อค้นหาขุมทรัพย์ความหลอนจากทั่วโลก 🩸
+                </p>
+            </div>
+        `;
+    }
+}
+
+async function fetchAndRenderHome() {
+    sliderTrending.innerHTML = '<div style="padding: 2rem; color: var(--text-dark);"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div>';
+    sliderUpcoming.innerHTML = '<div style="padding: 2rem; color: var(--text-dark);"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div>';
+    sliderPopularDiscover.innerHTML = '<div style="padding: 2rem; color: var(--text-dark);"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div>';
+    sliderAllHorror.innerHTML = '<div style="padding: 2rem; color: var(--text-dark);"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div>';
+    
+    try {
+        // 1. Trending Now Slider
+        const trendingResp = await TMDB.getPopularHorrorMovies(1, 'popularity.desc');
+        renderMoviesToSlider(trendingResp.results, sliderTrending);
         
-        // Load Sliders with placeholders/spinners
-        sliderTrending.innerHTML = '<div style="padding: 2rem; color: var(--text-dark);"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div>';
-        sliderUpcoming.innerHTML = '<div style="padding: 2rem; color: var(--text-dark);"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div>';
-        sliderPopularDiscover.innerHTML = '<div style="padding: 2rem; color: var(--text-dark);"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div>';
-        sliderAllHorror.innerHTML = '<div style="padding: 2rem; color: var(--text-dark);"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div>';
+        // 2. Upcoming Horror Slider (Release date >= today)
+        const todayStr = new Date().toISOString().split('T')[0];
+        const upcomingResp = await TMDB.fetchFromTMDB('/discover/movie', {
+            with_genres: TMDB.HORROR_GENRE_ID,
+            'primary_release_date.gte': todayStr,
+            sort_by: 'primary_release_date.asc',
+            page: 1
+        });
+        renderMoviesToSlider(upcomingResp.results, sliderUpcoming);
         
-        try {
-            // 1. Trending Now Slider
-            const trendingResp = await TMDB.getPopularHorrorMovies(1, 'popularity.desc');
-            renderMoviesToSlider(trendingResp.results, sliderTrending);
-            
-            // 2. Upcoming Horror Slider (Release date >= today)
-            const todayStr = new Date().toISOString().split('T')[0];
-            const upcomingResp = await TMDB.fetchFromTMDB('/discover/movie', {
-                with_genres: TMDB.HORROR_GENRE_ID,
-                'primary_release_date.gte': todayStr,
-                sort_by: 'primary_release_date.asc',
-                page: 1
-            });
-            renderMoviesToSlider(upcomingResp.results, sliderUpcoming);
-            
-            // 3. Popular Hits (Sort by Vote Average)
-            const popularResp = await TMDB.fetchFromTMDB('/discover/movie', {
-                with_genres: TMDB.HORROR_GENRE_ID,
-                'vote_count.gte': 100, 
-                sort_by: 'vote_average.desc',
-                page: 1
-            });
-            renderMoviesToSlider(popularResp.results, sliderPopularDiscover);
-            
-            // 4. All Horror Slider (Default popularity)
-            const allHorrorResp = await TMDB.fetchFromTMDB('/discover/movie', {
-                with_genres: TMDB.HORROR_GENRE_ID,
-                sort_by: 'popularity.desc',
-                page: 1
-            });
-            renderMoviesToSlider(allHorrorResp.results, sliderAllHorror);
-            
-        } catch (error) {
-            console.error('Failed to load sliders', error);
-            // Render beautiful local fallback movies so the Discover tab is not blank
-            renderMoviesToSlider(FALLBACK_POPULAR_MOVIES, sliderTrending);
-            renderMoviesToSlider(FALLBACK_POPULAR_MOVIES.slice().reverse(), sliderPopularDiscover);
-            renderMoviesToSlider(FALLBACK_POPULAR_MOVIES, sliderAllHorror);
-            sliderUpcoming.innerHTML = '<div style="padding: 2rem; color: var(--text-secondary); text-align: center;"><i class="fa-solid fa-wifi-slash"></i> ไม่สามารถเชื่อมต่อกับฐานข้อมูลภาพยนตร์ออนไลน์ได้ชั่วคราว แต่คุณยังสามารถค้นหาและจัดการหนังในคอลเล็กชันส่วนตัวของคุณได้ตามปกติครับ 🩸</div>';
-        }
+        // 3. Popular Hits (Sort by Vote Average)
+        const popularResp = await TMDB.fetchFromTMDB('/discover/movie', {
+            with_genres: TMDB.HORROR_GENRE_ID,
+            'vote_count.gte': 100, 
+            sort_by: 'vote_average.desc',
+            page: 1
+        });
+        renderMoviesToSlider(popularResp.results, sliderPopularDiscover);
+        
+        // 4. All Horror Slider (Default popularity)
+        const allHorrorResp = await TMDB.fetchFromTMDB('/discover/movie', {
+            with_genres: TMDB.HORROR_GENRE_ID,
+            sort_by: 'popularity.desc',
+            page: 1
+        });
+        renderMoviesToSlider(allHorrorResp.results, sliderAllHorror);
+        
+    } catch (error) {
+        console.error('Failed to load home sliders', error);
+        renderMoviesToSlider(FALLBACK_POPULAR_MOVIES, sliderTrending);
+        renderMoviesToSlider(FALLBACK_POPULAR_MOVIES.slice().reverse(), sliderPopularDiscover);
+        renderMoviesToSlider(FALLBACK_POPULAR_MOVIES, sliderAllHorror);
+        sliderUpcoming.innerHTML = '<div style="padding: 2rem; color: var(--text-secondary); text-align: center;"><i class="fa-solid fa-wifi-slash"></i> ไม่สามารถเชื่อมต่อกับฐานข้อมูลภาพยนตร์ออนไลน์ได้ชั่วคราว แต่คุณยังสามารถค้นหาและจัดการหนังในคอลเล็กชันส่วนตัวของคุณได้ตามปกติครับ 🩸</div>';
     }
 }
 
@@ -1615,6 +1654,7 @@ function createMovieCard(movie, isSaved) {
     const card = document.createElement('div');
     card.className = 'movie-card';
     card.dataset.id = movie.id;
+    card.movieData = movie; // Save reference for in-place updates
 
     // Defensive variables fallback
     const titleText = movie.title || 'ไม่มีชื่อเรื่อง';
@@ -1725,8 +1765,23 @@ function createMovieCard(movie, isSaved) {
         SoundscapeEngine.playClickSFX();
         openMovieModal(movie.id);
     });
-
+    
     return card;
+}
+
+function updateMovieCardsInDOM(movieId) {
+    const id = parseInt(movieId, 10);
+    const cards = document.querySelectorAll(`.movie-card[data-id="${id}"]`);
+    const savedRecord = Storage.getMovieFromCollection(id);
+    const isSaved = savedRecord !== null;
+    
+    cards.forEach(oldCard => {
+        const movieData = savedRecord || oldCard.movieData;
+        if (movieData) {
+            const newCard = createMovieCard(movieData, isSaved);
+            oldCard.parentNode.replaceChild(newCard, oldCard);
+        }
+    });
 }
 
 function renderEmptyState(message) {
@@ -2122,7 +2177,7 @@ function saveActiveMovie() {
     if (activeTab === 'collection') {
         renderMyCollection();
     } else {
-        fetchAndRenderDiscover();
+        updateMovieCardsInDOM(selectedMovieData.id);
     }
 
     checkBingoChallenges();
@@ -2140,7 +2195,7 @@ function deleteActiveMovie() {
         if (activeTab === 'collection') {
             renderMyCollection();
         } else {
-            fetchAndRenderDiscover();
+            updateMovieCardsInDOM(selectedMovieData.id);
         }
         
         closeMovieModal();
@@ -2222,6 +2277,10 @@ function decodeCollectionData(base64Str) {
 function openExportGuideModal() {
     const modal = document.getElementById('export-guide-modal');
     if (modal) {
+        // Reset manual copy box
+        const manualBox = document.getElementById('manual-copy-box');
+        if (manualBox) manualBox.style.display = 'none';
+        
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
     } else {
@@ -2237,10 +2296,62 @@ function closeExportGuideModal() {
     }
 }
 
+function handleModalShareCopy() {
+    const collection = Storage.getCollection();
+    if (collection.length === 0) {
+        alert('กรุณาเพิ่มภาพยนตร์ลงในคอลเล็กชันของคุณอย่างน้อย 1 เรื่องก่อนทำการแชร์คอลเล็กชันนี้ครับ! 🩸');
+        return;
+    }
+
+    try {
+        const encodedData = encodeCollectionData(collection);
+        
+        // Create full public sharing link, using window.location.href split by ?
+        let basePath = window.location.href.split('?')[0];
+        const shareUrl = `${basePath}?share=${encodedData}`;
+        
+        const copyBtn = document.getElementById('copy-share-link-btn');
+        const manualBox = document.getElementById('manual-copy-box');
+        const manualInput = document.getElementById('manual-share-url-input');
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                if (copyBtn) {
+                    copyBtn.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> คัดลอกลิงก์สำเร็จแล้ว! 🩸';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '<i class="fa-solid fa-link"></i> คัดลอกลิงก์แชร์คอลเล็กชัน';
+                    }, 3000);
+                }
+                alert('คัดลอกลิงก์สำหรับแชร์คอลเล็กชันเรียบร้อยแล้ว! 🩸\nคุณสามารถส่งลิงก์นี้ไปให้เพื่อนเปิดได้ทันที');
+            }).catch(err => {
+                console.error('Failed to copy via clipboard api', err);
+                showManualCopy(shareUrl, manualBox, manualInput);
+            });
+        } else {
+            showManualCopy(shareUrl, manualBox, manualInput);
+        }
+    } catch (e) {
+        console.error(e);
+        alert('เกิดข้อผิดพลาดในการสร้างลิงก์สำหรับแชร์ข้อมูล');
+    }
+}
+
+function showManualCopy(url, manualBox, manualInput) {
+    if (manualBox && manualInput) {
+        manualInput.value = url;
+        manualBox.style.display = 'block';
+        manualInput.select();
+        alert('เนื่องจากข้อจำกัดความปลอดภัยของระบบ/บราวเซอร์ ไม่สามารถคัดลอกอัตโนมัติได้\nกรุณาคัดลอกลิงก์แชร์ในช่องสีแดงที่แสดงขึ้นมาด้วยตนเองครับ 🩸');
+    } else {
+        prompt('คัดลอกลิงก์แชร์ตรงนี้:', url);
+    }
+}
+
 // Expose to global scope so inline onclick works
 window.openExportGuideModal = openExportGuideModal;
 window.closeExportGuideModal = closeExportGuideModal;
 window.handleExport = handleExport;
+window.handleModalShareCopy = handleModalShareCopy;
 
 function handleExport() {
     const collectionData = Storage.exportCollection();
@@ -2269,6 +2380,8 @@ function handleImport(e) {
             updateStatsDashboard();
             if (activeTab === 'collection') {
                 renderMyCollection();
+            } else if (activeTab === 'home') {
+                fetchAndRenderHome();
             } else {
                 fetchAndRenderDiscover();
             }
@@ -2691,7 +2804,7 @@ function initFogEffect() {
     }
     
     function animate() {
-        if (activeTab === 'playlists' || activeTab === 'characters') {
+        if (activeTab !== 'home') {
             fogAnimationId = requestAnimationFrame(animate);
             return; // Pause drawing if banner is hidden
         }
@@ -5688,6 +5801,8 @@ function saveMovieSurvivalLog() {
     updateStatsDashboard();
     if (activeTab === 'collection') {
         renderMyCollection();
+    } else {
+        updateMovieCardsInDOM(savedMovie.id);
     }
     
     checkBingoChallenges();
