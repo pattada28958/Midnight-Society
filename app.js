@@ -706,6 +706,153 @@ function setupEventListeners() {
     if (ticketRandomSeatBtn) ticketRandomSeatBtn.addEventListener('click', handleRandomSeatClick);
     if (ticketOwnerName) ticketOwnerName.addEventListener('input', handleTicketOwnerInput);
     if (ticketDownloadBtn) ticketDownloadBtn.addEventListener('click', handleTicketDownloadClick);
+
+    // Horror Roulette triggers
+    const openRouletteBtn = document.getElementById('open-roulette-btn');
+    const rouletteModal = document.getElementById('roulette-modal');
+    const rouletteCloseBtn = document.getElementById('roulette-close-btn');
+    const rouletteSpinBtn = document.getElementById('roulette-spin-btn');
+    
+    if (openRouletteBtn && rouletteModal) {
+        openRouletteBtn.addEventListener('click', () => {
+            SoundscapeEngine.playModalOpenSFX();
+            rouletteModal.classList.add('active');
+            const resultBox = document.getElementById('roulette-result-box');
+            if (resultBox) resultBox.style.display = 'none';
+        });
+    }
+    if (rouletteCloseBtn && rouletteModal) {
+        rouletteCloseBtn.addEventListener('click', () => {
+            if (!isRouletteSpinning) rouletteModal.classList.remove('active');
+        });
+    }
+    if (rouletteModal) {
+        rouletteModal.addEventListener('click', (e) => {
+            if (e.target === rouletteModal && !isRouletteSpinning) {
+                rouletteModal.classList.remove('active');
+            }
+        });
+    }
+    if (rouletteSpinBtn) {
+        rouletteSpinBtn.addEventListener('click', startRouletteSpin);
+    }
+
+    // Spooky Tarot triggers
+    const openTarotBtn = document.getElementById('open-tarot-btn');
+    const tarotModal = document.getElementById('tarot-modal');
+    const tarotCloseBtn = document.getElementById('tarot-close-btn');
+    const tarotResetBtn = document.getElementById('tarot-reset-btn');
+    const tarotRevealBtn = document.getElementById('tarot-reveal-btn');
+    const tarotCardWrappers = document.querySelectorAll('.tarot-card-wrapper');
+    
+    if (openTarotBtn && tarotModal) {
+        openTarotBtn.addEventListener('click', () => {
+            SoundscapeEngine.playModalOpenSFX();
+            tarotModal.classList.add('active');
+        });
+    }
+    if (tarotCloseBtn && tarotModal) {
+        tarotCloseBtn.addEventListener('click', () => {
+            tarotModal.classList.remove('active');
+        });
+    }
+    if (tarotModal) {
+        tarotModal.addEventListener('click', (e) => {
+            if (e.target === tarotModal) {
+                tarotModal.classList.remove('active');
+            }
+        });
+    }
+    if (tarotResetBtn) {
+        tarotResetBtn.addEventListener('click', resetTarotModal);
+    }
+    if (tarotRevealBtn) {
+        tarotRevealBtn.addEventListener('click', revealTarotPrediction);
+    }
+    tarotCardWrappers.forEach(wrapper => {
+        wrapper.addEventListener('click', () => {
+            const index = parseInt(wrapper.dataset.cardIndex, 10);
+            handleTarotCardClick(index);
+        });
+    });
+
+    // Horror Bingo triggers
+    const openBingoBtn = document.getElementById('open-bingo-btn');
+    const bingoModal = document.getElementById('bingo-modal');
+    const bingoCloseBtn = document.getElementById('bingo-close-btn');
+    
+    if (openBingoBtn && bingoModal) {
+        openBingoBtn.addEventListener('click', () => {
+            SoundscapeEngine.playModalOpenSFX();
+            bingoModal.classList.add('active');
+            renderBingoGrid();
+        });
+    }
+    if (bingoCloseBtn && bingoModal) {
+        bingoCloseBtn.addEventListener('click', () => {
+            bingoModal.classList.remove('active');
+        });
+    }
+    if (bingoModal) {
+        bingoModal.addEventListener('click', (e) => {
+            if (e.target === bingoModal) {
+                bingoModal.classList.remove('active');
+            }
+        });
+    }
+
+    // Spooky Soundboard triggers
+    const openSoundboardBtn = document.getElementById('open-soundboard-btn');
+    const soundboardModal = document.getElementById('soundboard-modal');
+    const soundboardCloseBtn = document.getElementById('soundboard-close-btn');
+    
+    if (openSoundboardBtn && soundboardModal) {
+        openSoundboardBtn.addEventListener('click', () => {
+            SoundscapeEngine.playModalOpenSFX();
+            soundboardModal.classList.add('active');
+        });
+    }
+    if (soundboardCloseBtn && soundboardModal) {
+        soundboardCloseBtn.addEventListener('click', () => {
+            soundboardModal.classList.remove('active');
+        });
+    }
+    if (soundboardModal) {
+        soundboardModal.addEventListener('click', (e) => {
+            if (e.target === soundboardModal) {
+                soundboardModal.classList.remove('active');
+            }
+        });
+    }
+
+    // Soundboard sound trigger clicks
+    const sbButtons = document.querySelectorAll('.soundboard-btn');
+    sbButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const sound = btn.dataset.sound;
+            let clicked = [];
+            try {
+                clicked = JSON.parse(localStorage.getItem('soundboard_clicks_history') || '[]');
+            } catch(e){}
+            if (!clicked.includes(sound)) {
+                clicked.push(sound);
+                localStorage.setItem('soundboard_clicks_history', JSON.stringify(clicked));
+            }
+            if (sound === 'laugh') SoundscapeEngine.playEvilLaughSFX();
+            else if (sound === 'slash') SoundscapeEngine.playKnifeSlashSFX();
+            else if (sound === 'step') SoundscapeEngine.playSpookyStepsSFX();
+            else if (sound === 'screech') SoundscapeEngine.playJumpscareSFX();
+            else if (sound === 'drone') SoundscapeEngine.playLowDroneSFX();
+            else if (sound === 'heartbeat') SoundscapeEngine.playHeartbeatSFX(1.0, 0.8);
+            checkBingoChallenges();
+        });
+    });
+
+    // Survival Log save trigger
+    const survivalSaveBtn = document.getElementById('survival-save-btn');
+    if (survivalSaveBtn) {
+        survivalSaveBtn.addEventListener('click', saveMovieSurvivalLog);
+    }
 }
 
 // --- TAB NAVIGATION ---
@@ -1573,6 +1720,25 @@ async function openMovieModal(movieId) {
             modalDeleteBtn.style.display = 'none';
         }
 
+        // Populate Survival Log
+        const statusSelect = document.getElementById('survival-status-select');
+        const noteText = document.getElementById('survival-note-text');
+        const survivalSaveBtn = document.getElementById('survival-save-btn');
+        if (statusSelect && noteText) {
+            statusSelect.value = (savedMovie && savedMovie.survivalStatus) ? savedMovie.survivalStatus : 'none';
+            noteText.value = (savedMovie && savedMovie.survivalNote) ? savedMovie.survivalNote : '';
+            statusSelect.disabled = isSharedProfileMode;
+            noteText.disabled = isSharedProfileMode;
+            if (survivalSaveBtn) {
+                survivalSaveBtn.style.display = isSharedProfileMode ? 'none' : 'block';
+            }
+            if (isSharedProfileMode) {
+                noteText.placeholder = 'ผู้ใช้รายนี้ไม่ได้เขียนบันทึกความหลอนไว้...';
+            } else {
+                noteText.placeholder = 'อธิบายชะตากรรมเสี่ยงตายของคุณ...';
+            }
+        }
+
         // Read-only configurations for shared profile view
         if (isSharedProfileMode) {
             modalSaveBtn.style.display = 'none';
@@ -1687,6 +1853,9 @@ function stopMovieTrailer() {
 function saveActiveMovie() {
     if (!selectedMovieData || isSharedProfileMode) return;
 
+    const statusSelect = document.getElementById('survival-status-select');
+    const noteText = document.getElementById('survival-note-text');
+
     const dataToSave = {
         id: selectedMovieData.id,
         title: selectedMovieData.title,
@@ -1701,7 +1870,9 @@ function saveActiveMovie() {
         // Custom user fields
         watchStatus: activeMovieWatchStatus,
         personalRating: activeMovieRating > 0 ? activeMovieRating : null,
-        review: modalReviewText.value.trim()
+        review: modalReviewText.value.trim(),
+        survivalStatus: statusSelect ? statusSelect.value : 'none',
+        survivalNote: noteText ? noteText.value.trim() : ''
     };
 
     Storage.saveMovie(dataToSave);
@@ -1713,6 +1884,7 @@ function saveActiveMovie() {
         fetchAndRenderDiscover();
     }
 
+    checkBingoChallenges();
     closeMovieModal();
 }
 
@@ -1775,7 +1947,9 @@ function encodeCollectionData(collection) {
         r: m.personalRating,
         c: m.review,
         im: m.imdbRating,
-        rt: m.rtRating
+        rt: m.rtRating,
+        ss: m.survivalStatus,
+        sn: m.survivalNote
     }));
     const jsonStr = JSON.stringify(compact);
     return btoa(unescape(encodeURIComponent(jsonStr)));
@@ -1796,6 +1970,8 @@ function decodeCollectionData(base64Str) {
         review: m.c,
         imdbRating: m.im,
         rtRating: m.rt,
+        survivalStatus: m.ss || 'none',
+        survivalNote: m.sn || '',
         genres: [], 
         production_countries: [] 
     }));
@@ -2332,6 +2508,10 @@ function toggleAnalyticsPanel() {
         analyticsPanel.style.display = 'block';
         analyticsToggleBtn.innerHTML = '<i class="fa-solid fa-chart-pie"></i> ซ่อนวิเคราะห์ความหลอน (Horror Analytics)';
         renderHorrorAnalytics();
+        
+        // Mark challenge as completed
+        localStorage.setItem('challenge_analytics_done', 'true');
+        checkBingoChallenges();
     } else {
         analyticsPanel.style.display = 'none';
         analyticsToggleBtn.innerHTML = '<i class="fa-solid fa-chart-pie"></i> เจาะลึกวิเคราะห์ความหลอน (Horror Analytics)';
@@ -2743,6 +2923,166 @@ const SoundscapeEngine = {
         osc2.stop(now + 1.8);
         pitchLfo.stop(now + 1.8);
         noise.stop(now + 1.8);
+    },
+    
+    playEvilLaughSFX() {
+        this.init();
+        if (this.ctx.state === 'suspended') return;
+        const ctx = this.ctx;
+        const now = ctx.currentTime;
+        const numHahas = 6;
+        for (let i = 0; i < numHahas; i++) {
+            const time = now + i * 0.18;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            const filter = ctx.createBiquadFilter();
+            
+            osc.type = 'sawtooth';
+            const startFreq = 400 - (i * 30);
+            osc.frequency.setValueAtTime(startFreq, time);
+            osc.frequency.exponentialRampToValueAtTime(startFreq * 0.4, time + 0.15);
+            
+            filter.type = 'lowpass';
+            filter.frequency.value = 1000;
+            
+            gain.gain.setValueAtTime(0.08, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+            
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.masterGain || ctx.destination);
+            
+            osc.start(time);
+            osc.stop(time + 0.16);
+        }
+    },
+    
+    playKnifeSlashSFX() {
+        this.init();
+        if (this.ctx.state === 'suspended') return;
+        const ctx = this.ctx;
+        const now = ctx.currentTime;
+        
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(1500, now);
+        osc.frequency.exponentialRampToValueAtTime(400, now + 0.25);
+        
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        
+        const oscRing = ctx.createOscillator();
+        const gainRing = ctx.createGain();
+        oscRing.type = 'sine';
+        oscRing.frequency.setValueAtTime(3000, now);
+        oscRing.frequency.exponentialRampToValueAtTime(1000, now + 0.1);
+        gainRing.gain.setValueAtTime(0.06, now);
+        gainRing.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+        
+        osc.connect(gain);
+        gain.connect(this.masterGain || ctx.destination);
+        
+        oscRing.connect(gainRing);
+        gainRing.connect(this.masterGain || ctx.destination);
+        
+        osc.start(now);
+        osc.stop(now + 0.26);
+        oscRing.start(now);
+        oscRing.stop(now + 0.11);
+    },
+    
+    playSpookyStepsSFX() {
+        this.init();
+        if (this.ctx.state === 'suspended') return;
+        const ctx = this.ctx;
+        const now = ctx.currentTime;
+        
+        const playStep = (time) => {
+            const osc = ctx.createOscillator();
+            const filter = ctx.createBiquadFilter();
+            const gain = ctx.createGain();
+            
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(90, time);
+            osc.frequency.linearRampToValueAtTime(40, time + 0.15);
+            
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(120, time);
+            
+            gain.gain.setValueAtTime(0.18, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+            
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.masterGain || ctx.destination);
+            
+            osc.start(time);
+            osc.stop(time + 0.16);
+        };
+        
+        playStep(now);
+        playStep(now + 0.45);
+    },
+    
+    playScreechSFX() {
+        this.playJumpscareSFX();
+    },
+    
+    playLowDroneSFX() {
+        this.init();
+        if (this.ctx.state === 'suspended') return;
+        const ctx = this.ctx;
+        const now = ctx.currentTime;
+        
+        const osc = ctx.createOscillator();
+        const filter = ctx.createBiquadFilter();
+        const gain = ctx.createGain();
+        
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(45, now);
+        osc.frequency.linearRampToValueAtTime(35, now + 1.5);
+        
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(80, now);
+        filter.frequency.exponentialRampToValueAtTime(50, now + 1.5);
+        
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+        
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain || ctx.destination);
+        
+        osc.start(now);
+        osc.stop(now + 1.6);
+    },
+    
+    playHeartbeatSFX(rate = 1.0, volume = 0.5) {
+        this.init();
+        if (this.ctx.state === 'suspended') return;
+        const ctx = this.ctx;
+        const now = ctx.currentTime;
+        
+        const playThump = (time) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(60, time);
+            osc.frequency.exponentialRampToValueAtTime(10, time + 0.15);
+            
+            gain.gain.setValueAtTime(volume * 0.8, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+            
+            osc.connect(gain);
+            gain.connect(this.masterGain || ctx.destination);
+            osc.start(time);
+            osc.stop(time + 0.16);
+        };
+        
+        playThump(now);
+        playThump(now + 0.25 / rate);
     }
 };
 
@@ -2845,6 +3185,13 @@ const SPOOKY_ACHIEVEMENTS = [
         check: (col) => {
             return col.some(m => parseInt(m.personalRating, 10) === 10);
         }
+    },
+    {
+        id: 'bingo_overlord',
+        title: 'ผู้เป็นนายเหนือปีศาจ (Spooky Overlord)',
+        desc: 'ทำภารกิจกระดานบิงโกความหลอนเชื่อมเส้นสำเร็จสำเร็จ 1 เส้นขึ้นไป',
+        icon: 'fa-solid fa-crown',
+        check: () => localStorage.getItem('achievement_bingo_completed') === 'true'
     }
 ];
 
@@ -3693,4 +4040,482 @@ function handleOutsideClickForSuggestions(e) {
     if (searchSuggestions && !searchSuggestions.contains(e.target) && e.target !== searchInput) {
         hideSuggestions();
     }
+}
+
+// ==========================================
+// --- 5 PREMIUM HORROR FEATURES LOGIC ---
+// ==========================================
+
+// --- HORROR ROULETTE LOGIC ---
+let isRouletteSpinning = false;
+let rouletteRotation = 0;
+let rouletteSelectedMovieId = null;
+
+function startRouletteSpin() {
+    if (isRouletteSpinning) return;
+    
+    isRouletteSpinning = true;
+    
+    // Mark roulette challenge as done in bingo
+    localStorage.setItem('challenge_roulette_done', 'true');
+    checkBingoChallenges();
+    
+    const wheelDisc = document.getElementById('roulette-wheel-disc');
+    const spinBtn = document.getElementById('roulette-spin-btn');
+    const resultBox = document.getElementById('roulette-result-box');
+    
+    if (resultBox) resultBox.style.display = 'none';
+    if (spinBtn) spinBtn.disabled = true;
+    
+    // Add random spin rotation
+    const extraSpins = 5 + Math.floor(Math.random() * 5); // 5 to 9 full spins
+    const targetDeg = extraSpins * 360 + Math.floor(Math.random() * 360);
+    rouletteRotation += targetDeg;
+    
+    if (wheelDisc) {
+        wheelDisc.style.transform = `rotate(${rouletteRotation}deg)`;
+    }
+    
+    // Heartbeat Sound Acceleration/Deceleration Synthesis
+    let baseInterval = 600; // ms
+    let timeElapsed = 0;
+    const duration = 4000; // ms (matches CSS transition)
+    
+    const playTick = () => {
+        if (timeElapsed >= duration) {
+            // Spin ended
+            isRouletteSpinning = false;
+            if (spinBtn) spinBtn.disabled = false;
+            revealRouletteResult();
+            return;
+        }
+        
+        let progress = timeElapsed / duration; // 0 to 1
+        let currentInterval;
+        if (progress < 0.4) {
+            // Accelerate: interval decreases
+            currentInterval = baseInterval - (baseInterval - 150) * (progress / 0.4);
+        } else {
+            // Decelerate: interval increases
+            currentInterval = 150 + (baseInterval - 150) * ((progress - 0.4) / 0.6);
+        }
+        
+        const rateFactor = 600 / currentInterval;
+        SoundscapeEngine.playHeartbeatSFX(rateFactor, 0.4 + 0.3 * (rateFactor - 1));
+        
+        timeElapsed += currentInterval;
+        setTimeout(playTick, currentInterval);
+    };
+    
+    playTick();
+}
+
+async function revealRouletteResult() {
+    const resultBox = document.getElementById('roulette-result-box');
+    const resultTitle = document.getElementById('roulette-result-title');
+    const resultPoster = document.getElementById('roulette-result-poster');
+    const resultDesc = document.getElementById('roulette-result-desc');
+    const goToMovieBtn = document.getElementById('roulette-go-to-movie');
+    const filterSelect = document.getElementById('roulette-filter-select');
+    
+    if (!resultBox || !resultTitle || !resultPoster || !resultDesc) return;
+    
+    const filterVal = filterSelect ? filterSelect.value : 'all';
+    const collection = Storage.getCollection();
+    let pool = [];
+    let isFallback = false;
+    
+    if (filterVal === 'watched') {
+        pool = collection.filter(m => m.watchStatus === 'watched');
+        if (pool.length === 0) {
+            isFallback = true;
+            pool = featuredMovies.length > 0 ? featuredMovies : FALLBACK_POPULAR_MOVIES;
+        }
+    } else if (filterVal === 'watchlist') {
+        pool = collection.filter(m => m.watchStatus === 'watchlist' || m.watchStatus === 'watching');
+        if (pool.length === 0) {
+            isFallback = true;
+            pool = featuredMovies.length > 0 ? featuredMovies : FALLBACK_POPULAR_MOVIES;
+        }
+    } else {
+        pool = collection;
+        if (pool.length === 0) {
+            isFallback = true;
+            pool = featuredMovies.length > 0 ? featuredMovies : FALLBACK_POPULAR_MOVIES;
+        }
+    }
+    
+    const selectedMovie = pool[Math.floor(Math.random() * pool.length)];
+    if (!selectedMovie) return;
+    
+    rouletteSelectedMovieId = selectedMovie.id;
+    SoundscapeEngine.playModalOpenSFX();
+    
+    resultTitle.textContent = selectedMovie.title;
+    
+    let overview = selectedMovie.overview || 'ชะตากรรมนี้ช่างน่าสะพรึงกลัวจนไม่อาจเอ่ยปากบรรยายเรื่องย่อได้...';
+    if (isFallback && filterVal !== 'all') {
+        const typeText = filterVal === 'watched' ? 'ที่ดูแล้ว' : 'ที่อยากดู';
+        overview = `⚠️ (ไม่พบหนัง${typeText}ในคอลเล็กชันของคุณ ระบบจึงสุ่มจากหนังยอดนิยมแทน) 🩸\n\n` + overview;
+    }
+    resultDesc.textContent = overview;
+    
+    if (selectedMovie.poster_path) {
+        resultPoster.src = TMDB.getImageUrl(selectedMovie.poster_path, 'w92');
+        resultPoster.style.display = 'block';
+    } else {
+        resultPoster.style.display = 'none';
+    }
+    
+    resultBox.style.display = 'block';
+    
+    if (goToMovieBtn) {
+        const newBtn = goToMovieBtn.cloneNode(true);
+        goToMovieBtn.parentNode.replaceChild(newBtn, goToMovieBtn);
+        newBtn.addEventListener('click', () => {
+            const rouletteModal = document.getElementById('roulette-modal');
+            if (rouletteModal) rouletteModal.classList.remove('active');
+            openMovieModal(selectedMovie.id);
+        });
+    }
+}
+
+// --- SPOOKY TAROT RECOMMENDATIONS LOGIC ---
+const TAROT_CARDS = [
+    // Slot 0: Vibe
+    [
+        { name: 'The Slasher (ฆาตกรสยอง)', icon: '🔪', vibe: 'slasher', desc: 'มีดสปาต้าที่สะท้อนแสงจันทร์... ค่ำคืนนี้จิตวิญญาณของคุณโหยหาการไล่ล่าและคราบเลือดกระเซ็น' },
+        { name: 'The Spectre (วิญญาณหลอน)', icon: '👻', vibe: 'ghost', desc: 'เสียงกระซิบไร้ที่มาในความเงียบ... ค่ำคืนนี้บ้านผีสิงและวิญญาณพยาบาทจะตามรังควานคุณ' },
+        { name: 'The Beast (อสูรกายกระหายเลือด)', icon: '👹', vibe: 'beast', desc: 'กรงเล็บและเขี้ยวแหลมคมในเงามืด... ค่ำคืนนี้คุณต้องเผชิญกับสัตว์ร้ายที่ไม่มีมนุษยธรรม' },
+        { name: 'The Occult (ลัทธิมรณะ)', icon: '🔮', vibe: 'occult', desc: 'สัญลักษณ์ดาวห้าแฉกและมนต์ดำ... ค่ำคืนนี้ปีศาจโบราณและการสิงสู่ทางจิตวิญญาณจะครอบงำคุณ' }
+    ],
+    // Slot 1: Era
+    [
+        { name: 'Classic Era (สุสานโบราณ)', icon: '⏳', era: 'classic', desc: 'เศษฟิล์มสีซีดจางและกลิ่นอายความสยองรุ่นเก๋า (ก่อนปี 1990)' },
+        { name: 'Gothic Nineties (ทศวรรษแห่งเลือด)', icon: '🕯️', era: 'nineties', desc: 'เสียงเพลงกรันจ์และเรื่องเล่าสยองยุค 90s (1990 - 1999)' },
+        { name: 'Modern Plague (ศตวรรษใหม่)', icon: '📱', era: 'modern', desc: 'กล้องวิดีโอแฮนดีแคมและอินเทอร์เน็ตความเร็วสูง (2000 - 2015)' },
+        { name: 'Apocalypse Now (วันสิ้นโลกปัจจุบัน)', icon: '💥', era: 'apocalypse', desc: 'ภาพสยองระดับ 4K และชะตากรรมร่วมสมัย (ปี 2016 ขึ้นไป)' }
+    ],
+    // Slot 2: Fate
+    [
+        { name: 'Survived (ผู้รอดชีวิต)', icon: '🟢', fate: 'survived', desc: 'ดวงชะตาแข็งแกร่ง คุณจะค้นพบแสงสว่างที่ปลายอุโมงค์ (แนะนำหนังเกรดดี คะแนนสูง 7+)' },
+        { name: 'Deceased (เหยื่อสังเวย)', icon: '🔴', fate: 'deceased', desc: 'ชะตากรรมขาดสะบั้น คุณตกเป็นอาหารของความกลัว (แนะนำหนังบีเกรดสยองขวัญสุดโต่ง คะแนนต่ำกว่า 6)' },
+        { name: 'Possessed (ร่างทรงปีศาจ)', icon: '💀', fate: 'possessed', desc: 'จิตใจถูกแทรกซึมด้วยความคลั่ง คุณกลายเป็นผู้สืบทอดคำสาป (แนะนำหนังสไตล์ไซโค/หักมุม คะแนนปานกลาง 6-7)' }
+    ]
+];
+
+let drawnTarotCards = [null, null, null];
+
+function handleTarotCardClick(cardIndex) {
+    if (drawnTarotCards[cardIndex] !== null) return;
+    
+    const cardsPool = TAROT_CARDS[cardIndex];
+    const randomIndex = Math.floor(Math.random() * cardsPool.length);
+    const selectedCard = cardsPool[randomIndex];
+    
+    drawnTarotCards[cardIndex] = selectedCard;
+    
+    const nameEl = document.getElementById(`tarot-name-${cardIndex}`);
+    const iconEl = document.getElementById(`tarot-icon-${cardIndex}`);
+    
+    if (nameEl) nameEl.textContent = selectedCard.name;
+    if (iconEl) iconEl.textContent = selectedCard.icon;
+    
+    SoundscapeEngine.playClickSFX();
+    
+    const cardInner = document.getElementById(`tarot-card-${cardIndex}`);
+    if (cardInner) {
+        cardInner.classList.add('flipped');
+    }
+    
+    const allDrawn = drawnTarotCards.every(c => c !== null);
+    const revealBtn = document.getElementById('tarot-reveal-btn');
+    if (revealBtn) {
+        revealBtn.disabled = !allDrawn;
+    }
+}
+
+async function revealTarotPrediction() {
+    const allDrawn = drawnTarotCards.every(c => c !== null);
+    if (!allDrawn) return;
+    
+    SoundscapeEngine.playLowDroneSFX();
+    
+    localStorage.setItem('challenge_tarot_done', 'true');
+    checkBingoChallenges();
+    
+    const predictionTextEl = document.getElementById('tarot-prediction-text');
+    const resultBox = document.getElementById('tarot-result-box');
+    const suggestionsContainer = document.getElementById('tarot-movies-suggestions');
+    const revealBtn = document.getElementById('tarot-reveal-btn');
+    
+    if (!predictionTextEl || !resultBox || !suggestionsContainer || !revealBtn) return;
+    
+    revealBtn.disabled = true;
+    predictionTextEl.textContent = 'กำลังสื่อสารกับมิติลี้ลับเพื่อนำคำทำนายมาให้คุณ...';
+    resultBox.style.display = 'block';
+    suggestionsContainer.innerHTML = '<div style="grid-column: span 3; text-align: center; padding: 1rem; color: var(--text-dark);"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังอัญเชิญคำแนะนำภาพยนตร์...</div>';
+    
+    const cardVibe = drawnTarotCards[0];
+    const cardEra = drawnTarotCards[1];
+    const cardFate = drawnTarotCards[2];
+    
+    const prediction = `คุณจับได้ไพ่ ${cardVibe.name} จิตเบื้องลึกกำลังบ่งบอกว่า: "${cardVibe.desc}" ซึ่งสั่นพ้องกับประตูมิติเวลาของ ${cardEra.name}: "${cardEra.desc}" และผลลัพธ์ของโชคชะตาครั้งนี้สิ้นสุดที่ ${cardFate.name}: "${cardFate.desc}"`;
+    predictionTextEl.textContent = prediction;
+    
+    const params = {
+        with_genres: '27',
+        page: 1
+    };
+    
+    if (cardVibe.vibe === 'slasher') params.with_genres = '27,53';
+    else if (cardVibe.vibe === 'ghost') params.with_genres = '27,9648';
+    else if (cardVibe.vibe === 'beast') params.with_genres = '27,878';
+    else if (cardVibe.vibe === 'occult') params.with_genres = '27,14';
+    
+    if (cardEra.era === 'classic') {
+        params['primary_release_date.lte'] = '1989-12-31';
+    } else if (cardEra.era === 'nineties') {
+        params['primary_release_date.gte'] = '1990-01-01';
+        params['primary_release_date.lte'] = '1999-12-31';
+    } else if (cardEra.era === 'modern') {
+        params['primary_release_date.gte'] = '2000-01-01';
+        params['primary_release_date.lte'] = '2015-12-31';
+    } else if (cardEra.era === 'apocalypse') {
+        params['primary_release_date.gte'] = '2016-01-01';
+    }
+    
+    try {
+        const response = await TMDB.fetchFromTMDB('/discover/movie', params);
+        let movies = response.results || [];
+        
+        if (cardFate.fate === 'survived') {
+            movies = movies.filter(m => m.vote_average >= 7.0);
+        } else if (cardFate.fate === 'deceased') {
+            movies = movies.filter(m => m.vote_average < 6.0);
+        } else if (cardFate.fate === 'possessed') {
+            movies = movies.filter(m => m.vote_average >= 6.0 && m.vote_average < 7.0);
+        }
+        
+        if (movies.length < 3) {
+            movies = response.results || [];
+        }
+        if (movies.length < 3) {
+            movies = FALLBACK_POPULAR_MOVIES;
+        }
+        
+        const selected = movies.slice(0, 3);
+        suggestionsContainer.innerHTML = '';
+        selected.forEach(movie => {
+            const movieItem = document.createElement('div');
+            movieItem.className = 'actor-movie-item';
+            movieItem.style.flexDirection = 'column';
+            movieItem.style.padding = '0.5rem';
+            movieItem.style.textAlign = 'center';
+            movieItem.style.gap = '0.5rem';
+            
+            const posterPath = movie.poster_path ? TMDB.getImageUrl(movie.poster_path, 'w92') : 'https://images.unsplash.com/photo-1509248961158-e54f6934749c?q=80&w=92&auto=format&fit=crop';
+            
+            movieItem.innerHTML = `
+                <img src="${posterPath}" class="actor-movie-poster" style="width: 65px; height: 95px; margin: 0 auto;" alt="${movie.title}">
+                <div class="actor-movie-title" style="font-size: 0.8rem; height: 32px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${movie.title}</div>
+                <div style="font-size: 0.7rem; color: var(--primary);"><i class="fa-solid fa-star"></i> TMDB ${movie.vote_average ? movie.vote_average.toFixed(1) : '-.-'}</div>
+            `;
+            
+            movieItem.addEventListener('click', () => {
+                const tarotModal = document.getElementById('tarot-modal');
+                if (tarotModal) tarotModal.classList.remove('active');
+                openMovieModal(movie.id);
+            });
+            suggestionsContainer.appendChild(movieItem);
+        });
+        
+    } catch (err) {
+        console.error("Tarot recommendation error:", err);
+        suggestionsContainer.innerHTML = '';
+        const offlineMovies = FALLBACK_POPULAR_MOVIES.slice(0, 3);
+        offlineMovies.forEach(movie => {
+            const movieItem = document.createElement('div');
+            movieItem.className = 'actor-movie-item';
+            movieItem.style.flexDirection = 'column';
+            movieItem.style.padding = '0.5rem';
+            movieItem.style.textAlign = 'center';
+            movieItem.style.gap = '0.5rem';
+            
+            movieItem.innerHTML = `
+                <img src="${TMDB.getImageUrl(movie.poster_path, 'w92')}" class="actor-movie-poster" style="width: 65px; height: 95px; margin: 0 auto;" alt="${movie.title}">
+                <div class="actor-movie-title" style="font-size: 0.8rem; height: 32px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${movie.title}</div>
+                <div style="font-size: 0.7rem; color: var(--primary);"><i class="fa-solid fa-star"></i> TMDB ${movie.vote_average ? movie.vote_average.toFixed(1) : '-.-'}</div>
+            `;
+            
+            movieItem.addEventListener('click', () => {
+                const tarotModal = document.getElementById('tarot-modal');
+                if (tarotModal) tarotModal.classList.remove('active');
+                openMovieModal(movie.id);
+            });
+            suggestionsContainer.appendChild(movieItem);
+        });
+    }
+}
+
+function resetTarotModal() {
+    drawnTarotCards = [null, null, null];
+    for (let i = 0; i < 3; i++) {
+        const cardInner = document.getElementById(`tarot-card-${i}`);
+        if (cardInner) {
+            cardInner.classList.remove('flipped');
+        }
+    }
+    setTimeout(() => {
+        for (let i = 0; i < 3; i++) {
+            const nameEl = document.getElementById(`tarot-name-${i}`);
+            const iconEl = document.getElementById(`tarot-icon-${i}`);
+            if (nameEl) nameEl.textContent = '-';
+            if (iconEl) iconEl.textContent = '💀';
+        }
+    }, 400);
+    
+    const resultBox = document.getElementById('tarot-result-box');
+    if (resultBox) resultBox.style.display = 'none';
+    
+    const revealBtn = document.getElementById('tarot-reveal-btn');
+    if (revealBtn) {
+        revealBtn.disabled = true;
+    }
+    SoundscapeEngine.playClickSFX();
+}
+
+// --- HORROR BINGO LOGIC ---
+const BINGO_CHALLENGES = [
+    { id: 0, title: 'วิญญาณฝึกหัด', desc: 'สะสมหนังสยอง 3+ เรื่อง', icon: '👻', check: (col) => col.length >= 3 },
+    { id: 1, title: 'นักเขียนอเวจี', desc: 'เขียนรีวิวหนัง 1+ เรื่อง', icon: '🖋️', check: (col) => col.some(m => m.review && m.review.trim().length > 0) },
+    { id: 2, title: 'สุสานคลาสสิก', desc: 'สะสมหนังสยองก่อนปี 1990', icon: '⏳', check: (col) => col.some(m => {
+        if (!m.release_date) return false;
+        const year = parseInt(m.release_date.split('-')[0], 10);
+        return year < 1990;
+    }) },
+    { id: 3, title: 'ผู้ท้าทายความตาย', desc: 'เล่นวงล้อเสี่ยงชะตากรรม', icon: '🎡', check: () => localStorage.getItem('challenge_roulette_done') === 'true' },
+    { id: 4, title: 'ทาโรต์นำทาง', desc: 'เล่นทำนายดวงไพ่ทาโรต์', icon: '🔮', check: () => localStorage.getItem('challenge_tarot_done') === 'true' },
+    { id: 5, title: 'จิตวิเคราะห์', desc: 'เปิดดูการวิเคราะห์ความหลอน', icon: '📊', check: () => localStorage.getItem('challenge_analytics_done') === 'true' },
+    { id: 6, title: 'รอดชีวิตแน่แท้', desc: 'บันทึกสถานะ "Survived"', icon: '🟢', check: (col) => col.some(m => m.survivalStatus === 'survived') },
+    { id: 7, title: 'นักบันทึกคืนหลอน', desc: 'เขียนประวัติรอดชีวิต/ตาย', icon: '📝', check: (col) => col.some(m => m.survivalNote && m.survivalNote.trim().length > 0) },
+    { id: 8, title: 'ทาสเสียงหลอน', desc: 'กดเสียงในซาวด์บอร์ดครบ', icon: '🎵', check: () => {
+        const clicked = JSON.parse(localStorage.getItem('soundboard_clicks_history') || '[]');
+        return clicked.length >= 6;
+    } }
+];
+
+function renderBingoGrid() {
+    const gridWrapper = document.getElementById('bingo-grid-wrapper');
+    if (!gridWrapper) return;
+    
+    gridWrapper.innerHTML = '';
+    const collection = Storage.getCollection();
+    const results = BINGO_CHALLENGES.map(ch => ch.check(collection));
+    
+    const lines = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+        [0, 3, 6], [1, 4, 7], [2, 5, 8], // cols
+        [0, 4, 8], [2, 4, 6]             // diagonals
+    ];
+    
+    let isBingo = false;
+    lines.forEach(line => {
+        if (line.every(idx => results[idx])) {
+            isBingo = true;
+        }
+    });
+    
+    if (isBingo) {
+        localStorage.setItem('achievement_bingo_completed', 'true');
+        const banner = document.getElementById('bingo-completed-banner');
+        if (banner) banner.style.display = 'block';
+    } else {
+        const banner = document.getElementById('bingo-completed-banner');
+        if (banner) banner.style.display = 'none';
+    }
+    
+    BINGO_CHALLENGES.forEach((ch, idx) => {
+        const isCompleted = results[idx];
+        const cell = document.createElement('div');
+        cell.className = `bingo-cell ${isCompleted ? 'completed' : ''}`;
+        
+        cell.innerHTML = `
+            <div class="bingo-icon">${ch.icon}</div>
+            <div class="bingo-title">${ch.title}</div>
+            <div style="font-size: 0.62rem; color: var(--text-dark); margin-top: 0.15rem;">${ch.desc}</div>
+        `;
+        
+        cell.addEventListener('click', () => {
+            SoundscapeEngine.playClickSFX();
+            alert(`ภารกิจ "${ch.title}": ${ch.desc}\nสถานะ: ${isCompleted ? '🟢 สำเร็จแล้ว' : '🔴 ยังไม่สำเร็จ'}`);
+        });
+        
+        gridWrapper.appendChild(cell);
+    });
+}
+
+function checkBingoChallenges() {
+    const bingoModal = document.getElementById('bingo-modal');
+    if (bingoModal && bingoModal.classList.contains('active')) {
+        renderBingoGrid();
+    }
+    
+    const collection = Storage.getCollection();
+    const results = BINGO_CHALLENGES.map(ch => ch.check(collection));
+    const lines = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+        [0, 3, 6], [1, 4, 7], [2, 5, 8], // cols
+        [0, 4, 8], [2, 4, 6]             // diagonals
+    ];
+    const isBingo = lines.some(line => line.every(idx => results[idx]));
+    if (isBingo) {
+        localStorage.setItem('achievement_bingo_completed', 'true');
+    }
+}
+
+// --- SURVIVAL LOG LOGIC ---
+function saveMovieSurvivalLog() {
+    if (!selectedMovieData || isSharedProfileMode) return;
+    
+    SoundscapeEngine.playClickSFX();
+    
+    const statusSelect = document.getElementById('survival-status-select');
+    const noteText = document.getElementById('survival-note-text');
+    if (!statusSelect || !noteText) return;
+    
+    const statusVal = statusSelect.value;
+    const noteVal = noteText.value.trim();
+    
+    let savedMovie = Storage.getMovieFromCollection(selectedMovieData.id);
+    if (!savedMovie) {
+        savedMovie = {
+            id: selectedMovieData.id,
+            title: selectedMovieData.title,
+            poster_path: selectedMovieData.poster_path,
+            backdrop_path: selectedMovieData.backdrop_path,
+            release_date: selectedMovieData.release_date,
+            vote_average: selectedMovieData.vote_average,
+            runtime: selectedMovieData.runtime,
+            genres: selectedMovieData.genres ? selectedMovieData.genres.map(g => g.id) : [],
+            production_countries: selectedMovieData.production_countries ? selectedMovieData.production_countries.map(c => c.iso_3166_1) : [],
+            watchStatus: 'watchlist',
+            personalRating: null,
+            review: ''
+        };
+    }
+    
+    savedMovie.survivalStatus = statusVal;
+    savedMovie.survivalNote = noteVal;
+    
+    Storage.saveMovie(savedMovie);
+    
+    updateStatsDashboard();
+    if (activeTab === 'collection') {
+        renderMyCollection();
+    }
+    
+    checkBingoChallenges();
+    
+    alert('บันทึกชะตากรรมความสยองเรียบร้อยแล้ว! 🩸');
 }

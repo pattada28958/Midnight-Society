@@ -129,7 +129,23 @@
                     </div>
                 </div>
             </section>
-            
+
+            <!-- HORROR SPECIAL ACTIVITIES PANEL -->
+            <div class="horror-actions-row" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.5rem;">
+                <button class="discover-btn" id="open-roulette-btn" style="background: linear-gradient(135deg, var(--primary), #991b1b); font-size: 0.85rem; padding: 0.65rem 0.5rem; justify-content: center; height: 40px; font-weight: 700; border-radius: 10px;">
+                    <i class="fa-solid fa-circle-notch"></i> วงล้อเสี่ยงตาย
+                </button>
+                <button class="discover-btn" id="open-tarot-btn" style="background: linear-gradient(135deg, var(--primary), #581c87); font-size: 0.85rem; padding: 0.65rem 0.5rem; justify-content: center; height: 40px; font-weight: 700; border-radius: 10px;">
+                    <i class="fa-solid fa-notes-medical"></i> ทำนายไพ่ทาโรต์
+                </button>
+                <button class="discover-btn" id="open-bingo-btn" style="background: linear-gradient(135deg, var(--primary), #065f46); font-size: 0.85rem; padding: 0.65rem 0.5rem; justify-content: center; height: 40px; font-weight: 700; border-radius: 10px;">
+                    <i class="fa-solid fa-table-cells"></i> บิงโกภารกิจ
+                </button>
+                <button class="discover-btn" id="open-soundboard-btn" style="background: linear-gradient(135deg, var(--primary), #075985); font-size: 0.85rem; padding: 0.65rem 0.5rem; justify-content: center; height: 40px; font-weight: 700; border-radius: 10px;">
+                    <i class="fa-solid fa-music"></i> ซาวด์บอร์ดหลอน
+                </button>
+            </div>
+
             <!-- ANALYTICS PANEL & TOGGLE -->
             <div style="margin-bottom: 2rem;">
                 <button id="analytics-toggle-btn" class="discover-btn" style="width: 100%; border-radius: 12px; height: 44px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: var(--transition-smooth);">
@@ -426,6 +442,30 @@
                                 </button>
                             </div>
                         </div>
+
+                        <!-- Survival Log Box -->
+                        <div class="interaction-box" style="margin-top: 1rem; border-color: rgba(255, 0, 60, 0.2);">
+                            <h3 class="modal-section-title" style="border-left-color: var(--primary); margin-bottom: 0.75rem;"><i class="fa-solid fa-skull"></i> ทำเนียบเหยื่อสยอง (Survival Log)</h3>
+                            
+                            <div class="filter-group" style="margin-bottom: 0.75rem;">
+                                <label style="font-size: 0.75rem; text-transform: none; letter-spacing: 0px; font-weight: 500;">หากคุณหลุดเข้าไปในเรื่องนี้?</label>
+                                <select id="survival-status-select" class="filter-select" style="padding: 0.5rem; font-size: 0.85rem; height: 36px;">
+                                    <option value="none">-- เลือกชะตากรรมของคุณ --</option>
+                                    <option value="survived">🟢 รอดชีวิตหวุดหวิด (Survived)</option>
+                                    <option value="dead">🔴 ตายอนาถแน่นอน (Deceased)</option>
+                                    <option value="possess">💀 กลายเป็นปีศาจ/ตัวร้าย (Possessed)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="review-textarea-wrapper" style="margin-bottom: 0.75rem;">
+                                <label style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 0.35rem;">คุณจะเสียชีวิตหรือรอดชีวิตอย่างไร?</label>
+                                <textarea class="review-textarea" id="survival-note-text" placeholder="อธิบายชะตากรรมเสี่ยงตายของคุณ..." style="height: 60px; font-size: 0.8rem;"></textarea>
+                            </div>
+                            
+                            <button class="btn-primary" id="survival-save-btn" style="width: 100%; padding: 0.5rem; font-size: 0.85rem; background: rgba(255,0,60,0.12); border: 1px solid rgba(255,0,60,0.25); box-shadow: none; height: 36px; border-radius: 6px;">
+                                <i class="fa-solid fa-pen-nib"></i> บันทึกชะตากรรมเหยื่อ
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -720,6 +760,189 @@
             <button class="btn-primary" id="playlist-save-btn" style="width: 100%;">
                 <i class="fa-solid fa-floppy-disk"></i> บันทึกเพลย์ลิสต์มาราธอน
             </button>
+        </div>
+    </div>
+
+    <!-- HORROR ROULETTE MODAL -->
+    <div class="modal-overlay" id="roulette-modal">
+        <div class="modal-content-container" style="max-width: 500px; padding: 2rem; text-align: center;">
+            <button class="modal-close-btn" id="roulette-close-btn" title="ปิดหน้าต่าง">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="modal-section-title" style="border-left-color: var(--primary); margin-bottom: 1.5rem; text-align: left;"><i class="fa-solid fa-circle-notch"></i> วงล้อสุ่มชะตากรรมคืนหลอน</h3>
+            <div class="filter-group" style="margin-bottom: 1.5rem; text-align: left;">
+                <label style="font-size: 0.8rem; margin-bottom: 0.35rem; display: block; color: var(--text-primary);"><i class="fa-solid fa-filter"></i> เลือกกลุ่มภาพยนตร์เสี่ยงดวง</label>
+                <select id="roulette-filter-select" class="filter-select" style="padding: 0.5rem; font-size: 0.85rem; height: 36px;">
+                    <option value="all">🌐 สุ่มทั้งหมดในคลัง/ยอดนิยม (All Horror)</option>
+                    <option value="watched">🟢 สุ่มเฉพาะหนังที่ดูแล้ว (Watched Only)</option>
+                    <option value="watchlist">🔴 สุ่มเฉพาะหนังที่อยากดู / กำลังดู (Watchlist Only)</option>
+                </select>
+            </div>
+            
+            <div class="roulette-wheel-container" style="position: relative; width: 200px; height: 200px; margin: 0 auto 2rem auto; border-radius: 50%; border: 4px solid var(--primary); box-shadow: 0 0 20px var(--primary-glow); overflow: hidden; background: radial-gradient(circle, #200609 0%, #08080c 100%); display: flex; align-items: center; justify-content: center;">
+                <div class="roulette-pointer" style="position: absolute; top: 0px; left: 50%; transform: translateX(-50%); z-index: 10; font-size: 1.8rem; color: var(--primary); filter: drop-shadow(0 0 5px var(--primary-glow)); height: 30px;">
+                    <i class="fa-solid fa-caret-down"></i>
+                </div>
+                <div class="roulette-wheel" id="roulette-wheel-disc" style="width: 100%; height: 100%; transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1); display: flex; align-items: center; justify-content: center; position: relative;">
+                    <div style="font-size: 3rem; color: rgba(255, 0, 60, 0.15);"><i class="fa-solid fa-skull-crossbones"></i></div>
+                </div>
+                <div class="wheel-center-skull" style="position: absolute; width: 44px; height: 44px; background: #08080c; border: 2px solid var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: var(--primary); z-index: 5; box-shadow: 0 0 10px var(--primary-glow);"><i class="fa-solid fa-skull"></i></div>
+            </div>
+            
+            <div id="roulette-result-box" style="display: none; margin-bottom: 1.5rem; padding: 1rem; background: rgba(255, 0, 60, 0.05); border: 1px dashed var(--primary); border-radius: 12px; animation: fadeIn 0.4s ease;">
+                <span style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.35rem; text-align: left;">ชะตากรรมลิขิตให้คุณพบกับ...</span>
+                <h4 id="roulette-result-title" style="font-size: 1.15rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem; text-align: left;">-</h4>
+                <div style="display: flex; gap: 1rem; text-align: left; align-items: center; margin-top: 0.75rem;">
+                    <img id="roulette-result-poster" src="" style="width: 55px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;">
+                    <p id="roulette-result-desc" style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4; margin: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"></p>
+                </div>
+                <button class="btn-primary" id="roulette-go-to-movie" style="margin-top: 1rem; width: 100%; padding: 0.5rem; font-size: 0.85rem; height: 36px; border-radius: 6px;">
+                    <i class="fa-solid fa-film"></i> เปิดดูรายละเอียดภาพยนตร์
+                </button>
+            </div>
+            
+            <button class="btn-primary" id="roulette-spin-btn" style="width: 100%; background: linear-gradient(135deg, var(--primary), #991b1b);">
+                <i class="fa-solid fa-skull-crossbones"></i> เริ่มหมุนรูเล็ตชะตากรรม
+            </button>
+        </div>
+    </div>
+
+    <!-- SPOOKY TAROT MODAL -->
+    <div class="modal-overlay" id="tarot-modal">
+        <div class="modal-content-container" style="max-width: 700px; padding: 2rem;">
+            <button class="modal-close-btn" id="tarot-close-btn" title="ปิดหน้าต่าง">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="modal-section-title" style="border-left-color: #581c87; margin-bottom: 1rem;"><i class="fa-solid fa-notes-medical"></i> ระบบทำนายดวงคืนหลอนด้วยไพ่ทาโรต์</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2rem;">
+                เลือกสุ่มไพ่ทาโรต์สยองขวัญ 3 ใบ เพื่อทำนายชะตาและดึงหนังที่เหมาะกับจิตวิญญาณของคุณคืนนี้...
+            </p>
+            
+            <div class="tarot-cards-container" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+                <!-- Card 0 -->
+                <div class="tarot-card-wrapper" data-card-index="0" style="perspective: 1000px; aspect-ratio: 2/3.2; cursor: pointer;">
+                    <div class="tarot-card-inner" id="tarot-card-0" style="position: relative; width: 100%; height: 100%; transition: transform 0.8s; transform-style: preserve-3d; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div class="tarot-card-front" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #180825 0%, #0d0413 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px;">
+                            <div style="font-size: 2.2rem; filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4));">🔮</div>
+                            <span style="font-size: 0.75rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px;">ธีมความรู้สึก</span>
+                        </div>
+                        <div class="tarot-card-back" id="tarot-back-0" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #311042 0%, #12021c 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px; transform: rotateY(180deg); border: 1px solid #8b5cf6;">
+                            <div class="tarot-card-name" id="tarot-name-0" style="font-size: 0.9rem; font-weight: 800; color: #f5f3ff;">-</div>
+                            <div class="tarot-card-icon" id="tarot-icon-0" style="font-size: 2rem;">💀</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 1 -->
+                <div class="tarot-card-wrapper" data-card-index="1" style="perspective: 1000px; aspect-ratio: 2/3.2; cursor: pointer;">
+                    <div class="tarot-card-inner" id="tarot-card-1" style="position: relative; width: 100%; height: 100%; transition: transform 0.8s; transform-style: preserve-3d; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div class="tarot-card-front" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #180825 0%, #0d0413 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px;">
+                            <div style="font-size: 2.2rem; filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4));">⏳</div>
+                            <span style="font-size: 0.75rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px;">มิติเวลา</span>
+                        </div>
+                        <div class="tarot-card-back" id="tarot-back-1" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #311042 0%, #12021c 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px; transform: rotateY(180deg); border: 1px solid #8b5cf6;">
+                            <div class="tarot-card-name" id="tarot-name-1" style="font-size: 0.9rem; font-weight: 800; color: #f5f3ff;">-</div>
+                            <div class="tarot-card-icon" id="tarot-icon-1" style="font-size: 2rem;">💀</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="tarot-card-wrapper" data-card-index="2" style="perspective: 1000px; aspect-ratio: 2/3.2; cursor: pointer;">
+                    <div class="tarot-card-inner" id="tarot-card-2" style="position: relative; width: 100%; height: 100%; transition: transform 0.8s; transform-style: preserve-3d; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div class="tarot-card-front" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #180825 0%, #0d0413 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px;">
+                            <div style="font-size: 2.2rem; filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4));">🩸</div>
+                            <span style="font-size: 0.75rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px;">ชะตากรรม</span>
+                        </div>
+                        <div class="tarot-card-back" id="tarot-back-2" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #311042 0%, #12021c 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px; transform: rotateY(180deg); border: 1px solid #8b5cf6;">
+                            <div class="tarot-card-name" id="tarot-name-2" style="font-size: 0.9rem; font-weight: 800; color: #f5f3ff;">-</div>
+                            <div class="tarot-card-icon" id="tarot-icon-2" style="font-size: 2rem;">💀</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="tarot-result-box" style="display: none; margin-top: 1.5rem; padding: 1.25rem; background: rgba(88, 28, 135, 0.1); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 12px; animation: fadeIn 0.5s ease;">
+                <h4 style="font-size: 1rem; color: #c084fc; margin-bottom: 0.5rem; font-weight: 700;"><i class="fa-solid fa-wand-magic-sparkles"></i> คำทำนายประจำค่ำคืนนี้</h4>
+                <p id="tarot-prediction-text" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 1.25rem 0;"></p>
+                
+                <h5 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.75rem; letter-spacing: 0.5px; font-weight: 700;"><i class="fa-solid fa-ghost"></i> ภาพยนตร์ที่ถูกเลือกโดยคำทำนาย:</h5>
+                <div id="tarot-movies-suggestions" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                    <!-- Suggested movies inserted dynamically -->
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn-primary" id="tarot-reset-btn" style="flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text-primary); box-shadow: none;">
+                    <i class="fa-solid fa-rotate-left"></i> ล้างไพ่ทั้งหมด
+                </button>
+                <button class="btn-primary" id="tarot-reveal-btn" style="flex: 2; background: linear-gradient(135deg, #581c87, #701a75);" disabled>
+                    <i class="fa-solid fa-book-skull"></i> อ่านชะตากรรมความหลอน
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HORROR BINGO MODAL -->
+    <div class="modal-overlay" id="bingo-modal">
+        <div class="modal-content-container" style="max-width: 500px; padding: 2rem;">
+            <button class="modal-close-btn" id="bingo-close-btn" title="ปิดหน้าต่าง">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="modal-section-title" style="border-left-color: #065f46; margin-bottom: 1rem;"><i class="fa-solid fa-table-cells"></i> กระดานบิงโกภารกิจท้าคนจิตแข็ง</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                สำเร็จภารกิจหนังสยองขวัญเพื่อบิงโกเชื่อมต่อเส้น (แนวตั้ง แนวนอน หรือแนวทแยง) และปลดล็อกตราเกียรติยศสูงสุด!
+            </p>
+            
+            <div class="bingo-grid-container" id="bingo-grid-wrapper" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.5rem;">
+                <!-- 9 grid items generated by JS -->
+            </div>
+            
+            <div id="bingo-completed-banner" style="display: none; margin-top: 1rem; padding: 0.75rem; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; text-align: center;">
+                <span style="font-size: 0.82rem; font-weight: 700; color: #10b981;"><i class="fa-solid fa-award"></i> ยินดีด้วย! คุณบิงโกภารกิจสำเร็จ ปลดล็อกตราเกียรติยศพิเศษ "Spooky Overlord"!</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SPOOKY SOUNDBOARD MODAL -->
+    <div class="modal-overlay" id="soundboard-modal">
+        <div class="modal-content-container" style="max-width: 440px; padding: 2rem; text-align: center;">
+            <button class="modal-close-btn" id="soundboard-close-btn" title="ปิดหน้าต่าง">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="modal-section-title" style="border-left-color: #0284c7; margin-bottom: 1.5rem; text-align: left;"><i class="fa-solid fa-music"></i> ซาวด์บอร์ดหลอนสะกดวิญญาณ</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                กดคลิกที่ปุ่มเพื่อสังเคราะห์เสียงเอฟเฟกต์หลอน ๆ แบบสดเรียลไทม์ผ่านบราวเซอร์ของคุณ
+            </p>
+            
+            <div class="soundboard-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                <button class="soundboard-btn status-btn" data-sound="laugh" style="height: 65px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.5rem; border-color: rgba(2, 132, 199, 0.25);">
+                    <i class="fa-solid fa-ghost" style="color: #38bdf8; font-size: 1.15rem;"></i>
+                    <span style="font-size: 0.78rem;">หัวเราะปีศาจ</span>
+                </button>
+                <button class="soundboard-btn status-btn" data-sound="slash" style="height: 65px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.5rem; border-color: rgba(2, 132, 199, 0.25);">
+                    <i class="fa-solid fa-gavel" style="color: #38bdf8; font-size: 1.15rem;"></i>
+                    <span style="font-size: 0.78rem;">ฟันมีดสปาต้า</span>
+                </button>
+                <button class="soundboard-btn status-btn" data-sound="step" style="height: 65px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.5rem; border-color: rgba(2, 132, 199, 0.25);">
+                    <i class="fa-solid fa-shoe-prints" style="color: #38bdf8; font-size: 1.15rem;"></i>
+                    <span style="font-size: 0.78rem;">ฝีเท้าสยอง</span>
+                </button>
+                <button class="soundboard-btn status-btn" data-sound="screech" style="height: 65px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.5rem; border-color: rgba(2, 132, 199, 0.25);">
+                    <i class="fa-solid fa-triangle-exclamation" style="color: #38bdf8; font-size: 1.15rem;"></i>
+                    <span style="font-size: 0.78rem;">กรีดร้องแหลม</span>
+                </button>
+                <button class="soundboard-btn status-btn" data-sound="drone" style="height: 65px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.5rem; border-color: rgba(2, 132, 199, 0.25);">
+                    <i class="fa-solid fa-wind" style="color: #38bdf8; font-size: 1.15rem;"></i>
+                    <span style="font-size: 0.78rem;">คลื่นความถี่ต่ำ</span>
+                </button>
+                <button class="soundboard-btn status-btn" data-sound="heartbeat" style="height: 65px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem; padding: 0.5rem; border-color: rgba(2, 132, 199, 0.25);">
+                    <i class="fa-solid fa-heart" style="color: #38bdf8; font-size: 1.15rem;"></i>
+                    <span style="font-size: 0.78rem;">เสียงใจเต้น</span>
+                </button>
+            </div>
+            
+            <p style="font-size: 0.72rem; color: var(--text-dark); margin-top: 1.5rem; line-height: 1.4;">
+                * สังเคราะห์เสียงทั้งหมดผ่าน Web Audio API คีย์บอร์ดและคลื่นเสียงไม่มีการดาวน์โหลดไฟล์เสียงภายนอก
+            </p>
         </div>
     </div>
 
