@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Main Style Sheet -->
-    <link rel="stylesheet" href="style.css?v=20260626_3">
+    <link rel="stylesheet" href="style.css?v=20260626_5">
 </head>
 <body>
 
@@ -791,27 +791,63 @@
                         </div>
                     </div>
                     
-                    <!-- Survival Simulator -->
-                    <div class="interaction-box" style="margin-top: 1rem; border-color: rgba(255, 0, 60, 0.25);">
-                        <h3 class="modal-section-title" style="border-left-color: var(--primary);"><i class="fa-solid fa-gamepad"></i> จำลองการเผชิญหน้า (Survival Simulator)</h3>
-                        <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
-                            หากคุณพบฆาตกรคนนี้ในคืนหลอน คุณจะเลือกทำอย่างไร? ระบบจะคำนวณโอกาสรอดชีวิตของคุณพร้อมแสดงผลลัพธ์
-                        </p>
+                    <!-- Interactive Horror RPG Simulator -->
+                    <div class="interaction-box" id="rpg-simulator-box" style="margin-top: 1rem; border-color: rgba(255, 0, 60, 0.25);">
+                        <h3 class="modal-section-title" id="rpg-title" style="border-left-color: var(--primary);"><i class="fa-solid fa-gamepad"></i> เกมจำลองเอาตัวรอด (Survival RPG)</h3>
                         
-                        <div class="watch-status-selector" style="grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
-                            <button class="status-btn" data-choice="run" id="sim-btn-run"><i class="fa-solid fa-person-running"></i> วิ่งหนีสุดชีวิต</button>
-                            <button class="status-btn" data-choice="hide" id="sim-btn-hide"><i class="fa-solid fa-eye-slash"></i> หาที่ซ่อนแอบ</button>
-                            <button class="status-btn" data-choice="fight" id="sim-btn-fight"><i class="fa-solid fa-hand-fist"></i> สู้กลับขาดใจ</button>
-                            <button class="status-btn" data-choice="trick" id="sim-btn-trick"><i class="fa-solid fa-brain"></i> ใช้ไหวพริบเจรจา</button>
+                        <!-- RPG Intro / Start Panel -->
+                        <div id="rpg-start-panel" style="text-align: center; padding: 0.5rem 0;">
+                            <p id="rpg-intro-text" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.45;">
+                                ก้าวเข้าสู่สถานการณ์เผชิญหน้าแบบ 3 ด่านที่คุณต้องตัดสินใจเพื่อเอาชีวิตรอด! จัดการ HP ค้นหาไอเทม และปลดล็อกฉากจบพิเศษ
+                            </p>
+                            <button class="btn-primary" id="rpg-start-btn" style="width: 100%; justify-content: center; padding: 0.65rem;">
+                                <i class="fa-solid fa-play"></i> เริ่มเผชิญหน้าคืนสยอง
+                            </button>
                         </div>
-                        
-                        <!-- Simulation result area -->
-                        <div id="sim-result-box" style="display: none; padding: 0.85rem; background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px dashed var(--glass-border); animation: fadeIn 0.4s ease;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary);">ผลลัพธ์จำลอง:</span>
-                                <span id="sim-survival-rate" style="font-size: 0.85rem; font-weight: 800; color: var(--primary);">โอกาสรอด 0%</span>
+
+                        <!-- RPG Main Game Screen (Hidden initially) -->
+                        <div id="rpg-game-panel" style="display: none; animation: fadeIn 0.4s ease;">
+                            <!-- HUD (HP and Inventory) -->
+                            <div class="rpg-hud" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; background: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <!-- HP Bar -->
+                                <div id="rpg-hp-container" style="flex: 1; margin-right: 0.75rem;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.25rem;">
+                                        <span><i class="fa-solid fa-heart text-primary" style="color: var(--primary);"></i> HP</span>
+                                        <span id="rpg-hp-value">100 / 100</span>
+                                    </div>
+                                    <div class="analytics-bar-bg" style="height: 6px;">
+                                        <div class="analytics-bar-fill" id="rpg-hp-bar" style="width: 100%; background: var(--primary); transition: width 0.3s ease;"></div>
+                                    </div>
+                                </div>
+                                <!-- Inventory slots -->
+                                <div id="rpg-inventory-container" style="display: flex; gap: 0.35rem; align-items: center;">
+                                    <span style="font-size: 0.75rem; color: var(--text-secondary); margin-right: 0.2rem;"><i class="fa-solid fa-briefcase"></i></span>
+                                    <div class="rpg-inventory-slot" id="rpg-slot-1" title="ยังไม่มีไอเทม" data-item=""></div>
+                                    <div class="rpg-inventory-slot" id="rpg-slot-2" title="ยังไม่มีไอเทม" data-item=""></div>
+                                    <div class="rpg-inventory-slot" id="rpg-slot-3" title="ยังไม่มีไอเทม" data-item=""></div>
+                                </div>
                             </div>
-                            <p id="sim-outcome-text" style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4; margin: 0;"></p>
+
+                            <!-- Narrative Screen -->
+                            <div class="rpg-narrative-box" style="padding: 0.85rem; background: rgba(0,0,0,0.5); border-radius: 8px; border: 1px solid var(--glass-border); margin-bottom: 0.75rem; min-height: 80px;">
+                                <div id="rpg-stage-indicator" style="font-size: 0.7rem; color: var(--primary); font-weight: 700; text-transform: uppercase; margin-bottom: 0.25rem;">STAGE 1: ENCOUNTER</div>
+                                <p id="rpg-narrative-text" style="font-size: 0.8rem; color: var(--text-primary); line-height: 1.5; margin: 0;"></p>
+                            </div>
+
+                            <!-- Choices List -->
+                            <div id="rpg-choices-list" style="display: flex; flex-direction: column; gap: 0.45rem;">
+                                <!-- Dynamic buttons will go here -->
+                            </div>
+                        </div>
+
+                        <!-- RPG Result Screen (Hidden initially) -->
+                        <div id="rpg-result-panel" style="display: none; text-align: center; padding: 1rem 0; animation: fadeIn 0.4s ease;">
+                            <div id="rpg-result-icon" style="font-size: 2.5rem; margin-bottom: 0.5rem; filter: drop-shadow(0 0 10px rgba(255,0,60,0.4));">💀</div>
+                            <h4 id="rpg-result-title" style="font-size: 1rem; color: var(--text-primary); font-weight: 700; margin-bottom: 0.5rem;">ผลลัพธ์</h4>
+                            <p id="rpg-result-desc" style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.45; margin-bottom: 1rem;"></p>
+                            <button class="status-btn" id="rpg-retry-btn" style="width: 100%; justify-content: center; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15);">
+                                <i class="fa-solid fa-arrow-rotate-right"></i> เล่นใหม่อีกครั้ง
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -921,12 +957,12 @@
                 <!-- Card 0 -->
                 <div class="tarot-card-wrapper" data-card-index="0" style="perspective: 1000px; aspect-ratio: 2/3.2; cursor: pointer;">
                     <div class="tarot-card-inner" id="tarot-card-0" style="position: relative; width: 100%; height: 100%; transition: transform 0.8s; transform-style: preserve-3d; border-radius: 12px; border: 1px solid var(--glass-border);">
-                        <div class="tarot-card-front" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #180825 0%, #0d0413 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px;">
+                        <div class="tarot-card-front card-occult-back" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #180825 0%, #0d0413 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px;">
                             <div style="font-size: 2.2rem; filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4));">🔮</div>
-                            <span style="font-size: 0.75rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px;">ธีมความรู้สึก</span>
+                            <span style="font-size: 0.72rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px;">ใบที่ 1: อดีต / จุดกำเนิด</span>
                         </div>
                         <div class="tarot-card-back" id="tarot-back-0" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #311042 0%, #12021c 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px; transform: rotateY(180deg); border: 1px solid #8b5cf6;">
-                            <div class="tarot-card-name" id="tarot-name-0" style="font-size: 0.9rem; font-weight: 800; color: #f5f3ff;">-</div>
+                            <div class="tarot-card-name" id="tarot-name-0" style="font-size: 0.9rem; font-weight: 800; color: #f5f3ff; text-align: center; padding: 0 0.5rem;">-</div>
                             <div class="tarot-card-icon" id="tarot-icon-0" style="font-size: 2rem;">💀</div>
                         </div>
                     </div>
@@ -934,12 +970,12 @@
                 <!-- Card 1 -->
                 <div class="tarot-card-wrapper" data-card-index="1" style="perspective: 1000px; aspect-ratio: 2/3.2; cursor: pointer;">
                     <div class="tarot-card-inner" id="tarot-card-1" style="position: relative; width: 100%; height: 100%; transition: transform 0.8s; transform-style: preserve-3d; border-radius: 12px; border: 1px solid var(--glass-border);">
-                        <div class="tarot-card-front" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #180825 0%, #0d0413 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px;">
+                        <div class="tarot-card-front card-occult-back" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #180825 0%, #0d0413 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px;">
                             <div style="font-size: 2.2rem; filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4));">⏳</div>
-                            <span style="font-size: 0.75rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px;">มิติเวลา</span>
+                            <span style="font-size: 0.72rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px;">ใบที่ 2: ปัจจุบัน / เผชิญหน้า</span>
                         </div>
                         <div class="tarot-card-back" id="tarot-back-1" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #311042 0%, #12021c 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px; transform: rotateY(180deg); border: 1px solid #8b5cf6;">
-                            <div class="tarot-card-name" id="tarot-name-1" style="font-size: 0.9rem; font-weight: 800; color: #f5f3ff;">-</div>
+                            <div class="tarot-card-name" id="tarot-name-1" style="font-size: 0.9rem; font-weight: 800; color: #f5f3ff; text-align: center; padding: 0 0.5rem;">-</div>
                             <div class="tarot-card-icon" id="tarot-icon-1" style="font-size: 2rem;">💀</div>
                         </div>
                     </div>
@@ -947,23 +983,35 @@
                 <!-- Card 2 -->
                 <div class="tarot-card-wrapper" data-card-index="2" style="perspective: 1000px; aspect-ratio: 2/3.2; cursor: pointer;">
                     <div class="tarot-card-inner" id="tarot-card-2" style="position: relative; width: 100%; height: 100%; transition: transform 0.8s; transform-style: preserve-3d; border-radius: 12px; border: 1px solid var(--glass-border);">
-                        <div class="tarot-card-front" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #180825 0%, #0d0413 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px;">
+                        <div class="tarot-card-front card-occult-back" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #180825 0%, #0d0413 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px;">
                             <div style="font-size: 2.2rem; filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4));">🩸</div>
-                            <span style="font-size: 0.75rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px;">ชะตากรรม</span>
+                            <span style="font-size: 0.72rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px;">ใบที่ 3: อนาคต / ชะตากรรม</span>
                         </div>
                         <div class="tarot-card-back" id="tarot-back-2" style="position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: linear-gradient(135deg, #311042 0%, #12021c 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; border-radius: 12px; transform: rotateY(180deg); border: 1px solid #8b5cf6;">
-                            <div class="tarot-card-name" id="tarot-name-2" style="font-size: 0.9rem; font-weight: 800; color: #f5f3ff;">-</div>
+                            <div class="tarot-card-name" id="tarot-name-2" style="font-size: 0.9rem; font-weight: 800; color: #f5f3ff; text-align: center; padding: 0 0.5rem;">-</div>
                             <div class="tarot-card-icon" id="tarot-icon-2" style="font-size: 2rem;">💀</div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <div id="tarot-result-box" style="display: none; margin-top: 1.5rem; padding: 1.25rem; background: rgba(88, 28, 135, 0.1); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 12px; animation: fadeIn 0.5s ease;">
-                <h4 style="font-size: 1rem; color: #c084fc; margin-bottom: 0.5rem; font-weight: 700;"><i class="fa-solid fa-wand-magic-sparkles"></i> คำทำนายประจำค่ำคืนนี้</h4>
-                <p id="tarot-prediction-text" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 1.25rem 0;"></p>
+            <div id="tarot-result-box" style="display: none; margin-top: 1.5rem; padding: 1.25rem; background: rgba(88, 28, 135, 0.15); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 12px; animation: fadeIn 0.5s ease;">
+                <h4 style="font-size: 1rem; color: #c084fc; margin-bottom: 0.75rem; font-weight: 700;"><i class="fa-solid fa-wand-magic-sparkles"></i> คำทำนายชะตากรรมความหลอน</h4>
                 
-                <h5 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.75rem; letter-spacing: 0.5px; font-weight: 700;"><i class="fa-solid fa-ghost"></i> ภาพยนตร์ที่ถูกเลือกโดยคำทำนาย:</h5>
+                <!-- Insanity / Soul Alignment Meter -->
+                <div id="tarot-insanity-container" style="margin-bottom: 1rem; background: rgba(0,0,0,0.3); padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid rgba(139, 92, 246, 0.15);">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.35rem;">
+                        <span style="color: var(--text-secondary);"><i class="fa-solid fa-heart-pulse"></i> ค่าความสอดคล้องทางวิญญาณ (Soul Alignment)</span>
+                        <strong id="tarot-insanity-val" style="color: #c084fc;">0%</strong>
+                    </div>
+                    <div class="analytics-bar-bg" style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                        <div class="analytics-bar-fill" id="tarot-insanity-bar" style="width: 0%; background: linear-gradient(90deg, #8b5cf6, #d946ef); transition: width 1.2s cubic-bezier(0.1, 0.8, 0.2, 1); box-shadow: 0 0 8px rgba(217, 70, 239, 0.5);"></div>
+                    </div>
+                </div>
+
+                <p id="tarot-prediction-text" style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin: 0 0 1.25rem 0;"></p>
+                
+                <h5 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.75rem; letter-spacing: 0.5px; font-weight: 700;"><i class="fa-solid fa-ghost"></i> ภาพยนตร์แนะนำปลอบประโลมวิญญาณ:</h5>
                 <div id="tarot-movies-suggestions" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
                     <!-- Suggested movies inserted dynamically -->
                 </div>
@@ -976,6 +1024,14 @@
                 <button class="btn-primary" id="tarot-reveal-btn" style="flex: 2; background: linear-gradient(135deg, #581c87, #701a75);" disabled>
                     <i class="fa-solid fa-book-skull"></i> อ่านชะตากรรมความหลอน
                 </button>
+            </div>
+
+            <!-- Tarot History Box -->
+            <div id="tarot-history-box" style="margin-top: 1.5rem; display: none; padding-top: 1rem; border-top: 1px solid var(--glass-border); animation: fadeIn 0.4s ease;">
+                <h5 style="font-size: 0.78rem; color: #a78bfa; margin-bottom: 0.5rem; text-transform: uppercase; font-weight: 700;"><i class="fa-solid fa-clock-rotate-left"></i> บันทึกชะตากรรม 3 ครั้งล่าสุด (Fate History)</h5>
+                <div id="tarot-history-list" style="display: flex; flex-direction: column; gap: 0.4rem;">
+                    <!-- History entries -->
+                </div>
             </div>
         </div>
     </div>
@@ -1043,7 +1099,7 @@
             
     <!-- HORROR QUIZ MODAL -->
     <div class="modal-overlay" id="quiz-modal">
-        <div class="modal-content-container" style="max-width: 550px; padding: 2rem;">
+        <div class="modal-content-container" style="max-width: 640px; padding: 2rem;">
             <button class="modal-close-btn" id="quiz-close-btn" title="ปิดหน้าต่าง">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -1083,7 +1139,7 @@
                 
                 <!-- Canvas card viewer -->
                 <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 12px; margin-bottom: 1.5rem; display: flex; justify-content: center;">
-                    <canvas id="quiz-card-canvas" width="500" height="300" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--glass-border); background: #000; box-shadow: 0 4px 15px rgba(0,0,0,0.5);"></canvas>
+                    <canvas id="quiz-card-canvas" width="1000" height="720" style="max-width: 100%; width: 560px; height: 403px; border-radius: 8px; border: 1px solid var(--glass-border); background: #000; box-shadow: 0 4px 15px rgba(0,0,0,0.5);"></canvas>
                 </div>
 
                 <div style="display: flex; gap: 1rem;">
@@ -1362,8 +1418,8 @@
     </div>
 
     <!-- Main Controller Scripts -->
-    <script src="storage.js?v=20260626_3"></script>
-    <script src="tmdb.js?v=20260626_3"></script>
-    <script src="app.js?v=20260626_3"></script>
+    <script src="storage.js?v=20260626_5"></script>
+    <script src="tmdb.js?v=20260626_5"></script>
+    <script src="app.js?v=20260626_5"></script>
 </body>
 </html>

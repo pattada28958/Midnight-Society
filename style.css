@@ -3679,3 +3679,154 @@ body.lunar-ambient-indigo {
         gap: 0.5rem !important;
     }
 }
+
+/* RPG Simulator UI styles */
+.rpg-inventory-slot {
+    width: 28px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1.5px dashed rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+    cursor: help;
+}
+
+.rpg-inventory-slot.has-item {
+    background: rgba(16, 185, 129, 0.08);
+    border: 1.5px solid var(--status-watched);
+    color: var(--status-watched);
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+    animation: pulseGlowGreen 2s infinite;
+}
+
+.rpg-choice-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    padding: 0.6rem 0.8rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.rpg-choice-btn:hover:not(:disabled) {
+    background: rgba(255, 0, 60, 0.08);
+    border-color: rgba(255, 0, 60, 0.4);
+    transform: translateX(4px);
+    box-shadow: 0 0 10px rgba(255, 0, 60, 0.1);
+}
+
+.rpg-choice-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+}
+
+.rpg-choice-btn.locked {
+    position: relative;
+    background: rgba(0, 0, 0, 0.4);
+    border-style: dashed;
+}
+
+.rpg-choice-btn.locked::after {
+    content: "🔒 ล็อก";
+    position: absolute;
+    right: 0.8rem;
+    font-size: 0.7rem;
+    background: rgba(255, 0, 60, 0.2);
+    color: var(--primary);
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+@keyframes pulseGlowGreen {
+    0% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.2); }
+    50% { box-shadow: 0 0 12px rgba(16, 185, 129, 0.45); }
+    100% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.2); }
+}
+
+/* Premium Tarot & Quiz UI styles */
+.card-occult-back {
+    position: relative;
+    background: radial-gradient(circle, #250938 0%, #0b0114 100%) !important;
+    border: 1.5px solid rgba(139, 92, 246, 0.25) !important;
+    box-shadow: inset 0 0 20px rgba(139, 92, 246, 0.15), 0 4px 10px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+.card-occult-back::before {
+    content: "";
+    position: absolute;
+    top: 5px; left: 5px; right: 5px; bottom: 5px;
+    border: 1px dashed rgba(139, 92, 246, 0.15);
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+.card-occult-back::after {
+    content: "👁️";
+    position: absolute;
+    font-size: 1.5rem;
+    opacity: 0.15;
+    transition: all 0.4s ease;
+    filter: drop-shadow(0 0 5px #8b5cf6);
+}
+
+.tarot-card-wrapper:hover .card-occult-back::after {
+    opacity: 0.5;
+    transform: scale(1.25) rotate(15deg);
+    filter: drop-shadow(0 0 10px #c084fc);
+}
+
+.tarot-history-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.tarot-history-item:hover {
+    background: rgba(139, 92, 246, 0.05);
+    border-color: rgba(139, 92, 246, 0.2);
+    transform: translateX(3px);
+}
+
+.quiz-option {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    padding: 0.75rem 1rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+
+.quiz-option:hover {
+    background: rgba(161, 98, 7, 0.08);
+    border-color: rgba(161, 98, 7, 0.4);
+    transform: translateX(4px);
+    box-shadow: 0 0 10px rgba(161, 98, 7, 0.1);
+}
