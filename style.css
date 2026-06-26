@@ -3601,3 +3601,81 @@ body.lunar-ambient-indigo {
         font-size: 0.85rem !important;
     }
 }
+
+/* --- COLLECTION GRID & CARD UI SPECIFIC CUSTOMIZATION --- */
+/* Global / Desktop overrides */
+.movie-grid.collection-grid {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 1.25rem;
+}
+.movie-grid.collection-grid .movie-title-card {
+    font-size: 0.95rem;
+}
+.movie-grid.collection-grid .rating-badge {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.5rem;
+}
+.movie-grid.collection-grid .status-badge {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.5rem;
+}
+.movie-grid.collection-grid .personal-rating-display {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+}
+.movie-grid.collection-grid .genre-badge {
+    font-size: 0.72rem;
+}
+.movie-grid.collection-grid .genre-text {
+    max-width: 110px;
+}
+
+/* Tablet (iPad) overrides (width <= 1024px) */
+@media (max-width: 1024px) {
+    .movie-grid.collection-grid {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)) !important;
+        gap: 0.75rem !important;
+    }
+    .movie-grid.collection-grid .movie-title-card {
+        font-size: 0.75rem !important;
+        line-height: 1.25 !important;
+    }
+    .movie-grid.collection-grid .movie-meta-details {
+        font-size: 0.65rem !important;
+    }
+    .movie-grid.collection-grid .rating-badge {
+        font-size: 0.62rem !important;
+        padding: 0.15rem 0.35rem !important;
+    }
+    .movie-grid.collection-grid .status-badge {
+        font-size: 0.62rem !important;
+        padding: 0.15rem 0.35rem !important;
+    }
+    .movie-grid.collection-grid .genre-badge {
+        font-size: 0.62rem !important;
+    }
+    .movie-grid.collection-grid .genre-text {
+        max-width: 75px !important;
+    }
+    .movie-grid.collection-grid .personal-rating-display {
+        font-size: 0.65rem !important;
+        margin-top: 0.25rem !important;
+    }
+    .movie-grid.collection-grid .card-badges {
+        top: 0.4rem !important;
+        left: 0.4rem !important;
+        right: 0.4rem !important;
+        gap: 0.25rem !important;
+    }
+    .movie-grid.collection-grid .card-overlay {
+        padding: 0.75rem !important;
+    }
+}
+
+/* Mobile overrides (width <= 650px) */
+@media (max-width: 650px) {
+    .movie-grid.collection-grid {
+        grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)) !important;
+        gap: 0.5rem !important;
+    }
+}

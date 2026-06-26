@@ -301,6 +301,8 @@ let activeTab = ''; // 'home', 'collection', 'playlists', 'characters', 'finalgi
 let currentSearchQuery = '';
 let discoverPage = 1;
 let discoverTotalPages = 1;
+let collectionPage = 1;
+let collectionTotalPages = 1;
 let discoverMoviesList = []; // Cache of currently shown TMDB search results
 let discoverCategory = null; // 'trending', 'upcoming', 'popular', 'all_horror' or null
 
@@ -536,8 +538,6 @@ const playlistModalTitle = document.getElementById('playlist-modal-title');
 // Analytics and Jumpscare Elements
 const analyticsToggleBtn = document.getElementById('analytics-toggle-btn');
 const analyticsPanel = document.getElementById('analytics-panel');
-const jumpscareOverlay = document.getElementById('jumpscare-overlay');
-const settingsJumpscareToggle = document.getElementById('settings-jumpscare-toggle');
 const controlPanel = document.querySelector('.control-panel');
 const achievementsGrid = document.getElementById('achievements-grid');
 
@@ -579,9 +579,6 @@ function initApp() {
     
     // Initialize fog loop
     initFogEffect();
-    
-    // Initialize Jumpscare Idle
-    initJumpscareIdleDetector();
     
     // Initialize Soundscape
     initSoundscapeState();
@@ -954,9 +951,9 @@ function setupEventListeners() {
         });
     });
 
-    // Pagination (Discover page only)
-    prevPageBtn.addEventListener('click', () => changeDiscoverPage(-1));
-    nextPageBtn.addEventListener('click', () => changeDiscoverPage(1));
+    // Pagination (Dynamic delegate based on activeTab)
+    prevPageBtn.addEventListener('click', () => changePage(-1));
+    nextPageBtn.addEventListener('click', () => changePage(1));
 
     // Share link and export button both open the export/share modal guide
     if (shareBtn) shareBtn.addEventListener('click', openExportGuideModal);
@@ -1384,6 +1381,10 @@ function switchTab(tabName, preserveDiscoverCategory = false) {
     if (gridModeContainer) gridModeContainer.style.display = 'none';
     if (paginationContainer) paginationContainer.style.display = 'none';
     
+    if (movieGrid) {
+        movieGrid.classList.remove('collection-grid');
+    }
+    
     if (activeTab === 'home') {
         if (heroBanner) heroBanner.style.display = 'flex';
         if (slidersModeContainer) slidersModeContainer.style.display = 'block';
@@ -1400,6 +1401,8 @@ function switchTab(tabName, preserveDiscoverCategory = false) {
         }
         sortFilter.value = 'latest_added';
         if (gridModeContainer) gridModeContainer.style.display = 'block';
+        if (movieGrid) movieGrid.classList.add('collection-grid');
+        collectionPage = 1;
         
         renderMyCollection();
     } else if (activeTab === 'playlists') {
@@ -1483,6 +1486,7 @@ function handleSearch() {
 
 function handleFilterChange() {
     if (activeTab === 'collection') {
+        collectionPage = 1;
         renderMyCollection();
     } else {
         discoverCategory = null; // Clear category grid when filtering
@@ -1501,6 +1505,7 @@ function resetAllFilters() {
     
     if (activeTab === 'collection') {
         sortFilter.value = 'latest_added';
+        collectionPage = 1;
         renderMyCollection();
     } else {
         sortFilter.value = 'tmdb_desc';
@@ -1667,12 +1672,29 @@ function renderMyCollection() {
 
         if (sortedList.length === 0) {
             renderEmptyState(isSharedProfileMode ? 'ไม่มีหนังสยองขวัญในเพลย์ลิสต์หรือตัวกรองที่ตรงความต้องการ' : 'ไม่พบภาพยนตร์ในคอลเล็กชันของคุณ ลองปรับปรุงตัวกรอง หรือเปลี่ยนไปแท็บ "ค้นหาหนังใหม่"');
+            if (paginationContainer) paginationContainer.style.display = 'none';
             return;
         }
 
+        // Pagination slicing for Collection (30 movies per page)
+        const itemsPerPage = 30;
+        collectionTotalPages = Math.ceil(sortedList.length / itemsPerPage) || 1;
+        
+        // Clamp page
+        if (collectionPage > collectionTotalPages) {
+            collectionPage = collectionTotalPages;
+        }
+        if (collectionPage < 1) {
+            collectionPage = 1;
+        }
+        
+        const startIndex = (collectionPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pagedList = sortedList.slice(startIndex, endIndex);
+
         // Render Cards with card-specific error catcher
         const newCards = [];
-        sortedList.forEach(movie => {
+        pagedList.forEach(movie => {
             try {
                 const card = createMovieCard(movie, true);
                 newCards.push(card);
@@ -1681,6 +1703,16 @@ function renderMyCollection() {
             }
         });
         movieGrid.replaceChildren(...newCards);
+
+        // Update Pagination Controls
+        if (collectionTotalPages > 1) {
+            paginationContainer.style.display = 'flex';
+            pageNumberLabel.textContent = `หน้า ${collectionPage} / ${collectionTotalPages}`;
+            prevPageBtn.disabled = collectionPage <= 1;
+            nextPageBtn.disabled = collectionPage >= collectionTotalPages;
+        } else {
+            paginationContainer.style.display = 'none';
+        }
     } catch (err) {
         console.error("Error rendering collection:", err);
         movieGrid.innerHTML = `
@@ -1946,12 +1978,21 @@ function renderMoviesToSlider(moviesList, sliderElement) {
     });
 }
 
-function changeDiscoverPage(delta) {
-    const targetPage = discoverPage + delta;
-    if (targetPage >= 1 && targetPage <= discoverTotalPages) {
-        discoverPage = targetPage;
-        fetchAndRenderDiscover();
-        document.querySelector('main').scrollIntoView({ behavior: 'smooth' });
+function changePage(delta) {
+    if (activeTab === 'collection') {
+        const targetPage = collectionPage + delta;
+        if (targetPage >= 1 && targetPage <= collectionTotalPages) {
+            collectionPage = targetPage;
+            renderMyCollection();
+            document.querySelector('main').scrollIntoView({ behavior: 'smooth' });
+        }
+    } else {
+        const targetPage = discoverPage + delta;
+        if (targetPage >= 1 && targetPage <= discoverTotalPages) {
+            discoverPage = targetPage;
+            fetchAndRenderDiscover();
+            document.querySelector('main').scrollIntoView({ behavior: 'smooth' });
+        }
     }
 }
 
@@ -2754,9 +2795,6 @@ function openSettingsModal() {
         storedOmdbKey = 'trilogy';
     }
     settingsOmdbKey.value = storedOmdbKey;
-    if (settingsJumpscareToggle) {
-        settingsJumpscareToggle.checked = localStorage.getItem('jumpscare_enabled') !== 'false';
-    }
     const soundscapeToggle = document.getElementById('settings-soundscape-toggle');
     if (soundscapeToggle) {
         soundscapeToggle.checked = localStorage.getItem('settings-soundscape-active') === 'true';
@@ -2771,9 +2809,6 @@ function closeSettingsModal() {
 function saveSettings() {
     const keyVal = settingsOmdbKey.value.trim();
     localStorage.setItem('omdb_api_key', keyVal);
-    if (settingsJumpscareToggle) {
-        localStorage.setItem('jumpscare_enabled', settingsJumpscareToggle.checked ? 'true' : 'false');
-    }
     const soundscapeToggle = document.getElementById('settings-soundscape-toggle');
     if (soundscapeToggle) {
         toggleSoundscapeState(soundscapeToggle.checked);
@@ -3199,41 +3234,7 @@ function initFogEffect() {
     animate();
 }
 
-// --- JUMPSCARE EASTER EGG ---
-function initJumpscareIdleDetector() {
-    const idleTimeLimit = 60000; // 60 seconds
-    
-    function resetIdleTimer() {
-        if (jumpscareOverlay && jumpscareOverlay.classList.contains('active')) {
-            jumpscareOverlay.classList.remove('active');
-            document.body.style.overflow = '';
-            // Unlock Jumpscare survivor achievement
-            localStorage.setItem('achievement_jumpscare_survived', 'true');
-            renderHorrorAnalytics();
-        }
-        
-        clearTimeout(idleTimer);
-        idleTimer = setTimeout(triggerJumpscare, idleTimeLimit);
-    }
-    
-    function triggerJumpscare() {
-        const isEnabled = localStorage.getItem('jumpscare_enabled') !== 'false';
-        if (!isEnabled || isSharedProfileMode) return;
-        
-        if (jumpscareOverlay) {
-            jumpscareOverlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            SoundscapeEngine.playJumpscareSFX();
-        }
-    }
-    
-    const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
-    events.forEach(event => {
-        window.addEventListener(event, resetIdleTimer, { passive: true });
-    });
-    
-    resetIdleTimer();
-}
+
 
 // --- HORROR ANALYTICS ---
 function toggleAnalyticsPanel() {
@@ -3886,13 +3887,7 @@ const SPOOKY_ACHIEVEMENTS = [
             return hr >= 0 && hr < 4;
         }
     },
-    {
-        id: 'jumpscare_survived',
-        title: 'จิตสัมผัสพาร่างสั่น (Spooky Survivor)',
-        desc: 'มีชีวิตรอดผ่านจังหวะตกใจกลัวผี Jump Scare 1 ครั้ง',
-        icon: 'fa-solid fa-triangle-exclamation',
-        check: () => localStorage.getItem('achievement_jumpscare_survived') === 'true'
-    },
+
     {
         id: 'marathoner',
         title: 'ผู้จัดตารางสังเวย (Midnight Marathoner)',
